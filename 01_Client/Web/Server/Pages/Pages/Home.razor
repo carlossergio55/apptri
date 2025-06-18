@@ -1,0 +1,12 @@
+﻿@* @page "/Home"
+@layout MainLayout
+@inherits MainBaseComponent
+
+<AuthorizeView>
+    <NotAuthorized>
+        <h1>No Autorizado ..</h1>
+    </NotAuthorized>
+    <Authorized>
+        <MudButton Variant="Variant.Filled" OnClick="@buttonClick">BOTON</MudButton>
+    </Authorized>
+</AuthorizeView> *@

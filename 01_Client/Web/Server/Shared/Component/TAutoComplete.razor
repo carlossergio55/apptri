@@ -1,0 +1,108 @@
+﻿@typeparam TItem
+@using Server.Models
+
+<div>
+    <MudAutocomplete T="string"
+                     @bind-Value="vValue"
+                     SearchFunc="@SearchText"
+                     Placeholder="@PlaceHolder"
+                     Disabled="@pDisable"
+                     Margin="Margin.None"
+                     TextChanged="OnValueChange"
+                     Variant="Variant.Outlined"
+                     ResetValueOnEmptyText="true"
+                     CoerceText="true"
+                     CoerceValue="true"
+                     Clearable="true"
+    MaxItems="100">
+    </MudAutocomplete>
+</div>
+
+
+@code {
+    [Parameter] public IEnumerable<TItem> Valores { get; set; }
+    [Parameter] public string Value { get; set; }
+    [Parameter] public string Descripcion { get; set; }
+    [Parameter] public string PlaceHolder { get; set; } = "Seleccionar";
+    [Parameter] public bool pDisable { get; set; } = false;
+
+    private int _datavalue;
+
+    [Parameter]
+    public int DataValue
+    {
+        get => _datavalue;
+        set
+        {
+            if (_datavalue == value) return;
+            _datavalue = value;
+            DataValueChanged.InvokeAsync(value);
+            SetValueChange(_datavalue);
+        }
+    }
+
+    [Parameter]
+    public EventCallback<int> DataValueChanged { get; set; }
+
+    [Parameter]
+    public EventCallback<int> onDataChanged { get; set; }
+
+    private string vValue { get; set; }
+
+    private List<GAutoCompleteModel> lstValues { get; set; } = new List<GAutoCompleteModel>();
+
+
+    private void _SetData()
+    {
+
+        if (lstValues.Count > 0)
+            lstValues.Clear();
+
+        foreach (var item in Valores)
+        {
+            var vItem = new GAutoCompleteModel();
+            vItem.text = item.GetType().GetProperty(Descripcion).GetValue(item).ToString();
+            vItem.value = Convert.ToInt32(item.GetType().GetProperty(Value).GetValue(item).ToString());
+            lstValues.Add(vItem);
+        }
+    }
+
+
+    private async Task<IEnumerable<string>> SearchText(string value)
+    {
+        await Task.Delay(5);
+        _SetData();
+
+        if (string.IsNullOrEmpty(value))
+        {
+            return await Task.FromResult(lstValues.Select(x => x.text));
+        }
+
+        return lstValues.Where(x => x.text.Contains(value, StringComparison.InvariantCultureIgnoreCase)).Select(x => x.text);
+    }
+
+    async Task OnValueChange(string valor)
+    {
+        foreach (var item in lstValues)
+        {
+            if (item.text == valor)
+            {
+                DataValue = item.value;
+                await onDataChanged.InvokeAsync(DataValue);
+            }
+        }
+    }
+
+    private void SetValueChange(int valor)
+    {
+        vValue = "";
+        foreach (var item in Valores)
+        {
+            if (Convert.ToInt32(item.GetType().GetProperty(Value).GetValue(item)) == valor)
+            {
+                vValue = item.GetType().GetProperty(Descripcion).GetValue(item).ToString();                
+            }
+        }
+    }
+
+}

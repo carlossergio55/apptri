@@ -1,0 +1,75 @@
+﻿@inherits LayoutComponentBase
+
+
+
+<MudThemeProvider Theme="_currentTheme" />
+<MudSnackbarProvider />
+<MudDialogProvider FullWidth="true"
+				   MaxWidth="MaxWidth.ExtraSmall"
+				   CloseButton="false"
+				   DisableBackdropClick="true"
+				   NoHeader="false"
+				   Position="DialogPosition.TopCenter" />
+<MudSnackbarProvider />
+
+@* <div style="position: fixed;top: 81px;text-align: center;align-items: center;width: 100%; " class="d-none d-sm-flex">
+	<img src="svg/logosedemministerio.svg" height="80" alt="Logo Institucional" style="margin: auto;">
+
+
+</div> *@
+
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="d-flex align-center" Style="height: 100vh; align-items:center">
+
+	<MudPaper Elevation="25" Class="pa-0" Style="width: 700px; height: 500px; margin:auto">
+		@Body
+	</MudPaper>
+</MudContainer>
+
+@* <div style="position: fixed;text-align: center;align-items: center;width: 100%;bottom:0" class="d-none d-sm-flex">
+	<img src="svg/empresas.svg" height="80" alt="Logo Institucional" style="margin: auto;" />
+</div> *@
+
+
+<SiabysLoading></SiabysLoading>
+<SiabysDialog></SiabysDialog>
+<SiabysDialogConfirm></SiabysDialogConfirm>
+
+<style>
+	.mud-breadcrumb-separator {
+		padding: 0 6px;
+	}
+
+	.mud-breadcrumb-item.mud-disabled > a {
+		color: #2261a1;
+	}
+
+	.mud-appbar.mud-appbar-dense .mud-toolbar-appbar {
+		height: calc(var(--mud-appbar-height) - var(--mud-appbar-height)/3);
+	}
+
+	.mud-button-text-transform {
+		text-transform: none !important;
+	}
+
+	.mud-input>input.mud-input-root, div.mud-input-slot.mud-input-root {
+		font-size: 0.75rem !important;
+	}
+
+</style>
+
+@code {
+	private MudTheme _currentTheme = new MudBlazorAdminDashboard();
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender)
+			await _auth.LogoutnAsync();
+	}
+
+	protected override void OnInitialized()
+	{
+		_Loading.Hide();
+	}
+
+}

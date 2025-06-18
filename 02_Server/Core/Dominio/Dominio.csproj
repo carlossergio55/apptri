@@ -1,0 +1,148 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup Label="Globals">
+    <SccProjectName></SccProjectName>
+    <SccProvider></SccProvider>
+    <SccAuxPath></SccAuxPath>
+    <SccLocalPath></SccLocalPath>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Entities\Aplicacion\**" />
+    <Compile Remove="Entities\SoapServicios\**" />
+    <Compile Remove="temp\**" />
+    <EmbeddedResource Remove="Entities\Aplicacion\**" />
+    <EmbeddedResource Remove="Entities\SoapServicios\**" />
+    <EmbeddedResource Remove="temp\**" />
+    <None Remove="Entities\Aplicacion\**" />
+    <None Remove="Entities\SoapServicios\**" />
+    <None Remove="temp\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Class1.cs" />
+    <Compile Remove="Entities\AlmvDistribucion.cs" />
+    <Compile Remove="Entities\APPSUBContext.cs" />
+    <Compile Remove="Entities\BioEnrolado.cs" />
+    <Compile Remove="Entities\BioProductosubsidiocanales.cs" />
+    <Compile Remove="Entities\BioPuntoAtencion.cs" />
+    <Compile Remove="Entities\BioTransacciones.cs" />
+    <Compile Remove="Entities\ConsolidadoSaldobeneficiaria.cs" />
+    <Compile Remove="Entities\DblikvAlmproductoprima.cs" />
+    <Compile Remove="Entities\DblinkvAppalmdistribucioningresodet.cs" />
+    <Compile Remove="Entities\DblinkvAppalmproduccionstock.cs" />
+    <Compile Remove="Entities\DblinkvPvproveecontprodcobertura.cs" />
+    <Compile Remove="Entities\DblkalmStokproductoconsumo.cs" />
+    <Compile Remove="Entities\DistBrigada.cs" />
+    <Compile Remove="Entities\DistBrigadadetalle.cs" />
+    <Compile Remove="Entities\DistBrigadadetalleadicional.cs" />
+    <Compile Remove="Entities\DistDistribucion.cs" />
+    <Compile Remove="Entities\DistDistribuciondet.cs" />
+    <Compile Remove="Entities\DistHistorialmodificacion.cs" />
+    <Compile Remove="Entities\DistMontogrupoalimenticio.cs" />
+    <Compile Remove="Entities\DistProductoconsumodet.cs" />
+    <Compile Remove="Entities\DistvDespachoxdistribuidora.cs" />
+    <Compile Remove="Entities\DistvDistribucion.cs" />
+    <Compile Remove="Entities\DlvDistribucion.cs" />
+    <Compile Remove="Entities\DlvvCoordenadasdistribuidora.cs" />
+    <Compile Remove="Entities\Duplicados.cs" />
+    <Compile Remove="Entities\Entregaspaqmayo.cs" />
+    <Compile Remove="Entities\FactEntidadpersonal.cs" />
+    <Compile Remove="Entities\FactEntidadpersonalhijos.cs" />
+    <Compile Remove="Entities\FactEntidadpersonalpaquete.cs" />
+    <Compile Remove="Entities\FactExtractouninet.cs" />
+    <Compile Remove="Entities\FactFacturadetalle.cs" />
+    <Compile Remove="Entities\FactFacturadetallepagos.cs" />
+    <Compile Remove="Entities\FactFacturadosificacion.cs" />
+    <Compile Remove="Entities\FactPersonaback.cs" />
+    <Compile Remove="Entities\FactPlanilladetallepaquetebio.cs" />
+    <Compile Remove="Entities\FactPlanillaentdetallebio.cs" />
+    <Compile Remove="Entities\FactPlanillaentidad.cs" />
+    <Compile Remove="Entities\FactPlanillaentidaddetalle.cs" />
+    <Compile Remove="Entities\GenCalendario.cs" />
+    <Compile Remove="Entities\GenCalendariodpto.cs" />
+    <Compile Remove="Entities\GenCalendariofecha.cs" />
+    <Compile Remove="Entities\GenClasificadorfechas.cs" />
+    <Compile Remove="Entities\GenControladicional.cs" />
+    <Compile Remove="Entities\GenCtabancariainstitucion.cs" />
+    <Compile Remove="Entities\GenInstitucion.cs" />
+    <Compile Remove="Entities\GenInstitucionback.cs" />
+    <Compile Remove="Entities\GenInstitucionsucursal.cs" />
+    <Compile Remove="Entities\GenInstitucionsucursalback.cs" />
+    <Compile Remove="Entities\GenInstsucursalcoordenadas.cs" />
+    <Compile Remove="Entities\GenPaquete.cs" />
+    <Compile Remove="Entities\GenPaquetearmado.cs" />
+    <Compile Remove="Entities\GenPaquetegral.cs" />
+    <Compile Remove="Entities\GenPaquetegralarmado.cs" />
+    <Compile Remove="Entities\GenPaquetegralgrupos.cs" />
+    <Compile Remove="Entities\GenPaquetegralproductos.cs" />
+    <Compile Remove="Entities\GenPaquetegralproductosbio.cs" />
+    <Compile Remove="Entities\GenPaquetegrupos.cs" />
+    <Compile Remove="Entities\GenPaqueteproductos.cs" />
+    <Compile Remove="Entities\GenPaqueteversion.cs" />
+    <Compile Remove="Entities\GenPaqueteversiongral.cs" />
+    <Compile Remove="Entities\GenProducto.cs" />
+    <Compile Remove="Entities\GenProductocontratocobertura.cs" />
+    <Compile Remove="Entities\GenProductosautorizados.cs" />
+    <Compile Remove="Entities\GenSubsidiobiometrico.cs" />
+    <Compile Remove="Entities\GenUbicacion.cs" />
+    <Compile Remove="Entities\GenUpload.cs" />
+    <Compile Remove="Entities\GenvClasificarproductos.cs" />
+    <Compile Remove="Entities\GenvContratoproveedor.cs" />
+    <Compile Remove="Entities\GenvInstitucion.cs" />
+    <Compile Remove="Entities\GenvProductogrupo.cs" />
+    <Compile Remove="Entities\GenvProductosubsidio.cs" />
+    <Compile Remove="Entities\GenvSegInstsucursal.cs" />
+    <Compile Remove="Entities\GenvUbicacion.cs" />
+    <Compile Remove="Entities\PBeneficiaria.cs" />
+    <Compile Remove="Entities\PgStatActivityAllusers.cs" />
+    <Compile Remove="Entities\PgStatStatements.cs" />
+    <Compile Remove="Entities\PgStatStatementsAllusers.cs" />
+    <Compile Remove="Entities\Productossupermercados.cs" />
+    <Compile Remove="Entities\SaetaDistribucion.cs" />
+    <Compile Remove="Entities\SaetaPaquetebio.cs" />
+    <Compile Remove="Entities\Seguridad\GenClasificador.cs" />
+    <Compile Remove="Entities\SocDistribucion.cs" />
+    <Compile Remove="Entities\TabPlanillaMagisterioLactancia.cs" />
+    <Compile Remove="Entities\TabPlanillaMagisterioPrenatal.cs" />
+    <Compile Remove="Entities\TabPlanillaMagisterioPrenatalCompletar.cs" />
+    <Compile Remove="Entities\Ubicacion.cs" />
+    <Compile Remove="Entities\Vconsumo.cs" />
+    <Compile Remove="Entities\Vconsumo2.cs" />
+    <Compile Remove="Entities\Vconteo.cs" />
+    <Compile Remove="Entities\Vconteopla.cs" />
+    <Compile Remove="Entities\Vexistencia.cs" />
+    <Compile Remove="Entities\Videntidadpersonalpaquete.cs" />
+    <Compile Remove="Entities\Vidgrupoproducto.cs" />
+    <Compile Remove="Entities\Vidproductosubsidio.cs" />
+    <Compile Remove="Entities\VistaClasificadores.cs" />
+    <Compile Remove="Entities\VistaClasificadorTipo.cs" />
+    <Compile Remove="Entities\VistaDistribuidorassubsidios.cs" />
+    <Compile Remove="Entities\VistaHipermaxisucursalesproductos.cs" />
+    <Compile Remove="Entities\VistaInstituciones.cs" />
+    <Compile Remove="Entities\VistaInstitucionesSucursalesPersonas.cs" />
+    <Compile Remove="Entities\VistaInstitucionPlanillaDetalle.cs" />
+    <Compile Remove="Entities\VistaInstitucionSucursalPersonaSubsidio.cs" />
+    <Compile Remove="Entities\VistaPaquetesentregados.cs" />
+    <Compile Remove="Entities\VmesTotal.cs" />
+    <Compile Remove="Entities\VnroFactura.cs" />
+    <Compile Remove="Entities\Vprodexistecp.cs" />
+    <Compile Remove="Entities\Vvalor.cs" />
+    <Compile Remove="Entities\Vvmonto.cs" />
+    <Compile Remove="Entities\Vvmontos.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Entities\Vistas\" />
+    <Folder Include="temp\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="EPPlus" Version="7.0.2" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,30 @@
+﻿@implements IDisposable
+
+<MudOverlay @bind-Visible="_Loading.vVisble" DarkBackground="true" ZIndex="9999" AutoClose="false">
+    <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+</MudOverlay>
+
+
+@code {
+
+    protected override void OnInitialized()
+    {
+        _Loading.CambiarEstado += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        _Loading.CambiarEstado -= StateHasChanged;
+    }
+}
+
+<style>
+
+    .mud-overlay-content {
+        background-image: url(svg/botella.png);
+        background-repeat: no-repeat;
+        background-size: 28px;
+        background-position-x: 15px;
+        background-position-y: 8px;
+    }
+</style>

@@ -1,0 +1,38 @@
+﻿.custom-container {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+
+    .custom-container .date-range-picker {
+        width: 300px;
+        height: 50px;
+    }
+
+    .custom-container .btn-imprimir {
+        margin-left: auto;
+    }
+
+.custom-button {
+    padding: 2px 6px; /* Ajustar el padding para que el botón sea más pequeño */
+    border-radius: 16px; /* Esquinas más redondeadas */
+    min-width: unset; /* Deshabilita el ancho mínimo */
+}
+
+.custom-gray-button {
+    background-color: #B0B0B0; /* Color plomo personalizado */
+    color: white; /* Color del texto */
+}
+
+.custom-button-gap {  /* AGREGAR UN ESPACIO ENTRE*/
+    margin-left: 20px; /* Ajusta el valor según el espacio que desees */
+}
+
+.custom-input {
+    padding: 2px 3px; /* Ajustar el padding para que el input sea más pequeño */
+    border-radius: 16px; /* Esquinas más redondeadas */
+    min-width: unset; /* Deshabilita el ancho mínimo */
+    /*border: 1px solid #B0B0B0; /* Agregar un borde plomo como el botón */
+}

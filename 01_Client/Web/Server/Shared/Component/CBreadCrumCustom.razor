@@ -1,0 +1,19 @@
+﻿
+@* <MudBreadcrumbs  Items="@_BreadList.LItems" Class="ml-3 pa-0" Style="font-size: 0.85em"></MudBreadcrumbs> *@
+
+
+@code {
+  
+    protected override void OnInitialized()
+    {
+        _BreadList.CambiarEstado += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        _BreadList.CambiarEstado -= StateHasChanged;
+    }
+    
+
+
+}

@@ -1,0 +1,245 @@
+﻿.contenedor-tabla {
+    width: 8000px; /* o un ancho máximo específico */
+    overflow-x: auto;
+    background-color: red;
+}
+
+.mi-tabla {
+    min-width: 200px;
+    table-layout: fixed;
+}
+
+
+
+.general {
+    border: 1px solid;
+    overflow-x: auto; /* Desplazamiento horizontal */
+    overflow-y: auto; /* Desplazamiento vertical */
+    text-align: center;
+    /*background-color: #8BC34A;*/
+}
+
+.fila_cabecera {
+    background-color: #42424252; /* Tu color preferido */
+    font-weight: bold;
+}
+
+/*[1-2]==================================================*/
+/** ESTILO PARA PRIMER COLUMNA DE CABECERA y CONTENIDO */
+.columna_1 {
+    width: 60px; /* ancho de columna*/
+    /*background-color: #8BC34A;*/
+    border: 1px solid;
+    text-align: center;
+}
+
+.columna_1_2 {
+    width: 36px;
+    text-align: center;
+    border: 1px solid;
+}
+/*[3-7]==================================================*/
+/** ESTILO PARA col 3 a col 7 COLUMNA DE CABECERA y CONTENIDO */
+.defecto {
+    width: 35px; /* ancho de columna*/
+    /*background-color: #8BC34A;*/
+    border: 1px solid;
+    text-align: center;
+}
+
+.codigo_error {
+    border: 1px solid;
+    /*background-color: #8BC34A;*/
+    min-width: 35px; /* Ancho fijo de la celda */
+    /**min-height: 50px; /* Alto fijo de la celda */
+    max-width: 35px; /* Ancho fijo de la celda */
+    /*max-height: 50px;*/ /* Alto fijo de la celda */
+    overflow-x: auto; /* Desplazamiento horizontal */
+    overflow-y: auto; /* Desplazamiento vertical */
+    text-align: center;
+}
+
+.codigo_error_rojo {
+    border: 1px solid;
+    /*background-color: #8BC34A;*/
+    min-width: 35px; /* Ancho fijo de la celda */
+    /**min-height: 50px; /* Alto fijo de la celda */
+    max-width: 35px; /* Ancho fijo de la celda */
+    /*max-height: 50px;*/ /* Alto fijo de la celda */
+    overflow-x: auto; /* Desplazamiento horizontal */
+    overflow-y: auto; /* Desplazamiento vertical */
+    text-align: center;
+    background-color: red;
+}
+
+.codigo_error_verde {
+    border: 1px solid;
+    /*background-color: #8BC34A;*/
+    min-width: 35px; /* Ancho fijo de la celda */
+    /**min-height: 50px; /* Alto fijo de la celda */
+    max-width: 35px; /* Ancho fijo de la celda */
+    /*max-height: 50px;*/ /* Alto fijo de la celda */
+    overflow-x: auto; /* Desplazamiento horizontal */
+    overflow-y: auto; /* Desplazamiento vertical */
+    text-align: center;
+    background-color: #053611;
+}
+
+.suma_error {
+    border: 1px solid;
+    min-width: 25px; /* Ancho fijo de la celda */
+    /**min-height: 50px; /* Alto fijo de la celda */
+    max-width: 25px; /* Ancho fijo de la celda */
+    /*max-height: 50px;*/ /* Alto fijo de la celda */
+    overflow-x: auto; /* Desplazamiento horizontal */
+    overflow-y: auto; /* Desplazamiento vertical */
+    text-align: center;
+}
+
+.critico_aql {
+    border: 1px solid;
+    min-width: 158px; /* Ancho fijo de la celda */
+    /**min-height: 50px; /* Alto fijo de la celda */
+    max-width: 158px; /* Ancho fijo de la celda */
+    /*max-height: 50px;*/ /* Alto fijo de la celda */
+    overflow-x: auto; /* Desplazamiento horizontal */
+    overflow-y: auto; /* Desplazamiento vertical */
+    text-align: center;
+}
+
+.suma_critico_aql {
+    border: 1px solid;
+    min-width: 175px; /* Ancho fijo de la celda */
+    /**min-height: 50px; /* Alto fijo de la celda */
+    max-width: 175px; /* Ancho fijo de la celda */
+    /*max-height: 50px;*/ /* Alto fijo de la celda */
+    overflow-x: auto; /* Desplazamiento horizontal */
+    overflow-y: auto; /* Desplazamiento vertical */
+    text-align: center;
+}
+
+/*[8-16]==================================================*/
+/** ESTILO PARA col 3 a col 7 COLUMNA DE CABECERA y CONTENIDO */
+
+.mayor_aql {
+    border: 1px solid;
+    min-width: 280px; /* Ancho fijo de la celda */
+    /**min-height: 50px; /* Alto fijo de la celda */
+    max-width: 280px; /* Ancho fijo de la celda */
+    /*max-height: 50px;*/ /* Alto fijo de la celda */
+    overflow-x: auto; /* Desplazamiento horizontal */
+    overflow-y: auto; /* Desplazamiento vertical */
+    text-align: center;
+}
+
+.suma_mayor_aql {
+    border: 1px solid;
+    min-width: 53px; /* Ancho fijo de la celda */
+    /**min-height: 50px; /* Alto fijo de la celda */
+    max-width: 53px; /* Ancho fijo de la celda */
+    /*max-height: 50px;*/ /* Alto fijo de la celda */
+    overflow-x: auto; /* Desplazamiento horizontal */
+    overflow-y: auto; /* Desplazamiento vertical */
+    text-align: center;
+}
+
+.suma_mayor_aql_rojo2 {
+    border: 1px solid;
+    min-width: 53px; /* Ancho fijo de la celda */
+    /**min-height: 50px; /* Alto fijo de la celda */
+    max-width: 53px; /* Ancho fijo de la celda */
+    /*max-height: 50px;*/ /* Alto fijo de la celda */
+    overflow-x: auto; /* Desplazamiento horizontal */
+    overflow-y: auto; /* Desplazamiento vertical */
+    text-align: center;
+    background-color: #FF403B;
+}
+
+/*[17-35]==================================================*/
+/** ESTILO PARA COL DE LA 17  A LA 35 */
+
+.menor_aql {
+    border: 1px solid;
+    min-width: 665px; /* Ancho fijo de la celda */
+    /**min-height: 50px; /* Alto fijo de la celda */
+    max-width: 665px; /* Ancho fijo de la celda */
+    /*max-height: 50px;*/ /* Alto fijo de la celda */
+    overflow-x: auto; /* Desplazamiento horizontal */
+    overflow-y: auto; /* Desplazamiento vertical */
+    text-align: center;
+}
+
+/*[HORA]==================================================*/
+/** ESTILO PARA PRIMER COLUMNA DE CABECERA y CONTENIDO DE HORA */
+.general_2 {
+    border: 1px solid;
+    min-width: 40px; /* Ancho fijo de la celda */
+    max-width: 40px; /* Ancho fijo de la celda */
+    /*max-height: 55px;*/ /* Alto fijo de la celda */
+}
+
+.general_2 {
+    overflow-x: auto; /* Desplazamiento horizontal */
+    overflow-y: auto; /* Desplazamiento vertical */
+}
+
+/*[RECHAZO]==================================================*/
+/** ESTILO PARA PRIMER COLUMNA DE CABECERA y CONTENIDO DE RECHAZO */
+.rechazo {
+    border: 1px solid;
+    min-width: 140px; /* Ancho fijo de la celda */
+    max-width: 140px; /* Ancho fijo de la celda */
+    /*max-height: 55px;*/ /* Alto fijo de la celda */
+    text-align: center;
+}
+
+.rechazo {
+    overflow-x: auto; /* Desplazamiento horizontal */
+    overflow-y: auto; /* Desplazamiento vertical */
+}
+
+/*[PESO]==================================================*/
+/** ESTILO PARA PRIMER COLUMNA DE CABECERA y CONTENIDO DE RECHAZO */
+.peso {
+    border: 1px solid;
+    min-width: 70px; /* Ancho fijo de la celda */
+    max-width: 70px; /* Ancho fijo de la celda */
+    text-align: center;
+    /*max-height: 55px;*/ /* Alto fijo de la celda */
+}
+
+.peso {
+    overflow-x: auto; /* Desplazamiento horizontal */
+    overflow-y: auto; /* Desplazamiento vertical */
+}
+
+
+
+
+
+
+
+
+/*[Observacion ]==================================================*/
+/** ESTILO PARA PRIMER COLUMNA DE CABECERA y CONTENIDO */
+.observacion {
+    border: 1px solid;
+    min-width: 310px; /* Ancho fijo de la celda */
+    min-height: 70px; /* Alto fijo de la celda */
+    max-width: 310px; /* Ancho fijo de la celda */
+    /* Alto fijo de la celda */
+}
+
+.observacion {
+    overflow-x: auto; /* Desplazamiento horizontal */
+    overflow-y: auto; /* Desplazamiento vertical */
+}
+
+.observacion {
+    /**white-space: nowrap; /* Evita que el texto se ajuste automáticamente */
+}
+
+
+.fila_vacia {
+    min-height: 70px;
+}

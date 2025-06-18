@@ -1,0 +1,121 @@
+﻿@page "/"
+@page "/pages/authentication/login"
+@using Microsoft.Extensions.Configuration
+@layout LoginLayout
+@inherits MainBaseComponent
+@inject IConfiguration Configuration
+
+@attribute [AllowAnonymous]
+@inject IStringLocalizer<Resources.Pages.Authentication.Login.Resource> localizer
+@inject IManagerAuthorize _LoginService
+
+<MudText Typo="Typo.h4" Align="Align.Center"><strong> CONTROL DE PAGOS  </strong></MudText>
+<br />
+<MudText Typo="Typo.h5" Align="Align.Center"><strong>  APORTES </strong></MudText>
+<br />
+<br />
+
+<div class="login-container">
+    <EditForm Model="@_tokenModel" OnValidSubmit="SubmitAsync">
+        <FluentValidationValidator @ref="_fluentValidationValidator" DisableAssemblyScanning="@true" />
+        <MudGrid>
+            <DataAnnotationsValidator />
+            <MudItem xs="12" sm="7">
+                <MudItem xs="12" Class="pt-0 pr-7 pl-7">
+                    <MudItem xs="12" Class="d-flex justify-center mb-0">
+                        <MudPaper Class="pa-4 ma-1 rounded-circle">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="48px" height="48px">
+                                <path d="M0 0h24v24H0z" fill="none" />
+                                <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0
+                      1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6
+                      9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1
+                      3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z" fill="#007BFF" />
+                            </svg>
+                        </MudPaper>
+                    </MudItem>
+
+
+                    <MudItem xs="12" Class="mb-0 pa-0">
+                        <MudTextField T="string"
+                                      Label="@localizer["Usuario"]"
+                                      Variant="Variant.Text"
+                                      Margin="Margin.None"
+                                      @bind-Value="_tokenModel.UserName"
+                                      For="@(() => _tokenModel.UserName)"
+                                      Class="mb-1 pa-0" />
+                    </MudItem>
+
+                    <MudItem xs="12" Class="mb-0">
+                        <MudTextField T="string"
+                                      Label="@localizer["Contraseña"]"
+                                      Variant="Variant.Text"
+                                      @bind-Value="_tokenModel.Password"
+                                      For="@(() => _tokenModel.Password)"
+                                      InputType="@PasswordInput"
+                                      Class="mb-0 pa-0"
+                                      Adornment="Adornment.End"
+                                      AdornmentIcon="@PasswordInputIcon"
+                                      OnAdornmentClick="TogglePasswordVisibility" />
+                    </MudItem>
+
+                    <MudItem xs="12" Class="d-flex justify-center mt-4 mb-4 pa-2">
+                        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Tertiary"
+                                   Size="Size.Medium" Style="width: 100%;">
+                            @localizer["Ingresar"]
+                        </MudButton>
+                    </MudItem>
+
+                </MudItem>
+            </MudItem>
+@*             AQUI SE AGREGARA EL LOGO PARA LA EMPRESA *@
+            <MudItem sm="5" Class="d-none d-sm-flex pa-0 loguin-p">
+                <img src="/images/internet.png" alt="Imagen de Login" style="width:100%; height:100%; object-fit:cover;" />
+            </MudItem>
+
+        </MudGrid>
+    </EditForm>
+</div>
+
+<style>
+
+    /* Aplica la fuente Montserrat */
+    .login-container, .login-container * {
+        font-family: 'Montserrat', sans-serif;
+    }
+
+        /* Ajusta el color de los títulos */
+        .login-container h4,
+        .login-container h5 {
+            color: #7B1E18; /* Borgoña */
+        }
+
+        /* Separación entre textfields */
+        .login-container .mud-text-field {
+            margin-bottom: 1rem;
+        }
+
+        /* Cambiar el color del ícono (dentro de MudPaper) */
+        .login-container svg {
+            fill: #7B1E18 !important;
+        }
+
+        /* Si tuvieras enlaces en el login */
+        .login-container a {
+            color: #7B1E18;
+        }
+
+            .login-container a:hover {
+                text-decoration: underline;
+            }
+
+    /* Columna derecha: estilo para el espacio decorativo o imagen */
+    .loguin-p {
+        background-color: #FAFAFA;
+        border-radius: 0 8px 8px 0;
+    }
+
+        /* Desplaza la imagen un poco a la izquierda */
+        .loguin-p img {
+            margin-left: -20px; /* Ajusta el valor a tu gusto */
+        }
+</style>

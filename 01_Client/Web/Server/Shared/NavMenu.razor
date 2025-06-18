@@ -1,0 +1,166 @@
+﻿@using System.Collections
+@using Infraestructura.Models.Authentication
+
+<div align="center">
+    <img src="images/internea.png" alt="Internet" style=" height: 57px; width: 130px; margin: 10px;" />
+</div>
+
+<MudDivider Class="mb-4" />
+
+<MudNavMenu>
+    @if (_menuListaPrinci == null)
+    {
+        <p><em>Cargando...</em></p>
+    }
+    else
+    {
+        @foreach (SegMenuResponse item in _menuListaPrinci)
+        {
+            // Hijos de primer nivel
+            var _menuListadetalle = _menuLista.Where(x => x.parentid == item.id).ToList();
+
+            // Si tiene hijos => MudNavGroup
+            if (_menuListadetalle.Count > 0)
+            {
+                <MudNavGroup Title="@item.texto.ToUpper()" Icon="@GetIcon(item.IconoModulo)">
+                    @foreach (SegMenuResponse items in _menuListadetalle)
+                    {
+                        // Hijos de segundo nivel
+                        var _menuListadetalle2 = _menuLista.Where(x => x.parentid == items.id).ToList();
+
+                        if (_menuListadetalle2.Count > 0)
+                        {
+                            <MudNavGroup Title="@items.texto" Icon="@GetIcon(items.IconoModulo)">
+                                @foreach (SegMenuResponse items2 in _menuListadetalle2)
+                                {
+                                    <MudNavLink Href="@items2.url" Icon="@GetIcon(items2.IconoModulo)">
+                                        @items2.texto.ToUpper()
+                                    </MudNavLink>
+                                }
+                            </MudNavGroup>
+                        }
+                        else
+                        {
+                            <MudNavLink Href="@items.url" Icon="@GetIcon(items.IconoModulo)">
+                                @items.texto.ToUpper()
+                            </MudNavLink>
+                        }
+                    }
+                </MudNavGroup>
+            }
+            else
+            {
+                // Sin hijos => MudNavLink
+                <MudNavLink Href="@item.url"
+                            Match="NavLinkMatch.All"
+                            Icon="@GetIcon(item.IconoModulo)">
+                    @item.texto.ToUpper()
+                </MudNavLink>
+            }
+        }
+    }
+</MudNavMenu>
+
+@code {
+
+    private IEnumerable _menuListaPrinci;
+    List<SegMenuResponse> _menuLista = new List<SegMenuResponse>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _menuLista = await _Storage.DatosMenu();
+        _menuListaPrinci = _menuLista.Where(x => x.parentid < 0);
+    }
+
+    /// <summary>
+    /// Convierte el string de la BD (p.ej. "Icons.Material.Filled.Home")
+    /// en la referencia estática real de MudBlazor por reflexión.
+    /// </summary>
+    private string GetIcon(string iconName)
+    {
+        // Si no hay nada, asignar ícono por defecto
+        if (string.IsNullOrEmpty(iconName))
+        {
+            iconName = "Icons.Material.Outlined.Dashboard"; // Ajusta si quieres otro default
+        }
+
+        // iconName se espera con este formato: "Icons.Material.[Filled|Outlined|Rounded|Sharp|TwoTone].NombreIcono"
+        // Ej: "Icons.Material.Filled.Home"
+        var parts = iconName.Split('.');
+        if (parts.Length != 4)
+        {
+            // formato inválido => retorna un ícono por defecto o un string vacío
+            return Icons.Material.Outlined.HelpOutline;
+        }
+
+        // Extraemos la categoría => Filled, Outlined, Rounded, Sharp, TwoTone
+        string iconCategory = parts[2];
+        // Extraemos el nombre real del icono => "Home", "Dashboard", "Person", etc.
+        string iconType = parts[3];
+
+        string iconValue = null;
+
+        switch (iconCategory)
+        {
+            case "Outlined":
+                {
+                    var outlinedIcons = typeof(Icons.Material.Outlined);
+                    var outlinedField = outlinedIcons.GetField(iconType);
+                    if (outlinedField != null)
+                    {
+                        iconValue = (string)outlinedField.GetValue(null);
+                    }
+                    break;
+                }
+            case "Filled":
+                {
+                    var filledIcons = typeof(Icons.Material.Filled);
+                    var filledField = filledIcons.GetField(iconType);
+                    if (filledField != null)
+                    {
+                        iconValue = (string)filledField.GetValue(null);
+                    }
+                    break;
+                }
+            case "Rounded":
+                {
+                    var roundedIcons = typeof(Icons.Material.Rounded);
+                    var roundedField = roundedIcons.GetField(iconType);
+                    if (roundedField != null)
+                    {
+                        iconValue = (string)roundedField.GetValue(null);
+                    }
+                    break;
+                }
+            case "Sharp":
+                {
+                    var sharpIcons = typeof(Icons.Material.Sharp);
+                    var sharpField = sharpIcons.GetField(iconType);
+                    if (sharpField != null)
+                    {
+                        iconValue = (string)sharpField.GetValue(null);
+                    }
+                    break;
+                }
+            case "TwoTone":
+                {
+                    var twoToneIcons = typeof(Icons.Material.TwoTone);
+                    var twoToneField = twoToneIcons.GetField(iconType);
+                    if (twoToneField != null)
+                    {
+                        iconValue = (string)twoToneField.GetValue(null);
+                    }
+                    break;
+                }
+            default:
+                // Si no coincide con ninguno, asignar un ícono fallback
+                return Icons.Material.Outlined.HelpOutline;
+        }
+
+        // Retornar el ícono encontrado o un fallback si no existe
+        return iconValue ?? Icons.Material.Outlined.HelpOutline;
+    }
+
+    // Ejemplo de ícono inline si quisieras
+    string AlertAssignmentIcon { get; set; } = "<path d=\"M19,3A2,2 0 0,1 21,5V19A2,2 0 0,1 19,21H5A2,2 0 0,1 3,19V5A2,2 0 0,1 5,3H9.18C9.6,1.84 10.7,1 12,1C13.3,1 14.4,1.84 14.82,3H19M12,3A1,1 0 0,0 11,4A1,1 0 0,0 12,5A1,1 0 0,0 13,4A1,1 0 0,0 12,3M7,7V5H5V19H19V5H17V7H7M11,9H13V13.5H11V9M11,15H13V17H11V15Z\" />";
+}

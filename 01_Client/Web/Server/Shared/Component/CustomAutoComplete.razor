@@ -1,0 +1,94 @@
+﻿﻿
+@typeparam TItem
+@using System.Text.Json;
+
+<MudAutocomplete T="string"
+				 @bind-Value="vValue"
+				 SearchFunc="@SearchText"
+				 Placeholder="@pPlaceHolder"
+				 Disabled="@pDisable"
+				 Margin="Margin.None"
+				 TextChanged="OnValueChange"
+				 Variant="Variant.Outlined">
+</MudAutocomplete>
+
+@code {
+
+	[Parameter] public string jsonData { get; set; } = string.Empty;
+	[Parameter] public string NameValue { get; set; }
+	[Parameter] public string NameDescripcion { get; set; }
+	[Parameter] public string pPlaceHolder { get; set; } = "Seleccionar";
+	[Parameter] public bool pDisable { get; set; } = false;
+
+
+	private int _datavalue;
+
+	[Parameter]
+	public int DataValue
+	{
+		get => _datavalue;
+		set
+		{
+			if (_datavalue == value) return;
+			_datavalue = value;
+			DataValueChanged.InvokeAsync(value);
+			SetValueChange(_datavalue.ToString());
+		}
+	}
+
+	[Parameter]
+	public EventCallback<int> DataValueChanged { get; set; }
+
+	private string vValue { get; set; }
+
+	private List<string> lstValues { get; set; } = new List<string>();
+
+	private void SetData()
+	{
+		if (lstValues.Count > 0)
+			return;
+
+		var vList = JsonSerializer.Deserialize<List<TItem>>(jsonData);
+		foreach (var item in vList)
+		{
+			lstValues.Add(item.GetType().GetProperty(NameDescripcion).GetValue(item).ToString());
+		}
+	}
+
+	private async Task<IEnumerable<string>> SearchText(string value)
+	{
+		await Task.Delay(5);
+		SetData();
+
+		if (string.IsNullOrEmpty(value))
+		{
+			return lstValues;
+		}
+
+		return lstValues.Where(x => x.Contains(value, StringComparison.InvariantCultureIgnoreCase));
+	}
+
+	private void OnValueChange(string valor)
+	{
+		foreach (var item in JsonSerializer.Deserialize<List<TItem>>(jsonData))
+		{
+			if (item.GetType().GetProperty(NameDescripcion).GetValue(item).ToString() == valor)
+			{
+				DataValue = Convert.ToInt32(item.GetType().GetProperty(NameValue).GetValue(item));
+			}
+		}
+	}
+
+	private void SetValueChange(string valor)
+	{
+		foreach (var item in JsonSerializer.Deserialize<List<TItem>>(jsonData))
+		{
+			if (item.GetType().GetProperty(NameValue).GetValue(item).ToString() == valor)
+			{
+				vValue = item.GetType().GetProperty(NameDescripcion).GetValue(item).ToString();
+
+			}
+		}
+	}
+
+}

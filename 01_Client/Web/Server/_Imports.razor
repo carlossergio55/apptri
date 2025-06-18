@@ -1,0 +1,31 @@
+@using System.Net.Http
+@using System.Net.Http.Json
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+@using Microsoft.JSInterop
+@using MudBlazor
+@using MudBlazor.ThemeManager
+@using Server
+@using Server.Shared
+@using Infraestructura.Abstract
+@using Infraestructura.Component
+@using Microsoft.Extensions.Localization
+@using Blazored.FluentValidation
+@using Infraestructura.Services
+@using Server.Shared.Component
+@using Syncfusion.Blazor
+@using Syncfusion.Blazor.Calendars
+@using Syncfusion.Blazor.Grids
+@inject NavigationManager _navMgr
+@inject Loading _Loading
+@inject TBreadCrumCustom _BreadList
+@inject ManagerRest _Rest
+@inject IManagerStorage _Storage
+@inject ISnackbar _snackbar
+@inject IDialogService DialogService
+@inject IManagerAuthorize _auth
+@inject IConfigurationPath _Uri

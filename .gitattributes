@@ -1,0 +1,8 @@
+# Forzar finales de línea LF para archivos de código
+*.js text eol=lf
+*.css text eol=lf
+*.html text eol=lf
+
+# Otros archivos que pueden causar advertencias, los mantenemos como están
+*.svg text eol=lf
+*.json text eol=lf

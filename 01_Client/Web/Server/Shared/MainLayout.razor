@@ -1,0 +1,200 @@
+﻿@inherits LayoutComponentBase
+@attribute [Authorize]
+@using Infraestructura.Abstract
+@using System.Globalization
+
+<MudThemeProvider Theme="_themeManager.Theme" />
+<MudDialogProvider FullWidth="true"
+                   MaxWidth="MaxWidth.ExtraSmall"
+                   CloseButton="false"
+                   DisableBackdropClick="true"
+                   NoHeader="false"
+                   Position="DialogPosition.TopCenter" />
+<MudSnackbarProvider />
+
+<AuthorizeView>
+    <Authorized>
+        <MudLayout>
+            <MudAppBar Color="Color.Primary" Dense="true">
+               
+                    <img src="images/icono(1).png" alt="Logo" @onclick="DrawerToggle" style="cursor: pointer;" />
+             
+               
+                <MudHidden Breakpoint="Breakpoint.Xs">
+                    <MudText Typo="Typo.h5" Class="ml-1">CONTROL DE PAGOS </MudText>
+                </MudHidden>
+                <MudHidden Breakpoint="Breakpoint.Xs" Invert="true">
+                    <MudText Typo="Typo.h5">APORTES</MudText>
+                </MudHidden>
+
+                <MudSpacer />
+                <MudMenu Direction="Direction.Left" OffsetX="true" Dense="true" Class="mt-1 ml-4">
+                    <ActivatorContent>
+                        <MudIconButton Icon="@Icons.Material.Outlined.AccountCircle"
+                                       Size="Size.Medium"
+                                       Style="color: #FFFFFF;" />
+                    </ActivatorContent>
+                    <ChildContent>
+                        <PersonCard Class="mt-n2" />
+                        <MudDivider Class="mb-2" />
+                        <MudListItem Text="Account" Icon="@Icons.Material.Outlined.Person" Href="/personal/account" />
+                        <MudListItem Text="Logout" Icon="@Icons.Material.Outlined.Login" Href="/pages/authentication/login" />
+                    </ChildContent>
+                </MudMenu>
+            </MudAppBar>
+
+            <MudDrawer @bind-Open="_drawerOpen"
+                       Elevation="_themeManager.DrawerElevation"
+                       ClipMode="_themeManager.DrawerClipMode"
+                       Variant="@DrawerVariant.Mini"
+                       OpenMiniOnHover="true"
+                       PreserveOpenState="true">
+                <NavMenu />
+            </MudDrawer>
+
+            <MudMainContent>
+                <MudContainer MaxWidth="MaxWidth.ExtraExtraLarge">
+                    <MudHidden Breakpoint="Breakpoint.SmAndDown">
+                     @*    <MudToolBar DisableGutters="false">
+                            <MudIconButton Icon="@Icons.Material.Outlined.Menu" Color="Color.Inherit" OnClick="@((e) => DrawerToggle())" Class="ml-3" />
+                            <CBreadCrumCustom />
+                        </MudToolBar> *@
+                    </MudHidden>
+                    @Body
+                </MudContainer>
+            </MudMainContent>
+
+        </MudLayout>
+    </Authorized>
+    <NotAuthorized>
+        <h5>No Autorizado ..</h5>
+    </NotAuthorized>
+</AuthorizeView>
+
+<SiabysLoading></SiabysLoading>
+<SiabysDialog></SiabysDialog>
+<SiabysDialogConfirm></SiabysDialogConfirm>
+
+<style>
+    .mud-breadcrumb-separator {
+        padding: 0 6px;
+    }
+
+    .mud-breadcrumb-item.mud-disabled > a {
+        color: #2261a1;
+    }
+
+    .mud-appbar.mud-appbar-dense .mud-toolbar-appbar {
+        height: calc(var(--mud-appbar-height) - var(--mud-appbar-height)/3);
+    }
+
+    .mud-input > input.mud-input-root, div.mud-input-slot.mud-input-root {
+        font-size: 0.785rem !important;
+    }
+
+    .mud-input > input.mud-input-root-outlined, div.mud-input-slot.mud-input-root-outlined {
+        padding: 10.5px 14px;
+    }
+
+    .mud-button {
+        text-transform: none !important;
+    }
+
+    .mud-input-control > .mud-input-control-input-container > .mud-input-label-outlined.mud-input-label-inputcontrol {
+        line-height: 0px;
+    }
+
+    /* Chrome, Safari, Edge, Opera */
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    /* Firefox */
+    input[type=number] {
+        -moz-appearance: textfield;
+    }
+
+    .mud-shrink ~ label.mud-input-label.mud-input-label-inputcontrol.mud-input-label-outlined, .mud-input:focus-within ~ label.mud-input-label.mud-input-label-inputcontrol.mud-input-label-outlined {
+        transform: translate(14px,-10px) scale(.75);
+        font-weight: 600;
+    }
+
+    .mud-alert-message {
+        line-height: 25px
+    }
+
+    .mud-input.mud-disabled {
+        color: #02524c;
+        cursor: default;
+    }
+
+
+    .e-date-wrapper, .e-date-container, .e-input-group, .e-control-container, .e-control-wrapper {
+        top: 6px !important;
+    }
+</style>
+
+@code {
+
+    [CascadingParameter]
+    public Task<AuthenticationState> authenticationState { get; set; }
+    private ThemeManagerTheme _themeManager = new ThemeManagerTheme
+        {
+            Theme = new MudBlazorAdminDashboard(),
+            DrawerClipMode = DrawerClipMode.Always,
+            FontFamily = "Montserrat",
+            DefaultBorderRadius = 6,
+            AppBarElevation = 1,
+            DrawerElevation = 1
+        };
+
+
+    public bool _drawerOpen = true;
+    public bool _themeManagerOpen = false;
+
+    void DrawerToggle()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+
+    void OpenThemeManager(bool value)
+    {
+        _themeManagerOpen = value;
+    }
+
+    void UpdateTheme(ThemeManagerTheme value)
+    {
+        _themeManager = value;
+        StateHasChanged();
+    }
+    protected override void OnInitialized()
+    {
+        // Barra superior (AppBar) en azul
+        _themeManager.Theme.Palette.Primary = "#0f6751"; // Azul principal
+        _themeManager.Theme.Palette.AppbarBackground = "#007BFF";
+
+        // Menú lateral (Drawer) en blanco/gris claro
+        _themeManager.Theme.Palette.DrawerBackground = "#FFFFFF"; // Blanco
+        _themeManager.Theme.Palette.DrawerText = "#212121"; // Texto oscuro para contraste
+        _themeManager.Theme.Palette.DrawerIcon = "#212121"; // Íconos en negro
+
+        // Fondo general de la aplicación (contenido principal)
+        _themeManager.Theme.Palette.Background = "#F5F5F5"; // Gris claro
+
+        // Botones de acción en verde (éxito) o naranja (advertencia)
+        _themeManager.Theme.Palette.Success = "#28A745"; // Verde para acciones exitosas
+        _themeManager.Theme.Palette.Warning = "#FD7E14"; // Naranja para advertencias
+
+        StateHasChanged();
+    }
+
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        _BreadList.Update(_navMgr.Uri.ToString().Replace(_navMgr.BaseUri, ""));
+    }
+
+
+}
