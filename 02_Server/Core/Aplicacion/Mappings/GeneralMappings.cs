@@ -1,8 +1,11 @@
 ﻿using Aplicacion.DTOs.Clasificador;
+using Aplicacion.DTOs.Integracion;
 using Aplicacion.DTOs.Segurity;
 using AutoMapper;
 using Dominio.Entities;
+using Dominio.Entities.Integracion;
 using Dominio.Entities.Seguridad;
+using System;
 
 
 
@@ -22,6 +25,16 @@ namespace Aplicacion.Mappings
 
             CreateMap<GenClasificador, GenClasificadorDto>();
             CreateMap<GenClasificadortipo, GenClasificadortipoDto>();
+            CreateMap<Bus, BusDto>();
+            CreateMap<Chofer, ChoferDto>();
+            CreateMap<Cliente, ClienteDto>();
+            CreateMap<Ruta, RutaDto>();
+            CreateMap<Usuario, UsuarioDto>();
+            CreateMap<Horario, HorarioDto>()
+                .ForMember(dest => dest.HoraSalida, opt => opt.MapFrom(src => src.HoraSalida.ToString(@"hh\:mm")));
+            CreateMap<Asiento, AsientoDto>();
+            CreateMap<Viaje, ViajeDto>();
+
 
 
             #endregion
@@ -32,7 +45,16 @@ namespace Aplicacion.Mappings
             //CreateMap<ConInventarioDto, ConInventario>();
             CreateMap<GenClasificadorDto, GenClasificador>();
             CreateMap<GenClasificadortipoDto, GenClasificadortipo>();
- 
+            CreateMap<BusDto, Bus>();
+            CreateMap<ChoferDto, Chofer>();
+            CreateMap<ClienteDto, Cliente>();
+            CreateMap<RutaDto, Ruta>();
+            CreateMap<UsuarioDto, Usuario>();
+            CreateMap<HorarioDto, Horario>()
+                  .ForMember(dest => dest.HoraSalida, opt => opt.MapFrom(src => TimeSpan.Parse(src.HoraSalida)));
+            CreateMap<AsientoDto, Asiento>();
+            CreateMap<ViajeDto, Viaje>();
+
 
             #endregion
         }

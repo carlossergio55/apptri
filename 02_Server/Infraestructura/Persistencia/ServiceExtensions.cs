@@ -33,6 +33,7 @@ namespace Persistencia
             //services.AddTransient<IProgSeguimientoRepository, ProgSeguimientoRepository>();
             //services.AddTransient<IPacFormularioRepository, PacFormularioRepository>();
             services.AddTransient<IClienteRepository, ClienteRepository>();
+
         }
 
 
