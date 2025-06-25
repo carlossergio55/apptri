@@ -44,6 +44,7 @@ namespace Aplicacion.Features.Integracion.Queries
             public AsientoSpecification()
             {
                 Query.Include(x => x.Bus);
+                //poara ver cambiois
             }
         }
 
