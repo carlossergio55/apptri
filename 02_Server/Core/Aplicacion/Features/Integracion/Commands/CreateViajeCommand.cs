@@ -58,8 +58,7 @@ namespace Aplicacion.Features.Integracion.Commands
 
             // Mapear y guardar
             var nuevoRegistro = _mapper.Map<Viaje>(request.Viaje);
-            var fechaHoy = DateTime.Today;
-            var fechaLimite = fechaHoy.AddDays(7);
+            
             // ✅ Convertir string a TimeSpan
             if (TimeSpan.TryParse(request.Viaje.HoraSalida, out TimeSpan hora))
             {
@@ -69,11 +68,13 @@ namespace Aplicacion.Features.Integracion.Commands
             {
                 throw new Exception("Formato inválido para la hora. Usa HH:mm o HH:mm:ss");
             }
+            var fechaHoy = DateTime.Today;
+            var fechaLimite = fechaHoy.AddDays(14);
             if (request.Viaje.Fecha.Date < fechaHoy)
                 throw new Exception("La fecha del viaje no puede ser en el pasado.");
 
             if (request.Viaje.Fecha.Date > fechaLimite)
-                throw new Exception("No se pueden programar viajes con más de una semana de anticipación.");
+                throw new Exception("No se pueden programar viajes con más de dos semanas de anticipación.");
 
             // Guardar en la base de datos
             var data = await _repositoryAsync.AddAsync(nuevoRegistro);
