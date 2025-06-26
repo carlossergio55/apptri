@@ -26,6 +26,8 @@ namespace Persistencia.Contexts
         public DbSet<Horario> Horario { get; set; }
         public DbSet<Asiento> Asiento { get; set; }
         public DbSet<Viaje> Viaje { get; set; }
+        public DbSet<Boleto> Boleto { get; set; }
+        public DbSet<Encomienda> Encomienda { get; set; }
 
 
 

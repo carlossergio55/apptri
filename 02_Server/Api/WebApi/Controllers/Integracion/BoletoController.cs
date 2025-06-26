@@ -8,23 +8,25 @@ using Webapi.Controllers.v1;
 
 namespace WebApi.Controllers.Integracion
 {
+    
     [ApiVersion("1.0")]
     [ApiController]
-    public class ViajeController : BaseApiController
+    public class BoletoController : BaseApiController
     {
-        [HttpGet("viaje")]
+        [HttpGet("boleto")]
         [Authorize]
         public async Task<IActionResult> Get()
         {
-            return Ok(await Mediator.Send(new GetAllViajeQuery()));
+            return Ok(await Mediator.Send(new GetAllBoletoQuery()));
         }
 
         [HttpPost("Guardar")]
         [Authorize]
-        public async Task<IActionResult> Post(CreateViajeCommand command)
+        public async Task<IActionResult> Post(CreateBoletoCommand command)
         {
             return Ok(await Mediator.Send(command));
         }
-    }
 
+        
+    }
 }

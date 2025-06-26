@@ -10,21 +10,20 @@ namespace WebApi.Controllers.Integracion
 {
     [ApiVersion("1.0")]
     [ApiController]
-    public class ViajeController : BaseApiController
+    public class EncomiendaController : BaseApiController
     {
-        [HttpGet("viaje")]
+        [HttpGet("encomienda")]
         [Authorize]
         public async Task<IActionResult> Get()
         {
-            return Ok(await Mediator.Send(new GetAllViajeQuery()));
+            return Ok(await Mediator.Send(new GetAllEncomiendaQuery()));
         }
 
-        [HttpPost("Guardar")]
+        [HttpPost("guardar")]
         [Authorize]
-        public async Task<IActionResult> Post(CreateViajeCommand command)
+        public async Task<IActionResult> Post(CreateEncomiendaCommand command)
         {
             return Ok(await Mediator.Send(command));
         }
     }
-
 }

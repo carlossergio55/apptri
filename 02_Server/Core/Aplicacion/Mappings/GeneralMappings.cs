@@ -34,6 +34,8 @@ namespace Aplicacion.Mappings
                 .ForMember(dest => dest.HoraSalida, opt => opt.MapFrom(src => src.HoraSalida.ToString(@"hh\:mm")));
             CreateMap<Asiento, AsientoDto>();
             CreateMap<Viaje, ViajeDto>();
+            CreateMap<Boleto, BoletoDto>();
+            CreateMap<Encomienda, EncomiendaDto>();
 
 
 
@@ -54,6 +56,9 @@ namespace Aplicacion.Mappings
                   .ForMember(dest => dest.HoraSalida, opt => opt.MapFrom(src => TimeSpan.Parse(src.HoraSalida)));
             CreateMap<AsientoDto, Asiento>();
             CreateMap<ViajeDto, Viaje>();
+            CreateMap<BoletoDto, Boleto>();
+            CreateMap<EncomiendaDto, Encomienda>();
+
 
 
             #endregion
