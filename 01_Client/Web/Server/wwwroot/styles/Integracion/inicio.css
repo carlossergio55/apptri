@@ -1,0 +1,273 @@
+﻿/* Sección principal con imagen de fondo */
+.seccion-principal {
+    margin-top: 50px; /* Espacio bajo AppBar */
+    background-image: url('/images/bus1.jpg');
+    background-size: cover;
+    background-position: center;
+    height: 400px;
+    position: relative;
+    color: white;
+}
+
+/* Contenido centrado dentro de la sección principal */
+.contenido-principal {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.4); /* Oscurece imagen */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+
+
+
+
+
+
+
+
+/* Botones de Comprar Pasaje Y Rastrear Envío */
+.btn-modern {
+    padding: 17px 40px;
+    border-radius: 50px;
+    cursor: pointer;
+    border: none;
+    background-color: white;
+    box-shadow: rgba(0, 0, 0, 0.05) 0 0 8px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    transition: all 0.5s ease;
+    color: #333; /* texto inicial */
+}
+
+    .btn-modern:hover {
+        letter-spacing: 3px;
+        background-color: darkred;
+        color: white;
+        box-shadow: #8e44ad 0px 7px 29px 0px;
+    }
+
+    .btn-modern:active {
+        letter-spacing: 3px;
+        background-color: darkred;
+        color: white;
+        box-shadow: #8e44ad 0px 0px 0px 0px;
+        transform: translateY(10px);
+        transition: 100ms;
+    }
+
+
+/*SEPARADORES DE SECCION*/
+/* Contenedor principal de todo el separador */
+.explore-separador {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px; /* Espacio entre elementos */
+    margin: 50px 0 1px;
+    animation: aparecer 0.5s ease-out;
+    font-family: 'Bebas Neue', cursive;
+    font-weight: 700;
+}
+
+/* Las líneas cortas a los lados */
+.linea-corta {
+    width: 40px;
+    height: 2px;
+    background-color: #8B0000; /* darkred */
+    opacity: 0.8;
+    border-radius: 1px;
+}
+
+/* Texto "Explore" con íconos de bus */
+.texto-explore {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Espacio entre íconos y texto */
+    font-size: 18px;
+    font-weight: 600;
+    color: #8B0000;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+    /* Íconos de bus dentro del texto */
+    .texto-explore i {
+        font-size: 20px;
+        color: #8B0000;
+    }
+
+/* Animación opcional de aparición */
+@keyframes aparecer {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+/*GALERIA DE DESTINOS*/
+.separador-texto-con-lineas {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin: 10px 0 10px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 24px;
+}
+
+.linea {
+    flex-grow: 1;
+    height: 1px;
+    background-color: lightgrey; /* color de la linea separadora */
+    border: none;
+    opacity: 0.85;
+}
+
+.texto-separador {
+    color: black;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+/* BOTON DE LA IMAGEN DE DESTINOS*/
+.pos-img-destino {
+    position: relative;
+    overflow: hidden;
+}
+
+/* Imagen por defecto */
+.img-destino {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 6px;
+    transition: filter 0.3s ease;
+}
+
+/* Al hacer hover, oscurece la imagen */
+.pos-img-destino:hover .img-destino {
+    filter: brightness(0.5);
+}
+
+/* Botón centrado */
+.btn-destino {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(0deg);
+    opacity: 0;
+    background-color: transparent;
+    color: white;
+    font-size: 24px;
+    width: 40px;
+    height: 40px;
+    border-radius: 9999px;
+    border: 2px solid transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.4s ease, opacity 0.4s ease, font-size 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Hover: muestra y anima el botón */
+.pos-img-destino:hover .btn-destino {
+    opacity: 1;
+    transform: translate(-50%, -50%) rotate(90deg) scale(1.2);
+    font-size: 30px;
+    color: #c084fc; /* Color violeta tomado de tu imagen */
+    border-color: #c084fc;
+}
+
+
+/*LETRAS DE DESTINOS DEBAJO DE LAS IMAGENES*/
+.nom-destino {
+    display: flex;
+    justify-content: center;
+    margin: 0 0 0px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 900;
+    font-size: 24px;
+    color: black;
+    letter-spacing: 1px;
+    text-shadow: 1px 1px 0 darkred, 2px 2px 0 darkred, 3px 3px 0 black;
+}
+
+
+
+
+/*TEXTOS LARGOS DE COLOR BLANCO*/
+.texto-solo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin: 0px 40px 30px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 20px;
+    color: whitesmoke;
+    text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.6);
+}
+
+
+.seccion-secundaria {
+    margin-top: 10px; /* Espacio bajo AppBar */
+    background-image: url('/images/Sucre1.jpg');
+    background-size: cover;
+    background-position: center;
+    height: 400px;
+    position: relative;
+}
+
+.seccion-tres {
+    margin-top: 10px; /* Espacio bajo AppBar */
+    background-image: url('/images/achachi1.jpg');
+    background-size: cover;
+    background-position: center;
+    height: 400px;
+    position: relative;
+}
+
+.seccion-cuatro {
+    margin-top: 10px; /* Espacio bajo AppBar */
+    background-size: cover;
+    background-position: center;
+    height: 400px;
+    position: relative;
+}
+
+
+.video-responsive {
+    position: relative;
+    padding-bottom: 18.25%; /* proporción 16:9 */
+    padding-top: 25px;
+    height: 0;
+    overflow: hidden;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+    .video-responsive iframe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border: none;
+    }

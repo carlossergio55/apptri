@@ -1,0 +1,119 @@
+﻿.mud-dialog.modal-destinos {
+    background-color: white !important;
+    --mud-palette-surface: white !important;
+    opacity: 1 !important;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(4px);
+    padding: 24px;
+    border-radius: 16px;
+    z-index: 9999;
+}
+
+.modal-destinos .mud-dialog-content,
+.modal-destinos .mud-dialog-content * {
+    color: #111 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    z-index: 9999;
+}
+
+.modal-destinos .mud-dialog-actions,
+.modal-destinos .mud-dialog-actions * {
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+.modal-destinos .mud-text {
+    color: #111 !important;
+}
+
+/* Botones dentro del modal */
+.modal-destinos .mud-button {
+    padding: 17px 40px;
+    border-radius: 50px;
+    cursor: pointer;
+    border: none;
+    background-color: white;
+    box-shadow: darkred 0 0 8px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    transition: all 0.5s ease;
+    color: black;
+}
+
+    .modal-destinos .mud-button:hover {
+        letter-spacing: 3px;
+        background-color: #61239f;
+        color: white;
+        box-shadow: #8e44ad 0px 7px 29px 0px;
+    }
+
+    .modal-destinos .mud-button:active {
+        letter-spacing: 3px;
+        background-color: #61239f;
+        color: white;
+        box-shadow: #8e44ad 0px 0px 0px 0px;
+        transform: translateY(10px);
+        transition: 100ms;
+    }
+
+/* Fondo del modal */
+.mud-overlay {
+    background-color: rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Contenido del modal */
+.modal-destinos-contenido {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem 2rem;
+    text-align: center;
+}
+
+.modal-destinos-title {
+    font-weight: bold;
+    color: #a30000;
+    margin-bottom: 1rem;
+}
+
+.modal-destinos-rutas,
+.modal-destinos-especiales {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+    max-width: 400px;
+}
+
+.modal-destinos-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #222;
+    padding: 0.2rem 1rem;
+}
+
+.modal-destinos-subtitulo {
+    margin-top: 1rem;
+    font-weight: bold;
+    color: #6a0000;
+    text-align: center;
+}
+
+.modal-destinos-boton-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-top: 1rem;
+}
+
+.modal-destinos-comprar {
+    font-weight: bold;
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+}

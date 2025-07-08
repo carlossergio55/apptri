@@ -19,13 +19,15 @@ namespace Persistencia
         {
 
             services.AddDbContext<AplicationDbContext>(options =>
-                                                options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"))
-                                                        .UseSnakeCaseNamingConvention());
+                     options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"))
+                                                  .UseSnakeCaseNamingConvention());
             services.AddTransient(typeof(IRepositoryAsync<>), typeof(AppRepositoryAsync<>));
             services.AddTransient<ISegurityRepository, SegurityRepository>();
             services.AddTransient<ISeguritySystemRepository, SeguritySystemRepository>();
             services.AddTransient<ISegurityMenuRepository, SegurityMenuRepository>();
             services.AddTransient<IUnitOfWork, AppUnitOfWork>();
+            services.AddScoped<IApplicationDbContext, AplicationDbContext>();
+
 
 
             //TODO: Agregar aqui Repositorios especificos elaborados Ej.: services.AddTransient<ILibroRepository, LibroRepository>();

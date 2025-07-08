@@ -36,6 +36,7 @@ namespace Aplicacion.Mappings
             CreateMap<Viaje, ViajeDto>();
             CreateMap<Boleto, BoletoDto>();
             CreateMap<Encomienda, EncomiendaDto>();
+            CreateMap<Pago, PagoDto>();
 
 
 
@@ -58,6 +59,7 @@ namespace Aplicacion.Mappings
             CreateMap<ViajeDto, Viaje>();
             CreateMap<BoletoDto, Boleto>();
             CreateMap<EncomiendaDto, Encomienda>();
+            CreateMap<PagoDto, Pago>();
 
 
 

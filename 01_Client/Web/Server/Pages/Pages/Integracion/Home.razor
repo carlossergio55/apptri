@@ -1,0 +1,232 @@
+﻿@page "/Inicio"
+@using Server.Shared.Integracion
+@layout PublicLayout
+@inject IDialogService DialogService
+@inject NavigationManager Nav
+<link href="styles/Integracion/inicio.css" rel="stylesheet" />
+
+<PageTitle>Inicio</PageTitle>
+
+<!-- HERO - Sección principal con imagen -->
+<MudPaper Class="seccion-principal" Elevation="0">
+    <div class="contenido-principal">
+        <MudStack Direction="Row" Justify="Justify.Center" Spacing="2">
+            <MudButton Class="btn-modern" Variant="Variant.Text" DisableElevation="true" OnClick="@(() => Nav.NavigateTo("/comprar-public"))">
+                Comprar Pasaje
+            </MudButton>
+            <MudButton Class="btn-modern" Variant="Variant.Text" DisableElevation="true" OnClick="@(() => Nav.NavigateTo("/rastreo"))">
+                Rastrear Envío
+            </MudButton>
+        </MudStack>
+    </div>
+</MudPaper>
+
+<!-- SEPARADOR DE SECCION -->
+<div class="explore-separador">
+    <div class="linea-corta"></div>
+
+    <div class="texto-explore">
+        <i class="fas fa-bus"></i>
+        <span>Explore</span>
+        <i class="fas fa-bus"></i>
+    </div>
+
+    <div class="linea-corta"></div>
+</div>
+
+
+
+@* Separador con líneas y texto en medio *@
+<div class="separador-texto-con-lineas">
+    <hr class="linea" />
+    <MudText Typo="Typo.h4" Align="Align.Center" Class="texto-separador">
+        Nuestros Destinos
+    </MudText>
+    <hr class="linea" />
+</div>
+
+
+
+@* Galería de destinos con botones superpuestos *@
+@using MudBlazor
+
+<MudGrid GutterSize="40px" Justify="Justify.Center">
+    @foreach (var destino in new[]
+    {
+    new { Nombre = "Sucre", Imagen = "images/Sucre2.jpg", Modal = typeof(ModalSucre) },
+    new { Nombre = "Serrano", Imagen = "images/Serrano1.1.jpg", Modal = typeof(ModalSerrano) },
+    new { Nombre = "Tomina", Imagen = "images/Tomina2.jpg", Modal = typeof(ModalTomina) },
+    new { Nombre = "Mendoza", Imagen = "images/Mendoza1.1.jpg", Modal = typeof(ModalMendoza) }
+    })
+    {
+        <MudItem xs="6" md="3">
+            <MudPaper Class="p-2 pos-img-destino text-center">
+                <img src="@destino.Imagen" class="img-destino" />
+                <button title="Ver más"
+                        class="btn-destino"
+                        @onclick="@(() => AbrirModal(destino.Modal))">
+                    +
+                </button>
+
+                <MudText Typo="Typo.subtitle1" Class="nom-destino">@destino.Nombre</MudText>
+            </MudPaper>
+        </MudItem>
+    }
+</MudGrid>
+
+
+@* Línea gruesa que cierra la sección *@
+<MudDivider Style="background-color: lightgrey; height: 1px;" Class="mt-8 mb-12" />
+
+
+
+<!-- SEPARADOR DE SECCION -->
+<div class="explore-separador">
+    <div class="linea-corta"></div>
+
+    <div class="texto-explore">
+        <i class="fas fa-bus"></i>
+        <span>Visite</span>
+        <i class="fas fa-bus"></i>
+    </div>
+
+    <div class="linea-corta"></div>
+</div>
+
+@* Separador con líneas y texto en medio *@
+<div class="separador-texto-con-lineas">
+    <hr class="linea" />
+    <MudText Typo="Typo.h4" Align="Align.Center" Class="texto-separador">
+        Nuestras Sucursales
+    </MudText>
+    <hr class="linea" />
+</div>
+
+
+<MudPaper Class="seccion-secundaria" Elevation="0">
+    
+    <div class="contenido-principal">
+
+        <MudText Typo="Typo.h4" Align="Align.Center" Class="texto-solo">
+            <br />
+            ¿Necesita enviar, recoger una encomienda, hacer una consulta o cotizar un servicio expreso en persona? <br />
+            Busque la sucursal más cercana para atención personalizada.
+        </MudText>
+
+
+        <MudStack Direction="Row" Justify="Justify.Center" Spacing="2">
+            <MudButton Class="btn-modern" Variant="Variant.Text" DisableElevation="true" OnClick="@(() => Nav.NavigateTo("/sucursales"))">
+                Nuestras Sucursales
+            </MudButton>
+            
+        </MudStack>
+    </div>
+</MudPaper>
+
+@* Línea gruesa que cierra la sección *@
+<MudDivider Style="background-color: lightgrey; height: 1px;" Class="mt-8 mb-12" />
+
+
+<div class="explore-separador">
+    <div class="linea-corta"></div>
+
+    <div class="texto-explore">
+        <i class="fas fa-bus"></i>
+        <span>DESCUBRE</span>
+        <i class="fas fa-bus"></i>
+    </div>
+
+    <div class="linea-corta"></div>
+</div>
+
+<div class="separador-texto-con-lineas">
+    <hr class="linea" />
+    <MudText Typo="Typo.h4" Align="Align.Center" Class="texto-separador">
+        conoce nuestros destinos
+    </MudText>
+    <hr class="linea" />
+</div>
+
+<MudPaper Class="seccion-tres" Elevation="0">
+
+    <div class="contenido-principal">
+
+        <MudText Typo="Typo.h4" Align="Align.Center" Class="texto-solo">
+            <br />
+            Recorre pueblos encantadores donde la historia está presente en cada piedra, los paisajes te roban el aliento, y las tradiciones se celebran con música, danza y sabores inolvidables.
+            <br />
+            <br />
+            Déjate envolver por la calidez de su gente, disfruta de su gastronomía auténtica y vive momentos únicos. 
+            
+        </MudText>
+
+
+        <MudStack Direction="Row" Justify="Justify.Center" Spacing="2">
+            <MudButton Class="btn-modern" Variant="Variant.Text" DisableElevation="true" OnClick="@(() => Nav.NavigateTo("/destinos"))">
+                Descubrir lugares
+            </MudButton>
+
+        </MudStack>
+    </div>
+</MudPaper>
+
+@* Línea gruesa que cierra la sección *@
+<MudDivider Style="background-color: lightgrey; height: 1px;" Class="mt-8 mb-12" />
+
+<!-- Separador estilo secciones -->
+<div class="explore-separador">
+    <div class="linea-corta"></div>
+
+    <div class="texto-explore">
+        <i class="fas fa-video"></i>
+        <span>GUÍA</span>
+        <i class="fas fa-video"></i>
+    </div>
+
+    <div class="linea-corta"></div>
+</div>
+
+<div class="separador-texto-con-lineas">
+    <hr class="linea" />
+    <MudText Typo="Typo.h4" Align="Align.Center" Class="texto-separador">
+        aprende a usar nuestro sistema web
+    </MudText>
+    <hr class="linea" />
+</div>
+
+<MudPaper Class="seccion-cuatro" Elevation="0">
+    <div class="contenido-principal">
+
+        <div class="video-responsive mt-4 mb-2">
+            <iframe width="560" height="315"
+                    src="https://www.youtube.com/embed/TU_VIDEO_ID"
+                    title="Tutorial sistema web Trans Integración"
+                    frameborder="0"
+                    allowfullscreen>
+            </iframe>
+        </div>
+
+        <MudStack Direction="Row" Justify="Justify.Center" Spacing="2">
+            <MudButton Class="btn-modern" Variant="Variant.Text" DisableElevation="true" OnClick="@(() => Nav.NavigateTo("/comprar"))">
+                Ir a Comprar Pasaje
+            </MudButton>
+        </MudStack>
+
+    </div>
+</MudPaper>
+
+<!-- Línea de cierre -->
+<MudDivider Style="background-color: lightgrey; height: 1px;" Class="mt-8 mb-12" />
+
+
+@code {
+   
+
+    void AbrirModal(Type modalTipo)
+    {
+        var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true };
+        DialogService.Show(modalTipo, "", options);
+    }
+
+
+}

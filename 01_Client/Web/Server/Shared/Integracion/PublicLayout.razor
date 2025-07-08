@@ -1,0 +1,175 @@
+﻿@inherits LayoutComponentBase
+@using MudBlazor
+@using Server.Shared.Integracion
+
+<MudLayout>
+
+    <!-- Barra de navegación -->
+    <MudAppBar Elevation="4" Color="Color.Primary" Fixed="true" Class="barra-navegacion">
+        <MudContainer MaxWidth="MaxWidth.False" Class="d-flex align-items-center justify-between px-4">
+
+            <!-- Logo -->
+            <MudButton Variant="Variant.Text" Class="boton-logo" Style="text-transform: none; padding: 0;" OnClick="@(() => Nav.NavigateTo("/inicio"))">
+                <div class="d-flex align-items-center">
+                    <MudImage Src="images/logo_sin.png" Alt="Logo" Height="55" />
+                    <div class="texto-logo ms-2">
+                        <div class="linea1">TRANS</div>
+                        <div class="linea2">INTEGRACIÓN</div>
+                        <div class="parachoque"></div>
+                    </div>
+                </div>
+            </MudButton>
+
+            <!-- Ícono de menú hamburguesa (solo visible en pantallas pequeñas) -->
+            <MudHidden Breakpoint="Breakpoint.MdAndUp">
+                <MudIconButton Icon="@Icons.Material.Filled.Menu"
+                               Color="Color.Inherit"
+                               OnClick="@ToggleDrawer"
+                               Edge="Edge.End"
+                               Class="hamburguesa-btn" />
+            </MudHidden>
+
+            <!-- Botones de navegación (solo visible en pantallas grandes) -->
+            <MudHidden Breakpoint="Breakpoint.MdAndDown">
+                <div class="grupo_btn_nav d-flex gap-2">
+                    <div class="wrap_btn_nav">
+                        <MudButton Class="btn_nav" Variant="Variant.Text" Size="Size.Small" OnClick="@(() => Nav.NavigateTo("/comprar-pulic"))">Pasajes</MudButton>
+                    </div>
+                    <div class="wrap_btn_nav">
+                        <MudButton Class="btn_nav" Variant="Variant.Text" Size="Size.Small" OnClick="@(() => Nav.NavigateTo("/rastreo"))">Carga y Encomienda</MudButton>
+                    </div>
+                    <div class="wrap_btn_nav">
+                        <MudButton Class="btn_nav" Variant="Variant.Text" Size="Size.Small" OnClick="@(() => Nav.NavigateTo("/sucursales"))">Sucursales</MudButton>
+                    </div>
+                    <div class="wrap_btn_nav">
+                        <MudButton Class="btn_nav" Variant="Variant.Text" Size="Size.Small" OnClick="@(() => Nav.NavigateTo("/empresa"))">Nuestra Empresa</MudButton>
+                    </div>
+                    <div class="wrap_btn_nav">
+                        <MudButton Class="btn_nav" Variant="Variant.Text" Size="Size.Small" OnClick="@(() => Nav.NavigateTo("/contacto"))">Contáctenos</MudButton>
+                    </div>
+                </div>
+            </MudHidden>
+
+        </MudContainer>
+    </MudAppBar>
+
+    <!-- Menú móvil (aparece desde arriba) -->
+    @if (_drawerOpen)
+    {
+        <div class="mobile-menu-overlay" @onclick="CerrarDrawer">
+            <div class="mobile-menu-paper" @onclick:stopPropagation="true">
+                <MudNavMenu Dense="true" Class="mobile-nav-menu">
+                    <MudNavLink Href="/comprar" OnClick="@CerrarDrawer" Match="NavLinkMatch.All" Class="mobile-nav-item">Pasajes</MudNavLink>
+                    <MudNavLink Href="/rastreo" OnClick="@CerrarDrawer" Class="mobile-nav-item">Carga y Encomienda</MudNavLink>
+                    <MudNavLink Href="/sucursales" OnClick="@CerrarDrawer" Class="mobile-nav-item">Sucursales</MudNavLink>
+                    <MudNavLink Href="/empresa" OnClick="@CerrarDrawer" Class="mobile-nav-item">Nuestra Empresa</MudNavLink>
+                    <MudNavLink Href="/contacto" OnClick="@CerrarDrawer" Class="mobile-nav-item">Contáctenos</MudNavLink>
+                </MudNavMenu>
+            </div>
+        </div>
+    }
+
+    <!-- Contenido principal -->
+    <MudMainContent Class="p-0 contenido-ajustado">
+        @Body
+    </MudMainContent>
+
+    <!-- Proveedores -->
+    <MudDialogProvider />
+    <MudSnackbarProvider />
+
+    <!-- Footer -->
+    <MudPaper Elevation="10" Class="footer-container">
+        <MudContainer MaxWidth="MaxWidth.False" Class="footer-content">
+            <MudGrid>
+                <!-- DIRECCIÓN DEL SITIO -->
+                <MudItem xs="12" sm="6" md="3">
+                    <MudText Typo="Typo.h6" Class="footer-title">DIRECCIÓN DEL SITIO</MudText>
+                    <MudList>
+                        <MudListItem Href="/inicio" Text="Inicio" Class="footer-link" />
+                        <MudListItem Href="/comprar-public" Text="Pasajes" Class="footer-link" />
+                        <MudListItem Href="/rastreo" Text="Carga y Encomiendas" Class="footer-link" />
+                        <MudListItem Href="/sucursales" Text="Sucursales" Class="footer-link" />
+                        <MudListItem Href="/contacto" Text="Contáctenos" Class="footer-link" />
+                    </MudList>
+                </MudItem>
+
+                <!-- INFORMACIÓN -->
+                <MudItem xs="12" sm="6" md="3">
+                    <MudText Typo="Typo.h6" Class="footer-title">INFORMACIÓN</MudText>
+                    <MudList>
+                        <MudListItem Text="Comprar Pasajes" Class="footer-link" />
+                        <MudListItem Text="Rastrear Carga y Encomiendas" Class="footer-link" />
+                        <MudListItem Text="Destinos" Class="footer-link" />
+                        <MudListItem Text="Términos y Condiciones" Class="footer-link" />
+                    </MudList>
+                </MudItem>
+
+                <!-- CONTÁCTENOS -->
+                <MudItem xs="12" sm="6" md="3">
+                    <MudText Typo="Typo.h6" Class="footer-title">CONTÁCTENOS</MudText>
+                    <MudList>
+                        <MudListItem Class="footer-contact-item">
+                            <MudText Class="footer-contact-title">Atención al Cliente:</MudText>
+                            <MudText Class="footer-contact-value">+591-71178739</MudText>
+                        </MudListItem>
+                      
+                        <MudListItem Class="footer-contact-item">
+                            <MudText Class="footer-contact-title">Oficina Central:</MudText>
+                            <MudText Class="footer-contact-value">18774744</MudText>
+                        </MudListItem>
+                        <MudListItem Class="footer-contact-item">
+                            <MudText Class="footer-contact-title">Dirección:</MudText>
+                            <MudText Class="footer-contact-value">Terminal Interprovincial - Sucre - Bolivia</MudText>
+                        </MudListItem>
+                        <MudListItem Class="footer-contact-item">
+                            <MudText Class="footer-contact-title">Correo:</MudText>
+                            <MudText Class="footer-contact-value">info@transintegracion.com</MudText>
+                        </MudListItem>
+                    </MudList>
+                </MudItem>
+
+                <!-- ACERCA DE NOSOTROS -->
+                <MudItem xs="12" sm="6" md="3">
+                    <MudText Typo="Typo.h6" Class="footer-title">ACERCA DE NOSOTROS</MudText>
+                    <MudText Class="footer-about">
+                        Somos una empresa boliviana con más de 34 años de experiencia en el transporte terrestre de pasajeros, carga y encomiendas.
+                    </MudText>
+                    <!-- Puedes agregar logos de certificaciones o redes sociales aquí -->
+                </MudItem>
+            </MudGrid>
+        </MudContainer>
+    </MudPaper>
+
+    <!-- Pie de página (copyright) -->
+    <MudPaper Class="copyright text-center p-4" Elevation="0">
+        <MudText Typo="Typo.caption" Class="copyright-text">
+            © 2025 Trans Integración | Todos los derechos reservados.
+            <br />
+           
+            Desarrollado como proyecto de defensa de grado de la carrera de Ingeniería de Sistemas TIC – Universidad Boliviana de Informática (UBI).
+        </MudText>
+    </MudPaper>
+
+
+   
+
+</MudLayout>
+
+@code {
+    [Inject] NavigationManager Nav { get; set; }
+
+    private bool _drawerOpen = false;
+
+    void ToggleDrawer()
+    {
+        _drawerOpen = !_drawerOpen;
+        StateHasChanged(); // Forzar actualización de la UI
+    }
+
+    void CerrarDrawer()
+    {
+        _drawerOpen = false;
+        StateHasChanged(); 
+    }
+}

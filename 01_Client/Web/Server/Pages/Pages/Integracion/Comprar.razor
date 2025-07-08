@@ -1,0 +1,102 @@
+﻿@page "/comprar-public"
+@layout PublicLayout
+@using MudBlazor
+@inject NavigationManager Nav
+
+<link href="styles/Integracion/comprar-public.css" rel="stylesheet" />
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="contenedor-comp mt-8">
+
+    <!-- Encabezado con título y botón de tutorial -->
+    <MudStack Direction="Row" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-6">
+        <MudText Typo="Typo.h4" Class="titulo-comp">Buscar Salidas</MudText>
+        <MudButton Variant="Variant.Text"
+                   Color="Color.Info"
+                   OnClick="@(() => Nav.NavigateTo("/tutoriales"))"
+                   Class="btn-tutorial-comp"
+                   EndIcon="@Icons.Filled.HelpOutline">
+            Tutorial
+        </MudButton>
+    </MudStack>
+
+    <!-- Formulario -->
+    <MudPaper Class="formulario-busqueda-comp p-6" Elevation="2">
+        <MudStack Spacing="4">
+
+            <!-- Origen -->
+            <MudSelect T="string"
+                       Label="Ciudad de partida"
+                       @bind-Value="OrigenSeleccionado"
+                       Variant="Variant.Outlined"
+                       AnchorOrigin="Origin.BottomCenter"
+                       Class="w-100">
+                <MudSelectItem T="string" Value="@(default(string))">Seleccione ciudad origen</MudSelectItem>
+                @foreach (var ruta in Rutas)
+                {
+                    <MudSelectItem T="string" Value="@ruta">@ruta</MudSelectItem>
+                }
+            </MudSelect>
+
+            <!-- Destino -->
+            <MudSelect T="string"
+                       Label="Ciudad de llegada"
+                       @bind-Value="DestinoSeleccionado"
+                       Variant="Variant.Outlined"
+                       AnchorOrigin="Origin.BottomCenter"
+                       Class="w-100">
+                <MudSelectItem T="string" Value="@(default(string))">Seleccione ciudad destino</MudSelectItem>
+                @foreach (var ruta in Rutas)
+                {
+                    <MudSelectItem T="string" Value="@ruta">@ruta</MudSelectItem>
+                }
+            </MudSelect>
+
+            <!-- Fecha de salida -->
+            <MudDatePicker Label="Fecha salida"
+                           @bind-Date="FechaSalida"
+                           Variant="Variant.Outlined"
+                           Class="w-100" />
+
+            <!-- Número de pasajeros -->
+            <MudNumericField Label="Pasajeros"
+                             @bind-Value="CantidadPasajeros"
+                             Min="1"
+                             Max="10"
+                             Variant="Variant.Outlined"
+                             Class="w-100" />
+
+            <!-- Botón de búsqueda -->
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       OnClick="@BuscarPasajes"
+                       Class="btn-buscar-comp mt-4"
+                       FullWidth="true"
+                       EndIcon="@Icons.Filled.Search">
+                Buscar
+            </MudButton>
+
+        </MudStack>
+    </MudPaper>
+
+</MudContainer>
+
+@code {
+    private List<string> Rutas = new() { "Sucre", "Serrano", "Tomina", "Mendoza" };
+
+    private string OrigenSeleccionado;
+    private string DestinoSeleccionado;
+    private DateTime? FechaSalida = DateTime.Today;
+    private int CantidadPasajeros = 1;
+
+    void BuscarPasajes()
+    {
+        if (string.IsNullOrEmpty(OrigenSeleccionado) || string.IsNullOrEmpty(DestinoSeleccionado))
+        {
+            // Mostrar mensaje de error
+            return;
+        }
+
+        // Lógica de búsqueda
+        Nav.NavigateTo($"/resultados?origen={OrigenSeleccionado}&destino={DestinoSeleccionado}&fecha={FechaSalida:yyyy-MM-dd}&pasajeros={CantidadPasajeros}");
+    }
+}

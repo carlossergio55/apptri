@@ -1,0 +1,275 @@
+﻿/* Barra de navegación general */
+.barra-navegacion {
+    background: linear-gradient(135deg, #1a1a1a, #2b2b2b);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
+    padding: 10px 30px;
+    position: sticky;
+    top: 0;
+    z-index: 1300;
+    overflow-x: hidden;
+}
+
+/* Botón del logo */
+.texto-logo {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    font-family: 'Montserrat', sans-serif;
+    color: white;
+    line-height: 1.1;
+    margin-right: 36px;
+}
+
+    /* Texto 3D para TRANS e INTEGRACIÓN con efecto más sutil y darkred */
+    .texto-logo .linea1,
+    .texto-logo .linea2 {
+        font-weight: 900;
+        color: white;
+        letter-spacing: 1px;
+        text-shadow: 1px 1px 0 darkred, 2px 2px 0 darkred, 3px 3px 0 black;
+    }
+
+    .texto-logo .linea1 {
+        font-size: 18px;
+    }
+
+    .texto-logo .linea2 {
+        font-size: 24px;
+        margin-top: -2px; /* opcional: ajusta espacio entre líneas */
+    }
+
+.parachoque {
+    margin-top: 2px;
+    width: 100%;
+    height: 5px;
+    background: linear-gradient(to right, transparent 0%, darkred 25%, darkred 75%, transparent 100%);
+    clip-path: polygon(0% 50%, 10% 0%, 90% 0%, 100% 50%, 90% 100%, 10% 100%);
+}
+
+
+/* Ajuste para evitar que el contenido quede oculto bajo el AppBar fijo */
+.contenido-ajustado {
+    padding-top: 64px; /* altura del AppBar fijo */
+    min-height: calc(100vh - 64px - 100px); /* 100px para el footer, ajusta si es necesario */
+    padding-bottom: 100px; /* espacio para el footer */
+}
+
+@media (max-width: 960px) {
+    .contenido-ajustado {
+        padding-top: 56px; /* AppBar más pequeño en móvil */
+        min-height: calc(100vh - 56px - 100px);
+    }
+}
+
+
+
+/* Contenedor de botones del menú */
+
+/* Grupo de botones de navegación */
+.grupo_btn_nav {
+    display: flex;
+    gap: 10px;
+}
+
+/* Envoltorio individual de cada botón para aplicar las líneas */
+.wrap_btn_nav {
+    position: relative;
+    display: inline-block;
+    padding: 4px 0;
+}
+
+/* Estilo base del botón */
+.btn_nav {
+    color: white;
+    font-size: 18px;
+    font-weight: 600;
+    font-family: 'Poppins', sans-serif;
+    background: none;
+    border: none;
+    padding: 6px 12px;
+    transition: color 0.3s ease;
+    z-index: 1;
+    line-height: 1.2; /* mejora alineación vertical */
+}
+
+/* Color al hacer hover */
+.wrap_btn_nav:hover .btn_nav {
+    color: #f5e6cc;
+}
+
+/* Líneas rojas arriba y abajo */
+.wrap_btn_nav::before,
+.wrap_btn_nav::after {
+    content: '';
+    position: absolute;
+    height: 2px;
+    background: #f44336;
+    width: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    transition: width 0.4s ease-in-out;
+}
+
+.wrap_btn_nav::before {
+    top: 0;
+}
+
+.wrap_btn_nav::after {
+    bottom: 0;
+}
+
+.wrap_btn_nav:hover::before,
+.wrap_btn_nav:hover::after {
+    width: 100%;
+}
+
+
+
+/* Menú móvil */
+.mobile-menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1200;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: 80px; /* Espacio para la barra de navegación */
+}
+
+.mobile-menu-paper {
+    width: 100%;
+    max-width: 100%;
+    background: linear-gradient(135deg, #1a1a1a, #2b2b2b);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+    animation: slideDown 0.3s ease-out;
+}
+
+.mobile-nav-menu {
+    padding: 0;
+}
+
+.mobile-nav-item {
+    color: white !important;
+    font-size: 18px;
+    font-weight: 600;
+    font-family: 'Poppins', sans-serif;
+    padding: 16px 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+    display: block;
+}
+
+    .mobile-nav-item:hover {
+        background-color: rgba(244, 67, 54, 0.2) !important;
+        color: #f5e6cc !important;
+    }
+
+@keyframes slideDown {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Hamburguesa */
+.hamburguesa-btn {
+    color: white !important;
+}
+
+/* Asegurar que los botones no sean visibles en móvil */
+@media (max-width: 959px) {
+    .grupo_btn_nav {
+        display: none !important;
+    }
+}
+
+
+
+/* Footer Principal*/
+.footer-container {
+    background: linear-gradient(135deg, #2e2e2e, #444); 
+    color: white;
+    padding: 40px 0;
+    border-top: 3px solid darkred;
+}
+
+.footer-content {
+    padding: 0 15px;
+}
+
+.footer-title {
+    color: white !important;
+    margin-bottom: 20px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase;
+    font-size: 18px !important;
+    text-shadow: 1px 1px 0 darkred, 2px 2px 0 darkred, 3px 3px 0 black;
+}
+
+.footer-link {
+    color: #e0e0e0 !important;
+    padding: 6px 0 !important;
+    transition: all 0.3s ease;
+    font-weight: 700 !important;
+}
+
+    .footer-link:hover {
+        color: white !important;
+        padding-left: 5px !important;
+        background-color: transparent !important;
+    }
+
+.footer-contact-item {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    padding: 6px 0 !important;
+}
+
+.footer-contact-title {
+    color: whitesmoke !important;
+    font-weight: 600 !important;
+    font-size: 14px !important;
+    margin-bottom: 2px !important;
+    text-shadow: 1px 1px 0 black, 2px 2px 0 darkred, 2px 2px 0 black;
+}
+
+.footer-contact-value {
+    color: #e0e0e0 !important;
+    font-size: 14px !important;
+}
+
+.footer-about {
+    color: #e0e0e0 !important;
+    font-size: 14px !important;
+    line-height: 1.6 !important;
+}
+
+
+
+/* Copyright*/
+.copyright {
+    background-color: #222; 
+    margin-top: 0 !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Texto del copyright*/
+.copyright-text {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    color: #ccc;
+    line-height: 1.6;
+    margin: 0 auto;
+    max-width: 900px; 
+    text-align: center;
+    padding: 0 20px;
+}

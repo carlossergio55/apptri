@@ -5,10 +5,12 @@ using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Dominio.Entities.Integracion;
+
 
 namespace Persistencia.Contexts
 {
-    public class AplicationDbContext : GenericContexDb
+    public class AplicationDbContext : GenericContexDb, IApplicationDbContext
     {               
         private readonly IDateTimeService _dateTime;
         private readonly ICurrentUserService _user;

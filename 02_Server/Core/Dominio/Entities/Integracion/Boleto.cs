@@ -34,8 +34,8 @@ namespace Dominio.Entities.Integracion
         [ForeignKey("IdAsiento")]
         public virtual Asiento Asiento { get; set; }
 
-        public int IdVendedor { get; set; }
-        [ForeignKey("IdVendedor")]
-        public virtual Usuario Vendedor { get; set; }
+        //public int IdVendedor { get; set; }
+        //[ForeignKey("IdVendedor")]
+        //public virtual Usuario Vendedor { get; set; }
     }
 }

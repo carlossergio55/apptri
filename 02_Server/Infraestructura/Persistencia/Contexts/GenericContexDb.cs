@@ -28,6 +28,7 @@ namespace Persistencia.Contexts
         public DbSet<Viaje> Viaje { get; set; }
         public DbSet<Boleto> Boleto { get; set; }
         public DbSet<Encomienda> Encomienda { get; set; }
+        public DbSet<Pago> Pago { get; set; }
 
 
 
