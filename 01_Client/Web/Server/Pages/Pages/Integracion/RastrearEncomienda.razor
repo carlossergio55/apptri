@@ -1,0 +1,61 @@
+﻿@page "/rastreo"
+@layout PublicLayout
+@using MudBlazor
+@inject NavigationManager Nav
+@inject ISnackbar Snackbar
+<link href="styles/Integracion/rastreo.css" rel="stylesheet" />
+
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="rastreo-contenedor mt-10">
+
+    <MudPaper Elevation="3" Class="rastreo-formulario p-6 rounded-xl">
+
+        <!-- Encabezado con título centrado y botón limpiar -->
+        <MudStack Direction="Row" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-6">
+            <MudText Typo="Typo.h4" Class="rastreo-titulo mx-auto">
+                RASTREO DE CARGA
+            </MudText>
+           
+        </MudStack>
+        <MudText Typo="Typo.h4" Class="rastreo-texto mx-auto">
+            Este servicio le permite conocer la ubicación y estado de su carga o encomienda en tiempo real
+        </MudText>
+
+        @* Línea gruesa que cierra la sección *@
+        <MudDivider Style="background-color: lightblue; height: 2px;" Class="mt-4 mb-6" />
+
+
+
+        <MudText Typo="Typo.body1" Class="custom-label">
+            Ingrese el número de Guía de carga o encomienda
+        </MudText>
+
+        <MudTextField @bind-Value="numeroGuia"
+                      Label=""
+                      Variant="Variant.Outlined"
+                      Class="custom-input"
+                      Placeholder="Ej: 123-ABC"
+                      Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.LocalShipping"
+                      Immediate="true" />
+
+
+
+
+        <!-- Botón buscar -->
+        <MudStack Justify="Justify.Center" AlignItems="AlignItems.Center">
+            <MudButton Variant="Variant.Filled"
+                       Class="rastreo-boton-buscar"
+                       EndIcon="@Icons.Material.Filled.Search">
+                Buscar
+            </MudButton>
+        </MudStack>
+
+    </MudPaper>
+</MudContainer>
+
+
+@code {
+    private string numeroGuia;
+
+}

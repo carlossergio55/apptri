@@ -2,82 +2,89 @@
 @layout PublicLayout
 @using MudBlazor
 @inject NavigationManager Nav
-
+@inject ISnackbar Snackbar
 <link href="styles/Integracion/comprar-public.css" rel="stylesheet" />
+<MudContainer MaxWidth="MaxWidth.Medium" Class="comp-public-contenedor mt-10">
 
-<MudContainer MaxWidth="MaxWidth.Medium" Class="contenedor-comp mt-8">
+    <MudPaper Elevation="3" Class="comp-public-formulario p-6 rounded-xl">
 
-    <!-- Encabezado con título y botón de tutorial -->
-    <MudStack Direction="Row" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-6">
-        <MudText Typo="Typo.h4" Class="titulo-comp">Buscar Salidas</MudText>
-        <MudButton Variant="Variant.Text"
-                   Color="Color.Info"
-                   OnClick="@(() => Nav.NavigateTo("/tutoriales"))"
-                   Class="btn-tutorial-comp"
-                   EndIcon="@Icons.Filled.HelpOutline">
-            Tutorial
-        </MudButton>
-    </MudStack>
+        <!-- Encabezado con título centrado y botón limpiar -->
+        <MudStack Direction="Row" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-6">
+            <MudText Typo="Typo.h4" Class="comp-public-titulo mx-auto">
+                BUSCAR SALIDAS
+            </MudText>
+            <MudButton Variant="Variant.Text"
+                       Size="Size.Small"
+                       StartIcon="@Icons.Material.Filled.Clear"
+                       OnClick="LimpiarCampos"
+                       Class="comp-public-limpiar-boton">Limpiar
+            </MudButton>
+        </MudStack>
 
-    <!-- Formulario -->
-    <MudPaper Class="formulario-busqueda-comp p-6" Elevation="2">
-        <MudStack Spacing="4">
-
-            <!-- Origen -->
-            <MudSelect T="string"
-                       Label="Ciudad de partida"
-                       @bind-Value="OrigenSeleccionado"
-                       Variant="Variant.Outlined"
-                       AnchorOrigin="Origin.BottomCenter"
-                       Class="w-100">
-                <MudSelectItem T="string" Value="@(default(string))">Seleccione ciudad origen</MudSelectItem>
-                @foreach (var ruta in Rutas)
-                {
-                    <MudSelectItem T="string" Value="@ruta">@ruta</MudSelectItem>
-                }
-            </MudSelect>
-
-            <!-- Destino -->
-            <MudSelect T="string"
-                       Label="Ciudad de llegada"
-                       @bind-Value="DestinoSeleccionado"
-                       Variant="Variant.Outlined"
-                       AnchorOrigin="Origin.BottomCenter"
-                       Class="w-100">
-                <MudSelectItem T="string" Value="@(default(string))">Seleccione ciudad destino</MudSelectItem>
-                @foreach (var ruta in Rutas)
-                {
-                    <MudSelectItem T="string" Value="@ruta">@ruta</MudSelectItem>
-                }
-            </MudSelect>
-
-            <!-- Fecha de salida -->
-            <MudDatePicker Label="Fecha salida"
-                           @bind-Date="FechaSalida"
+        <!-- Primera fila: origen y destino -->
+        <MudGrid Class="mb-4">
+            <MudItem xs="12" md="6">
+                <MudText Class="comp-public-etiqueta">Seleccione ciudad de origen</MudText>
+                <MudSelect T="string"
+                           @bind-Value="OrigenSeleccionado"
                            Variant="Variant.Outlined"
-                           Class="w-100" />
+                           Dense="true"
+                           Class="comp-public-campo">
+                    @foreach (var ruta in Rutas)
+                    {
+                        <MudSelectItem T="string" Value="@ruta">@ruta</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
 
-            <!-- Número de pasajeros -->
-            <MudNumericField Label="Pasajeros"
-                             @bind-Value="CantidadPasajeros"
-                             Min="1"
-                             Max="10"
-                             Variant="Variant.Outlined"
-                             Class="w-100" />
+            <MudItem xs="12" md="6">
+                <MudText Class="comp-public-etiqueta">Seleccione ciudad de destino</MudText>
+                <MudSelect T="string"
+                           @bind-Value="DestinoSeleccionado"
+                           Variant="Variant.Outlined"
+                           Dense="true"
+                           Class="comp-public-campo">
+                    @foreach (var ruta in Rutas)
+                    {
+                        <MudSelectItem T="string" Value="@ruta">@ruta</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+        </MudGrid>
 
-            <!-- Botón de búsqueda -->
+        <!-- Segunda fila: fecha y pasajeros -->
+        <MudGrid Class="mb-6">
+            <MudItem xs="12" md="6">
+                <MudText Class="comp-public-etiqueta">Seleccione fecha de salida</MudText>
+                <MudDatePicker @bind-Date="FechaSalida"
+                               Variant="Variant.Outlined"
+                               Dense="true"
+                               Class="comp-public-campo" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudText Class="comp-public-etiqueta">Número de pasajeros</MudText>
+                <MudNumericField @bind-Value="CantidadPasajeros"
+                                 Min="1"
+                                 Max="10"
+                                 Variant="Variant.Outlined"
+                                 Dense="true"
+                                 Class="comp-public-campo" />
+            </MudItem>
+        </MudGrid>
+
+        <!-- Botón buscar -->
+        <MudStack Justify="Justify.Center" AlignItems="AlignItems.Center">
             <MudButton Variant="Variant.Filled"
-                       Color="Color.Primary"
-                       OnClick="@BuscarPasajes"
-                       Class="btn-buscar-comp mt-4"
-                       FullWidth="true"
-                       EndIcon="@Icons.Filled.Search">
+                       
+                       OnClick="BuscarPasajes"
+                       Class="comp-public-boton-buscar"
+                       EndIcon="@Icons.Material.Filled.Search">
                 Buscar
             </MudButton>
-
         </MudStack>
-    </MudPaper>
 
+    </MudPaper>
 </MudContainer>
 
 @code {
@@ -90,13 +97,20 @@
 
     void BuscarPasajes()
     {
-        if (string.IsNullOrEmpty(OrigenSeleccionado) || string.IsNullOrEmpty(DestinoSeleccionado))
+        if (string.IsNullOrWhiteSpace(OrigenSeleccionado) || string.IsNullOrWhiteSpace(DestinoSeleccionado))
         {
-            // Mostrar mensaje de error
+            Snackbar.Add("Seleccione ciudad de origen y destino.", Severity.Warning);
             return;
         }
 
-        // Lógica de búsqueda
         Nav.NavigateTo($"/resultados?origen={OrigenSeleccionado}&destino={DestinoSeleccionado}&fecha={FechaSalida:yyyy-MM-dd}&pasajeros={CantidadPasajeros}");
+    }
+
+    void LimpiarCampos()
+    {
+        OrigenSeleccionado = null;
+        DestinoSeleccionado = null;
+        FechaSalida = DateTime.Today;
+        CantidadPasajeros = 1;
     }
 }

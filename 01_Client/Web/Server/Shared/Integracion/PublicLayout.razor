@@ -2,16 +2,28 @@
 @using MudBlazor
 @using Server.Shared.Integracion
 
+<HeadContent>
+    <link href="styles/Integracion/estilos.css" rel="stylesheet" />
+    <link href="styles/Integracion/modal-destinos.css" rel="stylesheet" />
+    <link href="styles/Integracion/inicio.css" rel="stylesheet" />
+    <link href="styles/Integracion/comprar-public.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+</HeadContent>
+
+
 <MudLayout>
 
     <!-- Barra de navegación -->
     <MudAppBar Elevation="4" Color="Color.Primary" Fixed="true" Class="barra-navegacion">
-        <MudContainer MaxWidth="MaxWidth.False" Class="d-flex align-items-center justify-between px-4">
+        <MudContainer Class="barra-navegacion-contenido px-4">
 
             <!-- Logo -->
+            <div class="navegacion-logo">   
             <MudButton Variant="Variant.Text" Class="boton-logo" Style="text-transform: none; padding: 0;" OnClick="@(() => Nav.NavigateTo("/inicio"))">
                 <div class="d-flex align-items-center">
-                    <MudImage Src="images/logo_sin.png" Alt="Logo" Height="55" />
+                    <MudImage Src="images/logo_sin.png" Alt="Logo" Class="logo-img" />
+
                     <div class="texto-logo ms-2">
                         <div class="linea1">TRANS</div>
                         <div class="linea2">INTEGRACIÓN</div>
@@ -19,7 +31,9 @@
                     </div>
                 </div>
             </MudButton>
+            </div>
 
+            <div class="navegacion-derecha">
             <!-- Ícono de menú hamburguesa (solo visible en pantallas pequeñas) -->
             <MudHidden Breakpoint="Breakpoint.MdAndUp">
                 <MudIconButton Icon="@Icons.Material.Filled.Menu"
@@ -33,7 +47,7 @@
             <MudHidden Breakpoint="Breakpoint.MdAndDown">
                 <div class="grupo_btn_nav d-flex gap-2">
                     <div class="wrap_btn_nav">
-                        <MudButton Class="btn_nav" Variant="Variant.Text" Size="Size.Small" OnClick="@(() => Nav.NavigateTo("/comprar-pulic"))">Pasajes</MudButton>
+                        <MudButton Class="btn_nav" Variant="Variant.Text" Size="Size.Small" OnClick="@(() => Nav.NavigateTo("/comprar-public"))">Pasajes</MudButton>
                     </div>
                     <div class="wrap_btn_nav">
                         <MudButton Class="btn_nav" Variant="Variant.Text" Size="Size.Small" OnClick="@(() => Nav.NavigateTo("/rastreo"))">Carga y Encomienda</MudButton>
@@ -49,6 +63,7 @@
                     </div>
                 </div>
             </MudHidden>
+            </div>
 
         </MudContainer>
     </MudAppBar>
@@ -59,7 +74,7 @@
         <div class="mobile-menu-overlay" @onclick="CerrarDrawer">
             <div class="mobile-menu-paper" @onclick:stopPropagation="true">
                 <MudNavMenu Dense="true" Class="mobile-nav-menu">
-                    <MudNavLink Href="/comprar" OnClick="@CerrarDrawer" Match="NavLinkMatch.All" Class="mobile-nav-item">Pasajes</MudNavLink>
+                    <MudNavLink Href="/comprar-public" OnClick="@CerrarDrawer" Match="NavLinkMatch.All" Class="mobile-nav-item">Pasajes</MudNavLink>
                     <MudNavLink Href="/rastreo" OnClick="@CerrarDrawer" Class="mobile-nav-item">Carga y Encomienda</MudNavLink>
                     <MudNavLink Href="/sucursales" OnClick="@CerrarDrawer" Class="mobile-nav-item">Sucursales</MudNavLink>
                     <MudNavLink Href="/empresa" OnClick="@CerrarDrawer" Class="mobile-nav-item">Nuestra Empresa</MudNavLink>
@@ -135,7 +150,17 @@
                     <MudText Class="footer-about">
                         Somos una empresa boliviana con más de 34 años de experiencia en el transporte terrestre de pasajeros, carga y encomiendas.
                     </MudText>
-                    <!-- Puedes agregar logos de certificaciones o redes sociales aquí -->
+                    <!-- redes sociales -->
+                    <MudStack Direction="Row" Spacing="3" Class="mt-4 redes-footer">
+                        <a href="https://www.facebook.com/share/1CFPSj6Twy/" target="_blank" rel="noopener noreferrer" class="text-primary">
+                            <i class="fab fa-facebook fa-2x"></i>
+                        </a>
+                        <a href="https://www.instagram.com/erick_jhoel_castro?igsh=MWJ4ZXZvaGJhNDZteg==" target="_blank" rel="noopener noreferrer" class="text-primary">
+                            <i class="fab fa-instagram fa-2x"></i>
+                        </a>
+                    </MudStack>
+
+
                 </MudItem>
             </MudGrid>
         </MudContainer>

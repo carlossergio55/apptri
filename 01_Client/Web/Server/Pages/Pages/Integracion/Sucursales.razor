@@ -1,0 +1,83 @@
+﻿@page "/sucursales"
+@layout PublicLayout
+@using MudBlazor
+
+<link href="styles/Integracion/sucursal.css" rel="stylesheet" />
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="sucursal-contenedor mt-10">
+
+    <MudPaper Elevation="3" Class="sucursal-formulario p-6 rounded-xl">
+
+        <MudText Typo="Typo.h4" Align="Align.Center" Class="sucursal-titulo mb-4">
+            NUESTRAS SUCURSALES
+        </MudText>
+
+        <MudText Typo="Typo.h6" Align="Align.Center" Class="mb-6">
+            Aquí puede encontrar la ubicación y contacto de nuestras oficinas
+        </MudText>
+
+        <MudDivider Style="background-color: lightblue; height: 2px;" Class="mb-6" />
+
+        <MudGrid GutterSize="3">
+            <MudItem xs="12" sm="6">
+                <MudPaper Class="sucursal-tarjeta">
+                    <MudText Typo="Typo.h6" Class="sucursal-nombre">Sucursal Central</MudText>
+                    <MudText Typo="Typo.body2" Class="sucursal-direccion">Av. Principal #123, Sucre</MudText>
+                    <MudText Typo="Typo.caption" Class="sucursal-telefono">Teléfono: 12345678</MudText>
+                    <MudButton Variant="Variant.Filled"
+                               Class="sucursal-boton mt-2"
+                               StartIcon="@Icons.Material.Filled.LocationOn"
+                               Href="https://maps.google.com/?q=-19.0347,-65.2625"
+                               Target="_blank">
+                        Cómo llegar
+                    </MudButton>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" sm="6">
+                <MudPaper Class="sucursal-tarjeta">
+                    <MudText Typo="Typo.h6" Class="sucursal-nombre">Sucursal Mercado</MudText>
+                    <MudText Typo="Typo.body2" Class="sucursal-direccion">Calle Comercio #45, Sucre</MudText>
+                    <MudText Typo="Typo.caption" Class="sucursal-telefono">Teléfono: 87654321</MudText>
+                    <MudButton Variant="Variant.Filled"
+                               Class="sucursal-boton mt-2"
+                               StartIcon="@Icons.Material.Filled.LocationOn"
+                               Href="https://maps.google.com/?q=-19.0451,-65.2593"
+                               Target="_blank">
+                        Cómo llegar
+                    </MudButton>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" sm="6">
+                <MudPaper Class="sucursal-tarjeta">
+                    <MudText Typo="Typo.h6" Class="sucursal-nombre">Sucursal Villa Serrano</MudText>
+                    <MudText Typo="Typo.body2" Class="sucursal-direccion">Calle Pando s/n</MudText>
+                    <MudText Typo="Typo.caption" Class="sucursal-telefono">Teléfono: 76543210</MudText>
+                    <MudButton Variant="Variant.Filled"
+                               Class="sucursal-boton mt-2"
+                               StartIcon="@Icons.Material.Filled.LocationOn"
+                               Href="https://maps.google.com/?q=-19.2487,-64.1792"
+                               Target="_blank">
+                        Cómo llegar
+                    </MudButton>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" sm="6">
+                <MudPaper Class="sucursal-tarjeta">
+                    <MudText Typo="Typo.h6" Class="sucursal-nombre">Sucursal Mendoza</MudText>
+                    <MudText Typo="Typo.body2" Class="sucursal-direccion">Plaza Principal, Mendoza</MudText>
+                    <MudText Typo="Typo.caption" Class="sucursal-telefono">Teléfono: 74125896</MudText>
+                    <MudButton Variant="Variant.Filled"
+                               Class="sucursal-boton mt-2"
+                               StartIcon="@Icons.Material.Filled.LocationOn"
+                               Href="https://maps.google.com/?q=-19.3994,-64.0958"
+                               Target="_blank">
+                        Cómo llegar
+                    </MudButton>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+</MudContainer>

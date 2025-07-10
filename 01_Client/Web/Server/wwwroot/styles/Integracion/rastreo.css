@@ -1,9 +1,9 @@
-﻿.comp-public-contenedor {
+﻿.rastreo-contenedor {
     display: flex;
     justify-content: center;
     width: 100%;
     max-width: 95%; /* para pantallas pequeñas */
-    max-width: 640px; /* ancho máximo sin fijarlo */
+    max-width: 600px; /* ancho máximo sin fijarlo */
     margin: auto;
     background-color: #fff;
     box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
@@ -12,12 +12,12 @@
     padding: 10px;
 }
 
-.comp-public-formulario {
+.rastreo-formulario {
     position: relative;
-    width: 640px;
+    
     background: linear-gradient(#fff, #808080) padding-box, linear-gradient(145deg, transparent 35%,#e81cff, #40c9ff) border-box;
     border: 3px solid transparent;
-    padding: 2px 24px;
+    padding: 22px 22px;
     font-size: 14px;
     font-family: inherit;
     color: black;
@@ -28,10 +28,10 @@
     border-radius: 6px;
 }
 
-.comp-public-titulo {
+.rastreo-titulo {
     text-align: center;
     font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande", "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
-    margin: 10px 0 30px 0;
+    margin: 10px 0 0px 0;
     font-size: 28px;
     font-weight: 800;
 }
@@ -39,50 +39,30 @@
 
 
 
-.comp-public-limpiar-boton {
-    position: absolute;
-    right: 20px;
-    top: 60px;
-    background-color: #e3d7e4; /* var(--ch-white) */
-    color: #000; /* var(--af-white) */
-    height: 30px;
-    width: 90px;
-    place-items: center;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 16px;
-    min-width: 0; /* Para que no crezca innecesariamente */
-    padding: 0;
-    transition: background-color 0.3s ease, color 0.3s ease;
+.custom-label {
+    display: block;
+    margin-bottom: .3rem;
+    font-size: 0.9rem;
+    
+    font-weight: bold;
+    color: #05060f99;
+    transition: color 0.3s cubic-bezier(.25,.01,.25,1) 0s;
 }
 
-    .comp-public-limpiar-boton:hover {
-        background-color: tomato; /* var(--tomato) */
-        color: white; /* var(--white) */
-    }
-
-
-
-
-
-
-
-.comp-public-etiqueta {
-    margin-bottom: 4px;
-    font-size: 14px;
-    font-weight: 600;
-    color: #333;
-}
-
-.comp-public-campo {
+.custom-input input {
+    max-width: 90px;
     width: 100%;
-    border-radius: 10px;
+    height: 40px;
+    background-color: #05060f0a;
+    border-radius: .5rem;
+    padding: 0 10px;
 }
 
-.comp-public-boton-buscar {
+
+.rastreo-boton-buscar {
     cursor: pointer;
     margin: 1rem;
+    margin-bottom: 4rem;
     border: none;
     border-radius: 9px;
     font-weight: bold;
@@ -94,7 +74,8 @@
     box-shadow: 3px 8px 24px 0 #1f1b8f;
     transition: all 0.3s ease-in-out;
 }
-    .comp-public-boton-buscar:hover {
+
+    .rastreo-boton-buscar:hover {
         background-color: #47538d;
         color: white;
         box-shadow: 2px 8px 24px 0 #834280;
