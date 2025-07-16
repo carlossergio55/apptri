@@ -1,0 +1,171 @@
+﻿@page "/nosotros"
+@using Server.Shared.Integracion
+@layout PublicLayout
+@inject IDialogService DialogService
+@inject NavigationManager Nav
+<link href="styles/Integracion/nosotros.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+
+
+<div class="explore-separador">
+    <div class="linea-corta"></div>
+
+    <div class="texto-explore">
+        <i class="fas fa-house"></i>
+        <span>nuestra empresa</span>
+        <i class="fas fa-house"></i>
+    </div>
+
+    <div class="linea-corta"></div>
+</div>
+
+<div class="separador-texto-con-lineas">
+    <hr class="linea" />
+    <MudText Typo="Typo.h4" Align="Align.Center" Class="texto-separador">
+        Quíenes Somos
+    </MudText>
+    <hr class="linea" />
+</div>
+
+<MudPaper Class="seccion-nosotros" Elevation="0">
+
+    <div class="contenido-principal">
+        <div class="card-nosotros">
+            <div class="texto-explore">
+                <i class="fas fa-bullseye"></i>
+                <span>misión</span>
+            </div>
+            <MudText Typo="Typo.h4" Align="Align.Center" Class="texto-solo">
+                <br />
+                Ofrecer un servicio de transporte terrestre interprovincial seguro, puntual y accesible, conectando a Sucre, Villa Serrano, Tomina, Mendoza y comunidades cercanas. <br /> Nos comprometemos con la calidad, la atención al cliente y el desarrollo regional a través de un transporte confiable y humano.
+            </MudText>
+        </div>
+
+        <div class="card-nosotros">
+            <div class="texto-explore">
+                <i class="fas fa-eye"></i>
+                <span>Visión</span>
+            </div>
+            <MudText Typo="Typo.h4" Align="Align.Center" Class="texto-solo">
+                <br />
+                Ser la empresa líder en transporte interprovincial en Chuquisaca, reconocida por su excelencia, cercanía con la gente y uso de tecnologías modernas que mejoran la experiencia del pasajero, fortaleciendo la integración entre zonas rurales y urbanas.
+            </MudText>
+        </div>
+
+
+        
+    </div>
+
+
+</MudPaper>
+
+@* Línea gruesa que cierra la sección *@
+<MudDivider Style="background-color: lightgrey; height: 1px;" Class="mt-8 mb-12" />
+
+
+
+<div class="explore-separador">
+    <div class="linea-corta"></div>
+
+    <div class="texto-explore">
+        <i class="fas fa-house"></i>
+        <span>nuestra empresa</span>
+        <i class="fas fa-house"></i>
+    </div>
+
+    <div class="linea-corta"></div>
+</div>
+
+<div class="separador-texto-con-lineas">
+    <hr class="linea" />
+    <MudText Typo="Typo.h4" Align="Align.Center" Class="texto-separador">
+        Valores
+    </MudText>
+    <hr class="linea" />
+</div>
+
+<MudPaper Class="seccion-nosotros" Elevation="0">
+
+    <div class="contenido-secundario">
+        <div class="card-valores">
+            <div class="texto-explore">
+                <i class="fas fa-shield-alt"></i>
+                <span>Seguridad</span>
+            </div>
+            <MudText Typo="Typo.h4" Align="Align.Center" Class="texto-solo">
+                <br />
+                Priorizamos la integridad y el bienestar de nuestros pasajeros, garantizando unidades en óptimas condiciones y personal capacitado.
+            </MudText>
+        </div>
+
+        <div class="card-valores">
+            <div class="texto-explore">
+                <i class="fas fa-people-carry"></i>
+                <span>Compromiso con la comunidad</span>
+            </div>
+            <MudText Typo="Typo.h4" Align="Align.Center" Class="texto-solo">
+                <br />
+                Servimos con responsabilidad a las regiones que conectamos, aportando al desarrollo social y económico de las comunidades rurales y urbanas.
+            </MudText>
+        </div>
+
+        <div class="card-valores">
+            <div class="texto-explore">
+                <i class="fas fa-clock"></i>
+                <span>Puntualidad</span>
+            </div>
+            <MudText Typo="Typo.h4" Align="Align.Center" Class="texto-solo">
+                <br />
+                Valoramos el tiempo de nuestros usuarios, cumpliendo rigurosamente con los horarios establecidos en cada ruta.
+            </MudText>
+        </div>
+
+        <div class="card-valores">
+            <div class="texto-explore">
+                <i class="fas fa-handshake"></i>
+                <span>Honestidad</span>
+            </div>
+            <MudText Typo="Typo.h4" Align="Align.Center" Class="texto-solo">
+                <br />
+                Actuamos con transparencia y ética en cada aspecto del servicio, generando confianza y credibilidad con nuestros usuarios.
+            </MudText>
+        </div>
+
+        <div class="card-valores">
+            <div class="texto-explore">
+                <i class="fas fa-heart"></i>
+                <span>Calidez humana</span>
+            </div>
+            <MudText Typo="Typo.h4" Align="Align.Center" Class="texto-solo">
+                <br />
+                Ofrecemos un trato cordial, cercano y respetuoso, asegurando que cada pasajero se sienta bien atendido y valorado.
+            </MudText>
+        </div>
+
+        <div class="card-valores">
+            <div class="texto-explore">
+                <i class="fas fa-sync-alt"></i>
+                <span>Mejora continua</span>
+            </div>
+            <MudText Typo="Typo.h4" Align="Align.Center" Class="texto-solo">
+                <br />
+                Buscamos constantemente innovar y optimizar nuestros procesos y servicios, integrando tecnología y buenas prácticas para ofrecer una experiencia cada vez mejor.
+            </MudText>
+        </div>
+
+
+
+    </div>
+
+
+</MudPaper>
+
+@* Línea gruesa que cierra la sección *@
+<MudDivider Style="background-color: lightgrey; height: 1px;" Class="mt-8 mb-12" />
+
+
+
+@code {
+
+}

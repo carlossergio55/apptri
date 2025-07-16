@@ -9,6 +9,11 @@
     <link href="styles/Integracion/comprar-public.css" rel="stylesheet" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap" rel="stylesheet">
+
+
+
 </HeadContent>
 
 
@@ -56,10 +61,10 @@
                         <MudButton Class="btn_nav" Variant="Variant.Text" Size="Size.Small" OnClick="@(() => Nav.NavigateTo("/sucursales"))">Sucursales</MudButton>
                     </div>
                     <div class="wrap_btn_nav">
-                        <MudButton Class="btn_nav" Variant="Variant.Text" Size="Size.Small" OnClick="@(() => Nav.NavigateTo("/empresa"))">Nuestra Empresa</MudButton>
+                        <MudButton Class="btn_nav" Variant="Variant.Text" Size="Size.Small" OnClick="@(() => Nav.NavigateTo("/nosotros"))">Nuestra Empresa</MudButton>
                     </div>
                     <div class="wrap_btn_nav">
-                        <MudButton Class="btn_nav" Variant="Variant.Text" Size="Size.Small" OnClick="@(() => Nav.NavigateTo("/contacto"))">Contáctenos</MudButton>
+                            <MudButton Class="btn_nav" Variant="Variant.Text" Size="Size.Small" OnClick="@(() => Nav.NavigateTo("/contactenos"))">Contáctenos</MudButton>
                     </div>
                 </div>
             </MudHidden>
@@ -73,13 +78,13 @@
     {
         <div class="mobile-menu-overlay" @onclick="CerrarDrawer">
             <div class="mobile-menu-paper" @onclick:stopPropagation="true">
-                <MudNavMenu Dense="true" Class="mobile-nav-menu">
-                    <MudNavLink Href="/comprar-public" OnClick="@CerrarDrawer" Match="NavLinkMatch.All" Class="mobile-nav-item">Pasajes</MudNavLink>
-                    <MudNavLink Href="/rastreo" OnClick="@CerrarDrawer" Class="mobile-nav-item">Carga y Encomienda</MudNavLink>
-                    <MudNavLink Href="/sucursales" OnClick="@CerrarDrawer" Class="mobile-nav-item">Sucursales</MudNavLink>
-                    <MudNavLink Href="/empresa" OnClick="@CerrarDrawer" Class="mobile-nav-item">Nuestra Empresa</MudNavLink>
-                    <MudNavLink Href="/contacto" OnClick="@CerrarDrawer" Class="mobile-nav-item">Contáctenos</MudNavLink>
-                </MudNavMenu>
+                <div class="mobile-nav-menu" style="display: flex; flex-direction: column; gap: 12px;">
+                    <MudButton Class="mobile-nav-item" Variant="Variant.Text" OnClick="@(() => NavegarYCerrar("/comprar-public"))">Pasajes</MudButton>
+                    <MudButton Class="mobile-nav-item" Variant="Variant.Text" OnClick="@(() => NavegarYCerrar("/rastreo"))">Carga y Encomienda</MudButton>
+                    <MudButton Class="mobile-nav-item" Variant="Variant.Text" OnClick="@(() => NavegarYCerrar("/sucursales"))">Sucursales</MudButton>
+                    <MudButton Class="mobile-nav-item" Variant="Variant.Text" OnClick="@(() => NavegarYCerrar("/nosotros"))">Nuestra Empresa</MudButton>
+                    <MudButton Class="mobile-nav-item" Variant="Variant.Text" OnClick="@(() => NavegarYCerrar("/contactenos"))">Contáctenos</MudButton>
+                </div>
             </div>
         </div>
     }
@@ -91,7 +96,11 @@
 
     <!-- Proveedores -->
     <MudDialogProvider />
-    <MudSnackbarProvider />
+    <MudSnackbarProvider Class="snackbar-ajustada"
+                         Position="SnackbarPosition.TopCenter"
+                         MaxDisplayedSnackbars="3"
+                         PreventDuplicates="true" />
+
 
     <!-- Footer -->
     <MudPaper Elevation="10" Class="footer-container">
@@ -196,5 +205,11 @@
     {
         _drawerOpen = false;
         StateHasChanged(); 
+    }
+    void NavegarYCerrar(string url)
+    {
+        _drawerOpen = false;
+        StateHasChanged();
+        Nav.NavigateTo(url);
     }
 }

@@ -1,0 +1,198 @@
+﻿@page "/contactenos"
+@using Server.Shared.Integracion
+@layout PublicLayout
+@inject IDialogService DialogService
+@inject NavigationManager Nav
+<link href="styles/Integracion/nosotros.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+
+
+<div class="explore-separador">
+    <div class="linea-corta"></div>
+
+    <div class="texto-explore">
+        <i class="fas fa-house"></i>
+        <span>¿Tiene Dudas o Consultas?</span>
+        <i class="fas fa-house"></i>
+    </div>
+
+    <div class="linea-corta"></div>
+</div>
+
+<div class="separador-texto-con-lineas">
+    <hr class="linea" />
+    <MudText Typo="Typo.h4" Align="Align.Center" Class="texto-separador">
+        Contáctese con nosotros
+    </MudText>
+    <hr class="linea" />
+</div>
+<MudText Typo="Typo.h4" Align="Align.Center" Class="texto-contactenos">
+    <br />
+    ¡Tu opinión es muy importante para nosotros!<br />
+    En Trans Integración queremos brindarte el mejor servicio, por eso hemos habilitado este espacio para que puedas consultarnos, hacer un reclamo o dejarnos tus sugerencias.<br />
+    Solo llena el formulario y pronto nos comunicaremos contigo. ¡Gracias por confiar en nosotros!
+</MudText>
+
+<MudPaper Class="seccion-nosotros" Elevation="0">
+
+    <div class="contenido-secundario">
+
+        <div class="card-valores">
+            <div class="texto-explore">
+                <i class="fas fa-headset"></i>
+                <span>ATENCIÓN AL CLIENTE</span>
+            </div>
+            <MudText Typo="Typo.h4" Align="Align.Center" Class="texto-solo">
+                <br />
+                <span class="rojo-label">Whatsapp:</span> (+591)71178739
+            </MudText>
+        </div>
+
+        <div class="card-valores">
+            <div class="texto-explore">
+                <i class="fas fa-map-marker-alt"></i>
+                <span>OFICINA CENTRAL</span>
+            </div>
+            <MudText Typo="Typo.h4" Align="Align.Center" Class="texto-solo">
+                <br />
+                <span class="rojo-label">Dirección:</span> Terminal Interprovincial de Buses Sucre Capital
+            </MudText>
+        </div>
+
+        <div class="card-valores">
+            <div class="texto-explore">
+                <i class="fas fa-box"></i>
+                <span>CARGA Y ENCOMIENDAS</span>
+            </div>
+            <MudText Typo="Typo.h4" Align="Align.Center" Class="texto-solo">
+                <br />
+                <span class="rojo-label">Celular:</span> 76767678
+            </MudText>
+        </div>
+
+        <div class="card-valores">
+            <div class="texto-explore">
+                <i class="fas fa-envelope"></i>
+                <span>CORREO ELECTRÓNICO</span>
+            </div>
+            <MudText Typo="Typo.h4" Align="Align.Center" Class="texto-solo">
+                <br />
+                <span class="rojo-label">Email:</span> transintegracion@gmail.com
+            </MudText>
+        </div>
+
+    </div>
+
+</MudPaper>
+@* Línea gruesa que cierra la sección *@
+<MudDivider Style="background-color: lightgrey; height: 1px;" Class="mt-8 mb-12" />
+
+
+
+<MudGrid Class="contacto-ubicacion-grid mb-12 px-4"  Gutter="3">
+
+    <!-- Columna del Mapa -->
+    <MudItem xs="12" md="6" Class="contacto-columna-mapa">
+        <iframe class="contacto-mapa"
+                width="600"
+                height="450"
+                style="border:0;"
+                allowfullscreen
+                loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade"
+                src=@("https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3771.602459792363!2d-65.2453204239671!3d-19.037231511131914!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x93fbc9f33d0e71ed%3A0x2f3d60c5fdde4082!2sTerminal%20Interprovincial%20Sucre!5e0!3m2!1ses!2sbo!4v1752698819760!5m2!1ses!2sbo")>
+        </iframe>
+    </MudItem>
+
+
+
+    <MudItem xs="12" md="6" Class="contacto-columna-tarjeta">
+        <MudPaper Class="contacto-tarjeta-info p-6" Elevation="3">
+            <div class="contacto-logo">
+                <div class="d-flex align-items-center">
+                    <MudImage Src="images/logo_sin.png" Alt="Logo" Class="logo-img" />
+
+                    <div class="texto-logo ms-2">
+                        <div class="linea1">TRANS</div>
+                        <div class="linea2">INTEGRACIÓN</div>
+                        <div class="parachoque"></div>
+                    </div>
+                </div>
+            </div>
+
+            <MudGrid GutterSize="16px">
+                <!-- Motivo y Fecha -->
+                <MudItem xs="12" md="6">
+                    <MudSelect T="string" Label="Motivo de Contacto" Required="true" @bind-Value="formulario.Motivo">
+                        <MudSelectItem Value="@("Consulta")">Consulta</MudSelectItem>
+                        <MudSelectItem Value="@("Sugerencia")">Sugerencia</MudSelectItem>
+                        <MudSelectItem Value="@("Reclamo")">Reclamo</MudSelectItem>
+
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudDatePicker T="DateTime?" Label="Fecha" Required="true" DateFormat="dd/MM/yyyy" @bind-Date="formulario.Fecha" />
+                </MudItem>
+
+                <!-- Nombre y CI -->
+                <MudItem xs="12" md="6">
+                    <MudTextField T="string" Label="Nombre Completo" Required="true" @bind-Value="formulario.Nombre" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField T="string" Label="Documento (CI)" Required="true" @bind-Value="formulario.Documento" />
+                </MudItem>
+
+                <!-- Teléfono y Correo -->
+                <MudItem xs="12" md="6">
+                    <MudTextField T="string" Label="Teléfono o Celular" Required="true" @bind-Value="formulario.Telefono" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField T="string" Label="Correo Electrónico" Required="true" @bind-Value="formulario.Correo" />
+                </MudItem>
+
+                <!-- Mensaje -->
+                <MudItem xs="12">
+                    <MudTextField T="string" Label="Mensaje" Lines="4" FullWidth="true" @bind-Value="formulario.Mensaje" />
+                </MudItem>
+
+                <!-- Botón -->
+                <MudItem xs="12" Class="d-flex justify-end">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Send" OnClick="EnviarFormulario">
+                        Enviar
+                    </MudButton>
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+    </MudItem>
+
+
+
+</MudGrid>
+
+
+@code {
+    private ContactoModel formulario = new();
+
+    public class ContactoModel
+    {
+        public string? Motivo { get; set; }
+        public DateTime? Fecha { get; set; }
+        public string? Nombre { get; set; }
+        public string? Documento { get; set; }
+        public string? Telefono { get; set; }
+        public string? Correo { get; set; }
+        public string? Mensaje { get; set; }
+    }
+
+    private void EnviarFormulario()
+    {
+        Console.WriteLine("Formulario enviado:");
+        Console.WriteLine($"Motivo: {formulario.Motivo}");
+        Console.WriteLine($"Nombre: {formulario.Nombre}");
+        Console.WriteLine($"CI: {formulario.Documento}");
+        Console.WriteLine($"Teléfono: {formulario.Telefono}");
+        Console.WriteLine($"Correo: {formulario.Correo}");
+        Console.WriteLine($"Mensaje: {formulario.Mensaje}");
+    }
+}

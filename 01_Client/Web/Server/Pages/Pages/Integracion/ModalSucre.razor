@@ -4,7 +4,12 @@
 <link href="styles/Integracion/modal-destinos.css" rel="stylesheet" />
 
 <MudDialog Class="modal-destinos">
+    
     <DialogContent>
+        <!-- Botón de cerrar  -->
+        <button class="cerrar-modal" @onclick="() => DialogInstance.Close()">
+            &times;
+        </button>
         <div class="modal-destinos-contenido">
             <MudText Typo="Typo.h5" Class="modal-destinos-title">SALIDAS DIARIAS DESDE SUCRE</MudText>
 

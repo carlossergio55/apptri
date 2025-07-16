@@ -1,0 +1,320 @@
+﻿.explore-separador {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px; /* Espacio entre elementos */
+    margin: 50px 0 1px;
+    animation: aparecer 0.5s ease-out;
+    font-family: 'Bebas Neue', cursive;
+    font-weight: 700;
+}
+
+/* Las líneas cortas a los lados */
+.linea-corta {
+    width: 40px;
+    height: 2px;
+    background-color: #8B0000; 
+    opacity: 0.8;
+    border-radius: 1px;
+}
+
+/* Texto "Explore" con íconos de bus */
+.texto-explore {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Espacio entre íconos y texto */
+    font-size: 18px;
+    font-weight: 600;
+    color: #8B0000;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+    /* Íconos de bus dentro del texto */
+    .texto-explore i {
+        font-size: 20px;
+        color: #8B0000;
+    }
+
+/* Animación opcional de aparición */
+@keyframes aparecer {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+
+.separador-texto-con-lineas {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin: 10px 0 10px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 24px;
+}
+
+.linea {
+    flex-grow: 1;
+    height: 1px;
+    background-color: lightgrey; 
+    border: none;
+    opacity: 0.85;
+}
+
+.texto-separador {
+    color: black;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+.seccion-nosotros {
+    display: flex;
+    flex-direction: column;
+    align-items: center;    /* Centra horizontalmente */
+    justify-content: left; /* Centra verticalmente */
+    min-height: 40px;      /* Ajusta según tu diseño */
+    padding: 10px 16px;     /* Espaciado interno */
+    box-sizing: border-box;
+}
+
+.card-nosotros {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgb(103, 138, 216);
+    padding: 32px 24px;
+    margin: 18px 0;
+    max-width: 600px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: box-shadow 0.3s;
+}
+
+    .card-nosotros:hover {
+        box-shadow: 0 4px 24px rgb(185, 105, 105);
+    }
+
+
+.contenido-secundario {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 32px 24px; /* Espacio entre tarjetas */
+}
+.card-valores {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgb(103, 138, 216);
+    padding: 32px 24px;
+    margin: 0;
+    width: 45%; /* Dos tarjetas por fila */
+    max-width: 400px;
+    min-width: 280px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: box-shadow 0.3s;
+}
+
+    .card-valores:hover {
+        box-shadow: 0 4px 24px rgb(185, 105, 105);
+    }
+
+/* Responsive: una tarjeta por fila en pantallas pequeñas */
+@media (max-width: 900px) {
+    .card-valores {
+        width: 100%;
+        max-width: 100%;
+    }
+}
+
+
+
+/* PARA CONTACTENOS */
+.rojo-label {
+    color: #b30000;
+    font-weight: 700;
+}
+
+.texto-contactenos {
+    text-align: left;
+    color: #4b4141bf; 
+    font-family: 'Lato', 'Montserrat', Arial, sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    margin: 24px 0 32px 0;
+    margin-left: 80px;
+    line-height: 1.6;
+}
+
+
+
+
+
+/* Estilo general para el grid */
+.contacto-ubicacion-grid {
+    margin-bottom: 3rem;
+    padding-left: 60px;
+    padding-right: 1rem;
+    background-color: #6c696926;
+}
+
+.contacto-mapa {
+    width: 100%;
+    height: 100%;
+    min-height: 350px;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px #4a484866;
+}
+
+
+
+/* Columna del mapa */
+.contacto-columna-mapa iframe.contacto-mapa {
+    width: 100%;
+    height: 100%;
+    min-height: 350px;
+    border: none;
+    border-radius: 8px;
+
+}
+
+/* Columna de la tarjeta de contacto */
+.contacto-columna-tarjeta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Tarjeta de contacto */
+.contacto-tarjeta-info {
+    width: 100%;
+    max-width: 750px;
+    background-color: #cacaca;
+    border-radius: 16px;
+    padding: 1rem;
+    box-shadow: 0 4px 8px #4a4848cc;
+}
+
+    /* Formulario - campos */
+    .contacto-tarjeta-info .mud-input,
+    .contacto-tarjeta-info .mud-select,
+    .contacto-tarjeta-info .mud-picker {
+        width: 100%;
+    }
+
+    /* Campo de mensaje con múltiples líneas */
+    .contacto-tarjeta-info textarea {
+        resize: vertical;
+        min-height: 100px;
+    }
+
+    /* Botón de enviar */
+    .contacto-tarjeta-info .mud-button {
+        margin-top: 1rem;
+        min-width: 150px;
+        font-weight: 600;
+    }
+
+    /* Alineación del botón a la derecha */
+    .contacto-tarjeta-info .d-flex.justify-end {
+        justify-content: flex-end;
+    }
+
+
+
+
+
+
+
+
+
+
+/* Logo (imagen del bus) */
+.logo-img {
+    max-height: 49px;
+    width: auto;
+    object-fit: contain;
+    display: block;
+
+}
+
+/* Texto del logo */
+.texto-logo {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    font-family: 'Montserrat', sans-serif;
+    color: white;
+    line-height: 1.1;
+    margin-left: 10px;
+    
+}
+
+    .texto-logo .linea1,
+    .texto-logo .linea2 {
+        font-weight: 900;
+        color: white;
+        letter-spacing: 1px;
+        text-shadow: 1px 1px 0 darkred, 2px 2px 0 darkred, 3px 3px 0 black;
+    }
+
+    .texto-logo .linea1 {
+        font-size: 18px;
+    }
+
+    .texto-logo .linea2 {
+        font-size: 24px;
+        margin-top: -2px;
+    }
+
+/* Línea decorativa tipo parachoque */
+.parachoque {
+    margin-top: 2px;
+    width: 100%;
+    height: 5px;
+    background: linear-gradient(to right, transparent 0%, darkred 25%, darkred 75%, transparent 100%);
+    clip-path: polygon(0% 50%, 10% 0%, 90% 0%, 100% 50%, 90% 100%, 10% 100%);
+}
+
+/* Responsive para pantallas pequeñas */
+@media (max-width: 600px) {
+    .barra-navegacion-contenido {
+        padding: 10px;
+    }
+
+    .texto-logo .linea1 {
+        font-size: 16px;
+    }
+
+    .texto-logo .linea2 {
+        font-size: 20px;
+    }
+}
+
+
+.contacto-logo {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    box-shadow: 0 4px 8px rgb(0, 0, 0, 0,60);
+    background-color: #808080ff;
+    border-radius: 16px;
+    padding: 8px 10px;
+}
+
+.navegacion-derecha {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-left: auto;
+}

@@ -1,7 +1,8 @@
 ﻿/* Sección principal con imagen de fondo */
 .seccion-principal {
-    margin-top: 50px; /* Espacio bajo AppBar */
-    background-image: url('/images/bus1.jpg');
+    margin-top: 10px; /* Espacio bajo AppBar */
+    background-image: url('../../images/bus_00.png');
+    
     background-size: cover;
     background-position: center;
     height: 400px;
@@ -23,13 +24,6 @@
     justify-content: center;
     text-align: center;
 }
-
-
-
-
-
-
-
 
 
 /* Botones de Comprar Pasaje Y Rastrear Envío */

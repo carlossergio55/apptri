@@ -2,12 +2,31 @@
 .barra-navegacion {
     background: linear-gradient(135deg, #1a1a1a, #2b2b2b);
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
-    padding: 10px 30px;
+    padding: 9px 0px;
     position: sticky;
     top: 0;
     z-index: 1300;
     overflow-x: hidden;
 }
+
+
+
+.snackbar-ajustada .mud-snackbar {
+    margin-top: 80px; /* ajusta si tu barra es más alta o más baja */
+    z-index: 1300;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    padding: 16px;
+    font-size: 15px;
+}
+
+.snackbar-ajustada .mud-snackbar-warning {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+}
+
+
 
 /* Contenedor interno centrado y flexible */
 .barra-navegacion-contenido {
@@ -23,7 +42,7 @@
 
 /* Logo (imagen del bus) */
 .logo-img {
-    max-height: 50px;
+    max-height: 49px;
     width: auto;
     object-fit: contain;
     display: block;
@@ -186,11 +205,11 @@
     right: 0;
     bottom: 0;
     z-index: 1200;
-    background-color: rgba(0, 0, 0, 0.7);
+    background-color: rgba(255, 255, 255, 0.1);
     display: flex;
     justify-content: center;
     align-items: flex-start;
-    padding-top: 80px; /* Espacio para la barra de navegación */
+    padding-top: 88px; /* Espacio para la barra de navegación */
 }
 
 .mobile-menu-paper {
@@ -206,14 +225,18 @@
 }
 
 .mobile-nav-item {
-    color: white !important;
-    font-size: 18px;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    height: 56px; /* prueba aumentar para mejor legibilidad */
+    padding: 0 16px;
+    font-size: 20px;
     font-weight: 600;
     font-family: 'Poppins', sans-serif;
-    padding: 16px 24px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    transition: all 0.3s ease;
-    display: block;
+    border-bottom: 1px solid #692020;
+    box-sizing: border-box;
+    color: white !important;
+    line-height: normal; /* importante */
 }
 
     .mobile-nav-item:hover {
@@ -232,6 +255,18 @@
         opacity: 1;
     }
 }
+
+/* Fuerza el MudButton a ocupar todo el espacio */
+.mobile-nav-item .mud-button-root {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    line-height: normal;
+}
+
 
 /* Hamburguesa */
 .hamburguesa-btn {
@@ -256,7 +291,7 @@
 }
 
 .footer-content {
-    padding: 0 15px;
+    padding: 0 10px;
 }
 
 .footer-title {

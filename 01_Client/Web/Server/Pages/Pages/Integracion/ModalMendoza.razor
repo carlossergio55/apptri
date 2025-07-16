@@ -5,6 +5,10 @@
 
 <MudDialog Class="modal-destinos">
     <DialogContent>
+        <!-- Botón de cerrar  -->
+        <button class="cerrar-modal" @onclick="() => DialogInstance.Close()">
+            &times;
+        </button>
         <div class="modal-destinos-contenido">
             <MudText Typo="Typo.h5" Class="modal-destinos-title">SALIDAS ESPECIALES DESDE MENDOZA</MudText>
 
