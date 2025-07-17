@@ -13,26 +13,27 @@ namespace WebApi.Controllers.Integracion
     {
 
         [HttpGet("chofer")]
-        [Authorize]
+        [AllowAnonymous] // 👈 Esto permite el acceso sin autenticación
         public async Task<IActionResult> Get()
         {
             return Ok(await Mediator.Send(new GetAllChoferQuery()));
         }
+
         [HttpPost("Guardar")]
-        [Authorize]
+        [AllowAnonymous]
         public async Task<IActionResult> Post(CreateChoferCommand command)
         {
             return Ok(await Mediator.Send(command));
         }
 
         [HttpDelete("{id}")]
-        [Authorize]
+        [AllowAnonymous]
         public async Task<IActionResult> Delete(int id)
         {
             return Ok(await Mediator.Send(new DeleteChoferCommand { IdChofer = id }));
         }
         [HttpPut("{id}")]
-        [Authorize]
+        [AllowAnonymous]
         public async Task<IActionResult> Put(int id, UpdateChoferCommand command)
         {
             if (id != command.IdChofer)

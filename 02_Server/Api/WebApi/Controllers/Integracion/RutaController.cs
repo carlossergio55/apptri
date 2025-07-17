@@ -13,7 +13,6 @@ namespace WebApi.Controllers.Integracion
     {
 
         [HttpGet("ruta")]
-        [Authorize]
         public async Task<IActionResult> Get()
         {
             return Ok(await Mediator.Send(new GetAllRutaQuery()));

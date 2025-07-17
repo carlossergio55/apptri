@@ -1,5 +1,6 @@
 ﻿using Aplicacion.DTOs.Identity;
 using Aplicacion.Features.Segurity.Commands;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
@@ -33,6 +34,7 @@ namespace Webapi.Controllers.v1.Identity
 
 
         [HttpGet("getmenu")]
+        [Authorize]
         public async Task<IActionResult> getmenu(int pidsegperfil, int pidsegSistema)
         {
             return Ok(await Mediator.Send(new GetAllUserMenuQuery

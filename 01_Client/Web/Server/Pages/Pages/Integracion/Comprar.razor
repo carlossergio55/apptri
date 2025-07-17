@@ -1,52 +1,52 @@
 ﻿@page "/comprar-public"
 @layout PublicLayout
+@using Infraestructura.Models.Integracion
 @using MudBlazor
 @inject NavigationManager Nav
 @inject ISnackbar Snackbar
+@using Infraestructura.Models.Clasificador
+@using Microsoft.AspNetCore.Components
+@using Syncfusion.Blazor.Grids
+@using System.Globalization
+@inherits MainBaseComponent
+
 <link href="styles/Integracion/comprar-public.css" rel="stylesheet" />
 <MudContainer MaxWidth="MaxWidth.Medium" Class="comp-public-contenedor mt-10">
 
     <MudPaper Elevation="3" Class="comp-public-formulario p-6 rounded-xl">
 
-        <!-- Encabezado con título centrado y botón limpiar -->
-        <MudStack Direction="Row" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-6">
-            <MudText Typo="Typo.h4" Class="comp-public-titulo mx-auto">
-                BUSCAR SALIDAS
-            </MudText>
-            <MudButton Variant="Variant.Text"
-                       Size="Size.Small"
-                       StartIcon="@Icons.Material.Filled.Clear"
-                       OnClick="LimpiarCampos"
-                       Class="comp-public-limpiar-boton">Limpiar
-            </MudButton>
-        </MudStack>
+        <!-- Título centrado y botón limpiar a la izquierda -->
+        <MudGrid Class="mb-6">
+            <MudItem xs="12" md="6">
+                <MudButton Variant="Variant.Text"
+                           Size="Size.Small"
+                           StartIcon="@Icons.Material.Filled.Clear"
+                           OnClick="LimpiarCampos"
+                           Class="comp-public-limpiar-boton">
+                    Limpiar
+                </MudButton>
+            </MudItem>
+            <MudItem xs="12" md="6" Class="d-flex justify-center">
+                <MudText Typo="Typo.h4" Class="comp-public-titulo">
+                    BUSCAR SALIDAS
+                </MudText>
+            </MudItem>
+        </MudGrid>
 
         <!-- Primera fila: origen y destino -->
         <MudGrid Class="mb-4">
-            <MudItem xs="12" md="6">
+            <MudItem xs="12" md="12">
                 <MudText Class="comp-public-etiqueta">Seleccione ciudad de origen</MudText>
-                <MudSelect T="string"
-                           @bind-Value="OrigenSeleccionado"
+                <MudSelect T="int"
+                           Label="Ruta"
+                           @bind-Value="_rutaSeleccionadaId"
                            Variant="Variant.Outlined"
-                           Dense="true"
-                           Class="comp-public-campo">
-                    @foreach (var ruta in Rutas)
+                           Margin="Margin.Dense">
+                    @foreach (var ruta in _listaRutas ?? Enumerable.Empty<RutaDto>())
                     {
-                        <MudSelectItem T="string" Value="@ruta">@ruta</MudSelectItem>
-                    }
-                </MudSelect>
-            </MudItem>
-
-            <MudItem xs="12" md="6">
-                <MudText Class="comp-public-etiqueta">Seleccione ciudad de destino</MudText>
-                <MudSelect T="string"
-                           @bind-Value="DestinoSeleccionado"
-                           Variant="Variant.Outlined"
-                           Dense="true"
-                           Class="comp-public-campo">
-                    @foreach (var ruta in Rutas)
-                    {
-                        <MudSelectItem T="string" Value="@ruta">@ruta</MudSelectItem>
+                        <MudSelectItem Value="@ruta.IdRuta">
+                            @ruta.Origen → @ruta.Destino (@ruta.Duracion)
+                        </MudSelectItem>
                     }
                 </MudSelect>
             </MudItem>
@@ -73,10 +73,9 @@
             </MudItem>
         </MudGrid>
 
-        <!-- Botón buscar -->
-        <MudStack Justify="Justify.Center" AlignItems="AlignItems.Center">
+        <!-- Botones centrados -->
+        <MudStack Direction="Row" Justify="Justify.Center" AlignItems="AlignItems.Center" Spacing="2">
             <MudButton Variant="Variant.Filled"
-                       
                        OnClick="BuscarPasajes"
                        Class="comp-public-boton-buscar"
                        EndIcon="@Icons.Material.Filled.Search">
@@ -86,6 +85,7 @@
 
     </MudPaper>
 </MudContainer>
+
 
 @code {
     private List<string> Rutas = new() { "Sucre", "Serrano", "Tomina", "Mendoza" };
