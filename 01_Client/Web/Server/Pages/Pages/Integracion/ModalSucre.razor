@@ -1,5 +1,6 @@
 ﻿@namespace Server.Shared.Integracion
 @using MudBlazor
+@layout PublicLayout
 @inject NavigationManager Nav
 <link href="styles/Integracion/modal-destinos.css" rel="stylesheet" />
 
@@ -50,7 +51,7 @@
     void ComprarPasaje()
     {
         DialogInstance.Close();
-        Nav.NavigateTo("/comprar");
+        Nav.NavigateTo("/comprar-public");
     }
 }
 

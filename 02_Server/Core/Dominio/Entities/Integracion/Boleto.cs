@@ -37,5 +37,8 @@ namespace Dominio.Entities.Integracion
         //public int IdVendedor { get; set; }
         //[ForeignKey("IdVendedor")]
         //public virtual Usuario Vendedor { get; set; }
+        public int? IdPago { get; set; }
+        [ForeignKey("IdPago")]
+        public virtual Pago? Pago { get; set; }
     }
 }

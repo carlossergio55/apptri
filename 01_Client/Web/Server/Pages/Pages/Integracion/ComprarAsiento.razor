@@ -1,0 +1,112 @@
+﻿@page "/comprar-asiento"
+@layout PublicLayout
+<link href="styles/Integracion/comprar-asiento.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+
+<MudPaper Class="d-flex flex-column align-items-center p-4" Style="gap: 24px;">
+    <MudText Typo="Typo.h5" Align="Align.Center" Class="titulo-pasajes-public">
+        Asientos disponibles: Sucre → Villa Serrano para la fecha 29-07-2025
+    </MudText>
+
+    <MudPaper Class="d-flex justify-center align-items-center flex-wrap" Style="gap: 20px;">
+        <MudText Class="d-flex align-items-center" Style="gap: 6px;">
+            <i class="fas fa-chair" style="color: lightgray;"></i> Libre
+        </MudText>
+        <MudText Class="d-flex align-items-center" Style="gap: 6px;">
+            <i class="fas fa-chair" style="color: red;"></i> Ocupado
+        </MudText>
+        <MudText Class="d-flex align-items-center" Style="gap: 6px;">
+            <i class="fas fa-chair" style="color: green;"></i> Seleccionado
+        </MudText>
+        <MudText Class="d-flex align-items-center" Style="gap: 6px;">
+            <i class="fas fa-chair" style="color: gold;"></i> Bloqueado temporalmente
+        </MudText>
+        <MudText Class="d-flex align-items-center" Style="gap: 6px;">
+            <i class="fas fa-chair" style="color: orange;"></i> Reservado por llamada
+        </MudText>
+    </MudPaper>
+
+    <div class="pasajes-public-bus-layout">
+        <!-- Conductor -->
+        <div class="pasajes-public-fila-conductor">
+            <div class="pasajes-public-conductor-icono">
+                <i class="fas fa-user-tie"></i>
+                <span>Conductor</span>
+            </div>
+        </div>
+
+        <!-- Asientos -->
+        @for (int fila = 0; fila < 8; fila++)
+        {
+            <div class="pasajes-public-fila-bus">
+                @for (int col = 0; col < 4; col++)
+                {
+                    if (col == 2)
+                    {
+                        <div class="pasajes-public-pasillo"></div>
+                    }
+
+                    int numeroAsiento = fila * 4 + col + 1;
+                    if (numeroAsiento > 32) break;
+
+                    <div class="pasajes-public-asiento libre">
+                        <i class="fas fa-chair">
+                            <span class="pasajes-public-numero">@numeroAsiento</span>
+                        </i>
+                    </div>
+                }
+            </div>
+        }
+
+        <!-- Última fila: 33–37 -->
+        <div class="pasajes-public-ultima-fila">
+            @for (int i = 33; i <= 37; i++)
+            {
+                <div class="pasajes-public-asiento libre">
+                    <i class="fas fa-chair">
+                        <span class="pasajes-public-numero">@i</span>
+                    </i>
+                </div>
+            }
+        </div>
+
+        <!-- Resumen inferior -->
+        <div class="pasajes-public-info-resumen">
+            Usted ha seleccionado los asientos: <b>5, 6</b>
+
+            <div class="pasajes-public-temporizador">
+                Tiempo restante: <span id="temporizador">10:00</span>
+            </div>
+
+            <div class="pasajes-public-botones">
+                <a href="https://wa.me/591XXXXXXXX?text=Hola, deseo reservar mis pasajes del bus" target="_blank">
+                    <button class="pasajes-public-boton wa">Llamar para reservar</button>
+                </a>
+                <button class="pasajes-public-boton pagar" disabled>Ir a Pagar</button>
+            </div>
+        </div>
+
+        
+    </div>
+</MudPaper>
+
+<div class="pasajes-public-notas">
+<!-- Notas -->
+<div class="pasajes-public-nota">
+        ⏳Pasado el tiempo de 10 minutos si no realiza el pago, los asientos se liberarán automáticamente. <br />
+        📞Si reserva pasajes mediante llamada y no realiza el pago, el pasaje estará disponible para su venta. <br />
+        💸Para pagar pasajes reservados debe ir a nuestras oficinas o solicitar un QR por WhatsApp. <br />
+        🔔Los boletos reservados se recogen físicamente. El sistema <strong>no emite boletos</strong> de reserva, solo boletos pagados mediante el mismo.
+</div>
+
+<!-- Leyenda extendida -->
+<div class="pasajes-public-leyenda">
+    <strong>Estados de los asientos:</strong><br />
+    <i class="fas fa-chair" style="color: lightgray;"></i> Libre — Disponible para seleccionar.<br />
+    <i class="fas fa-chair" style="color: red;"></i> Ocupado — Ya ha sido vendido.<br />
+    <i class="fas fa-chair" style="color: green;"></i> Seleccionado — Usted ha elegido este asiento.<br />
+    <i class="fas fa-chair" style="color: gold;"></i> Bloqueado temporalmente — Otro usuario está en proceso de pago.<br />
+    <i class="fas fa-chair" style="color: orange;"></i> Reservado por llamada — Bloqueado por secretaría. Se libera 3 horas antes de la salida si no se realiza el pago.
+</div>
+</div>

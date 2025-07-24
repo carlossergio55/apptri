@@ -1,0 +1,186 @@
+﻿/* Título de la página */
+.titulo-pasajes-public {
+    margin-top: 20px;
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+
+.pasajes-public-bus-layout {
+    max-width: 350px;
+    width: 100%;
+    background-color: #f8f9fa;
+    padding: 30px 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    margin: auto;
+}
+
+.pasajes-public-fila-conductor {
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+    padding-left: 10px;
+}
+
+.pasajes-public-conductor-icono {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 13px;
+    color: #333;
+}
+
+    .pasajes-public-conductor-icono i {
+        font-size: 30px;
+        margin-bottom: 2px;
+    }
+
+.pasajes-public-fila-bus,
+.pasajes-public-ultima-fila {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.pasajes-public-asiento {
+    width: 50px;
+    height: 50px;
+    background-color: #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    transition: 0.2s;
+    position: relative;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+    .pasajes-public-asiento:hover {
+        transform: scale(1.07);
+        cursor: pointer;
+    }
+
+    .pasajes-public-asiento i {
+        font-size: 26px;
+        position: relative;
+    }
+
+.pasajes-public-numero {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    font-size: 0.75rem;
+    color: black;
+    font-weight: bold;
+    text-align: center;
+}
+
+.pasajes-public-pasillo {
+    width: 40px;
+}
+
+/* Estado visual de los asientos */
+.pasajes-public-asiento.libre i {
+    color: lightgray;
+}
+
+.pasajes-public-asiento.ocupado i {
+    color: red;
+}
+
+.pasajes-public-asiento.seleccionado i {
+    color: green;
+    border: 2px solid #2ecc71;
+    border-radius: 8px;
+}
+
+.pasajes-public-asiento.temporal i {
+    color: gold;
+}
+
+.pasajes-public-asiento.reservado i {
+    color: orange;
+}
+
+/* Sección inferior */
+.pasajes-public-info-resumen {
+    margin-top: 24px;
+    width: 100%;
+    text-align: center;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.pasajes-public-botones {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+}
+
+.pasajes-public-boton {
+    padding: 10px 18px;
+    font-size: 0.9rem;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+}
+
+    .pasajes-public-boton.wa {
+        background-color: #25D366;
+        color: white;
+    }
+
+    .pasajes-public-boton.pagar {
+        background-color: #007BFF;
+        color: white;
+    }
+
+        .pasajes-public-boton.pagar:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+.pasajes-public-temporizador {
+    margin-top: 6px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: #555;
+}
+
+.pasajes-public-nota {
+    margin-top: 20px;
+    font-size: 0.85rem;
+    color: #555;
+    text-align: justify;
+    line-height: 1.4;
+}
+
+.pasajes-public-leyenda {
+    margin-top: 18px;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: #333;
+}
+.pasajes-public-notas {
+    
+    max-width: 650px;
+    width: 100%;
+    background-color: #f8f9fa;
+    padding: 30px 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    margin: auto;
+}

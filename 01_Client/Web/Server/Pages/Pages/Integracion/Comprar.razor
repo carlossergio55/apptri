@@ -11,13 +11,21 @@
 @inherits MainBaseComponent
 
 <link href="styles/Integracion/comprar-public.css" rel="stylesheet" />
+
+
 <MudContainer MaxWidth="MaxWidth.Medium" Class="comp-public-contenedor mt-10">
-
+    
     <MudPaper Elevation="3" Class="comp-public-formulario p-6 rounded-xl">
-
+        
         <!-- Título centrado y botón limpiar a la izquierda -->
-        <MudGrid Class="mb-6">
-            <MudItem xs="12" md="6">
+        <MudText Typo="Typo.h4" Class="comp-public-titulo">
+            BUSCAR SALIDAS
+        </MudText>
+        <MudText Class="ver-tutorial-btn" OnClick="@AbrirTutorial" Style="cursor: pointer;">
+            ▶ Ver tutorial
+        </MudText>
+        <MudGrid Class="mb-6" AlignItems="AlignItems.Center">
+            <MudItem xs="12">
                 <MudButton Variant="Variant.Text"
                            Size="Size.Small"
                            StartIcon="@Icons.Material.Filled.Clear"
@@ -26,31 +34,51 @@
                     Limpiar
                 </MudButton>
             </MudItem>
-            <MudItem xs="12" md="6" Class="d-flex justify-center">
-                <MudText Typo="Typo.h4" Class="comp-public-titulo">
-                    BUSCAR SALIDAS
-                </MudText>
-            </MudItem>
         </MudGrid>
 
-        <!-- Primera fila: origen y destino -->
+        <!-- Primera fila: origen, duración y destino -->
         <MudGrid Class="mb-4">
-            <MudItem xs="12" md="12">
+            <MudItem xs="12" md="4">
                 <MudText Class="comp-public-etiqueta">Seleccione ciudad de origen</MudText>
-                <MudSelect T="int"
-                           Label="Ruta"
-                           @bind-Value="_rutaSeleccionadaId"
+                <MudSelect T="string"
+                          
+                           @bind-Value="OrigenSeleccionado"
                            Variant="Variant.Outlined"
                            Margin="Margin.Dense">
-                    @foreach (var ruta in _listaRutas ?? Enumerable.Empty<RutaDto>())
+                    @foreach (var ciudad in _listaRutas?.Select(r => r.Origen).Distinct() ?? Enumerable.Empty<string>())
                     {
-                        <MudSelectItem Value="@ruta.IdRuta">
-                            @ruta.Origen → @ruta.Destino (@ruta.Duracion)
-                        </MudSelectItem>
+                        <MudSelectItem Value="@ciudad">@ciudad</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+
+            <MudItem xs="12" md="4" Class="d-flex justify-center align-center">
+                @if (!string.IsNullOrWhiteSpace(OrigenSeleccionado) && !string.IsNullOrWhiteSpace(DestinoSeleccionado))
+                {
+                    var duracion = _listaRutas?
+                    .FirstOrDefault(r => r.Origen == OrigenSeleccionado && r.Destino == DestinoSeleccionado)?.Duracion;
+
+                    <MudChip Color="Color.Info" Variant="Variant.Filled">
+                        @($"Duración: {duracion ?? "N/D"}")
+                    </MudChip>
+                }
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudText Class="comp-public-etiqueta">Seleccione ciudad de destino</MudText>
+                <MudSelect T="string"
+                           
+                           @bind-Value="DestinoSeleccionado"
+                           Variant="Variant.Outlined"
+                           Margin="Margin.Dense">
+                    @foreach (var ciudad in _listaRutas?.Select(r => r.Destino).Distinct() ?? Enumerable.Empty<string>())
+                    {
+                        <MudSelectItem Value="@ciudad">@ciudad</MudSelectItem>
                     }
                 </MudSelect>
             </MudItem>
         </MudGrid>
+
 
         <!-- Segunda fila: fecha y pasajeros -->
         <MudGrid Class="mb-6">
@@ -74,9 +102,11 @@
         </MudGrid>
 
         <!-- Botones centrados -->
+        @inject NavigationManager Nav
+
         <MudStack Direction="Row" Justify="Justify.Center" AlignItems="AlignItems.Center" Spacing="2">
             <MudButton Variant="Variant.Filled"
-                       OnClick="BuscarPasajes"
+                       OnClick="@(() => Nav.NavigateTo("/comprar-asiento"))"
                        Class="comp-public-boton-buscar"
                        EndIcon="@Icons.Material.Filled.Search">
                 Buscar
@@ -112,5 +142,9 @@
         DestinoSeleccionado = null;
         FechaSalida = DateTime.Today;
         CantidadPasajeros = 1;
+    }
+    void AbrirTutorial()
+    {
+        Nav.NavigateTo("https://www.youtube.com/watch?v=VIDEO_ID", true);
     }
 }

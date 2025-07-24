@@ -78,10 +78,10 @@
 .seccion-nosotros {
     display: flex;
     flex-direction: column;
-    align-items: center;    /* Centra horizontalmente */
-    justify-content: left; /* Centra verticalmente */
-    min-height: 40px;      /* Ajusta según tu diseño */
-    padding: 10px 16px;     /* Espaciado interno */
+    align-items: center;    
+    justify-content: left; 
+    min-height: 40px;      
+    padding: 10px 16px;     
     box-sizing: border-box;
 }
 
@@ -139,20 +139,30 @@
 
 
 
+
+
 /* PARA CONTACTENOS */
 .rojo-label {
     color: #b30000;
     font-weight: 700;
 }
 
+.texto-contactenos-contenedor {
+    max-width: 1250px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 1rem;
+    box-sizing: border-box;
+}
+
 .texto-contactenos {
-    text-align: left;
-    color: #4b4141bf; 
+    text-align: center;
+    color: #1d1818cc; 
     font-family: 'Lato', 'Montserrat', Arial, sans-serif;
     font-size: 18px;
     font-weight: 600;
-    margin: 24px 0 32px 0;
-    margin-left: 80px;
+    margin: 12px 0 12px 0;
+    margin-left: 0px;
     line-height: 1.6;
 }
 

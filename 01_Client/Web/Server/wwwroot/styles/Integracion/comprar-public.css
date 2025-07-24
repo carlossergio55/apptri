@@ -1,15 +1,43 @@
-﻿.comp-public-contenedor {
+﻿.ver-tutorial-btn {
+    position: absolute;
+    top: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #e3dde4;
+    color: #8000ff;
+    height: 30px;
+    width: 110px;
+    display: grid;
+    place-items: center;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    padding: 0;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    text-align: center;
+    z-index: 1;
+}
+
+    .ver-tutorial-btn:hover {
+        background-color: #8ffae6;
+        color: #000;
+    }
+
+
+.comp-public-contenedor {
     display: flex;
     justify-content: center;
     width: 100%;
     max-width: 95%; /* para pantallas pequeñas */
     max-width: 640px; /* ancho máximo sin fijarlo */
-    margin: auto;
+   
     background-color: #fff;
     box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
     border-radius: 30px;
     box-sizing: border-box;
     padding: 10px;
+    align-items: center;
 }
 
 .comp-public-formulario {
