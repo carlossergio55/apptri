@@ -2,7 +2,7 @@
 @using Infraestructura.Models.Authentication
 @layout MainLayout
 <div align="center">
-    <img src="images/internea.png" alt="Internet" style=" height: 57px; width: 130px; margin: 10px;" />
+    <MudText Typo="Typo.subtitle1">Administración</MudText>
 </div>
 
 <MudDivider Class="mb-4" />
@@ -47,7 +47,7 @@
         <MudNavLink Href="/roles" Icon="@Icons.Material.Outlined.Security">Roles</MudNavLink>
         <MudNavLink Href="/parametros" Icon="@Icons.Material.Outlined.Tune">Parámetros</MudNavLink>
     </MudNavGroup>
-    <MudNavLink Href="/dashboard" Match="NavLinkMatch.All" Icon="@Icons.Material.Outlined.Dashboard" IconColor="Color.Primary">DASHBOARD</MudNavLink>
+   
 
     @if (_menuListaPrinci == null)
     {
