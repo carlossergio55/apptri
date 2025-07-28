@@ -20,22 +20,22 @@ namespace Infraestructura.Services
 
         public ManagerStateAuthorize(ILocalStorageService localStorageService)
         {
-            _localStorageService = localStorageService;            
+            _localStorageService = localStorageService;
         }
 
         public async Task LoginAsync(SegResponse respose)
         {
             var _user = new ObjectEntity();
-            await _localStorageService.SetItemAsStringAsync(KEYACCES, respose.data.jwToken);            
+            await _localStorageService.SetItemAsStringAsync(KEYACCES, respose.data.jwToken);
             NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(ParseClaimsFromJwt(respose.data.jwToken))))));
             _user = respose.data;
-          //  _user.jwToken = "";
+            //  _user.jwToken = "";
             await _localStorageService.SetItemAsStringAsync(USER, JsonSerializer.Serialize(_user));
             await _localStorageService.SetItemAsStringAsync(NAVMENU, JsonSerializer.Serialize(respose.Menu));
         }
 
         public async Task LogoutnAsync()
-        {            
+        {
             await _localStorageService.RemoveItemAsync(KEYACCES);
             await _localStorageService.RemoveItemAsync(USER);
             await _localStorageService.RemoveItemAsync(NAVMENU);
@@ -86,13 +86,13 @@ namespace Infraestructura.Services
         }
 
         public async override Task<AuthenticationState> GetAuthenticationStateAsync()
-        {            
+        {
             var vToken = await _localStorageService.GetItemAsStringAsync(KEYACCES);
             if (string.IsNullOrEmpty(vToken))
             {
                 return anonimo;
             }
-            var identity = new ClaimsIdentity(ParseClaimsFromJwt(vToken),"Acceso");
+            var identity = new ClaimsIdentity(ParseClaimsFromJwt(vToken), "Acceso");
             return await Task.FromResult(new AuthenticationState(new ClaimsPrincipal(identity)));
         }
 
