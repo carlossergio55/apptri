@@ -1,6 +1,8 @@
 ﻿@page "/"
 @namespace Server.Pages
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@addTagHelper *, Syncfusion.Blazor
+
 
 <!DOCTYPE html>
 <html lang="es">
@@ -15,7 +17,8 @@
 </head>
 <body>
     <app>
-        <component type="typeof(App)" render-mode="ServerPrerendered" />
+        <component type="typeof(App)" render-mode="Server" />
+
     </app>
 
     <div id="blazor-error-ui">
@@ -31,5 +34,8 @@
 
     <script src="_framework/blazor.server.js"></script>
     <script src="_content/MudBlazor/MudBlazor.min.js"></script>
+    
+    <script src="_content/Syncfusion.Blazor/scripts/sf-blazor.min.js"></script>
+
 </body>
 </html>

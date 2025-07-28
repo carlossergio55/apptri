@@ -85,7 +85,7 @@ namespace Server
                 config.SnackbarConfiguration.ShowTransitionDuration = 500;
                 config.SnackbarConfiguration.SnackbarVariant = Variant.Text;
             });
-            services.AddSyncfusionBlazor();
+           
            
         }
         

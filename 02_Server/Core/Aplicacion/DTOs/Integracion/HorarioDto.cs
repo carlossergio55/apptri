@@ -9,7 +9,7 @@ namespace Aplicacion.DTOs.Integracion
     public class HorarioDto
     {
         public int IdHorario { get; set; }
-        public String HoraSalida { get; set; }
+        public TimeSpan HoraSalida { get; set; }
         public string DiaSemana { get; set; }
         public int IdRuta { get; set; }
     }

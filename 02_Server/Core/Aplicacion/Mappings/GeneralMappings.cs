@@ -53,8 +53,7 @@ namespace Aplicacion.Mappings
             CreateMap<ClienteDto, Cliente>();
             CreateMap<RutaDto, Ruta>();
             CreateMap<UsuarioDto, Usuario>();
-            CreateMap<HorarioDto, Horario>()
-                  .ForMember(dest => dest.HoraSalida, opt => opt.MapFrom(src => TimeSpan.Parse(src.HoraSalida)));
+            CreateMap<HorarioDto, Horario>();
             CreateMap<AsientoDto, Asiento>();
             CreateMap<ViajeDto, Viaje>();
             CreateMap<BoletoDto, Boleto>();

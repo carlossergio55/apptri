@@ -1,6 +1,5 @@
-﻿using Aplicacion.Features.Integracion.Commands;
+﻿using Aplicacion.Features.Integracion.Commands.PagoC;
 using Aplicacion.Features.Integracion.Queries;
-using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
@@ -10,22 +9,29 @@ namespace WebApi.Controllers.Integracion
 {
     [ApiVersion("1.0")]
     [ApiController]
-    //[Route("api/v{version:apiVersion}/[controller]")]
     public class PagoController : BaseApiController
     {
-        [HttpGet]
+        [HttpGet("pago")]
         [Authorize]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> Get() =>
+            Ok(await Mediator.Send(new GetAllPagoQuery()));
+
+        [HttpPost("guardar")]
+        [Authorize]
+        public async Task<IActionResult> Post(CreatePagoCommand command) =>
+            Ok(await Mediator.Send(command));
+
+        [HttpPut("{id}")]
+        [Authorize]
+        public async Task<IActionResult> Put(int id, UpdatePagoCommand command)
         {
-            return Ok(await Mediator.Send(new GetAllPagoQuery()));
+            if (id != command.IdPago) return BadRequest();
+            return Ok(await Mediator.Send(command));
         }
 
-        [HttpPost("crear")]
+        [HttpDelete("{id}")]
         [Authorize]
-        public async Task<IActionResult> Crear([FromBody] CreatePagoCommand command)
-        {
-            var resultado = await Mediator.Send(command);
-            return Ok(resultado);
-        }
+        public async Task<IActionResult> Delete(int id) =>
+            Ok(await Mediator.Send(new DeletePagoCommand { IdPago = id }));
     }
 }

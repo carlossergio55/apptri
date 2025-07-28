@@ -63,14 +63,21 @@
 
 @code {
 
-    private IEnumerable _menuListaPrinci;
-    List<SegMenuResponse> _menuLista = new List<SegMenuResponse>();
+    @code {
+        private List<SegMenuResponse> _menuListaPrinci;
+        private List<SegMenuResponse> _menuLista = new();
 
-    protected override async Task OnInitializedAsync()
-    {
-        _menuLista = await _Storage.DatosMenu();
-        _menuListaPrinci = _menuLista.Where(x => x.parentid < 0);
+        protected override async Task OnInitializedAsync()
+        {
+            var resultado = await _Storage.DatosMenu();
+            _menuLista = resultado?.ToList() ?? new List<SegMenuResponse>(); // <- CORREGIDO
+            _menuListaPrinci = _menuLista.Where(x => x.parentid < 0).ToList();
+        }
+
+   
     }
+
+
 
     /// <summary>
     /// Convierte el string de la BD (p.ej. "Icons.Material.Filled.Home")

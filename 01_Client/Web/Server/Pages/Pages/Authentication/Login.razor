@@ -9,9 +9,9 @@
 @inject IStringLocalizer<Resources.Pages.Authentication.Login.Resource> localizer
 @inject IManagerAuthorize _LoginService
 
-<MudText Typo="Typo.h4" Align="Align.Center"><strong> NOMBRE DEL SISTEMA  </strong></MudText>
+<MudText Typo="Typo.h4" Align="Align.Center"><strong> TRAS INTEGRACION  </strong></MudText>
 <br />
-<MudText Typo="Typo.h5" Align="Align.Center"><strong>  ABREVIATURA </strong></MudText>
+<MudText Typo="Typo.h5" Align="Align.Center"><strong>  ADMINISTRACIÓN </strong></MudText>
 <br />
 <br />
 
@@ -68,9 +68,11 @@
                 </MudItem>
             </MudItem>
 @*             AQUI SE AGREGARA EL LOGO PARA LA EMPRESA *@
-            <MudItem sm="5" Class="d-none d-sm-flex pa-0 loguin-p">
-                <img src="/images/internet.png" alt="Imagen de Login" style="width:100%; height:100%; object-fit:cover;" />
+            <MudItem sm="5" Class="d-flex pa-0 loguin-p">
+                <img src="/images/bus_00.png" alt="Imagen de Login"
+                     style="width:90%; height:90%; object-fit:cover;" />
             </MudItem>
+
 
         </MudGrid>
     </EditForm>
@@ -116,6 +118,6 @@
 
         /* Desplaza la imagen un poco a la izquierda */
         .loguin-p img {
-            margin-left: -20px; /* Ajusta el valor a tu gusto */
+            margin-left: 0px; /* Ajusta el valor a tu gusto */
         }
 </style>

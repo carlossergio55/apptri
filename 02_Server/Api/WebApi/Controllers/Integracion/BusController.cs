@@ -1,4 +1,6 @@
 ﻿using Aplicacion.Features.Integracion.Commands;
+
+using Aplicacion.Features.Integracion.Commands.BusC;
 using Aplicacion.Features.Integracion.Queries;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

@@ -1,6 +1,5 @@
-﻿using Aplicacion.Features.Integracion.Commands;
+﻿using Aplicacion.Features.Integracion.Commands.EncomiendaC;
 using Aplicacion.Features.Integracion.Queries;
-using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
@@ -14,16 +13,25 @@ namespace WebApi.Controllers.Integracion
     {
         [HttpGet("encomienda")]
         [Authorize]
-        public async Task<IActionResult> Get()
-        {
-            return Ok(await Mediator.Send(new GetAllEncomiendaQuery()));
-        }
+        public async Task<IActionResult> Get() =>
+            Ok(await Mediator.Send(new GetAllEncomiendaQuery()));
 
         [HttpPost("guardar")]
         [Authorize]
-        public async Task<IActionResult> Post(CreateEncomiendaCommand command)
+        public async Task<IActionResult> Post(CreateEncomiendaCommand command) =>
+            Ok(await Mediator.Send(command));
+
+        [HttpPut("{id}")]
+        [Authorize]
+        public async Task<IActionResult> Put(int id, UpdateEncomiendaCommand command)
         {
+            if (id != command.IdEncomienda) return BadRequest();
             return Ok(await Mediator.Send(command));
         }
+
+        [HttpDelete("{id}")]
+        [Authorize]
+        public async Task<IActionResult> Delete(int id) =>
+            Ok(await Mediator.Send(new DeleteEncomiendaCommand { IdEncomienda = id }));
     }
 }
