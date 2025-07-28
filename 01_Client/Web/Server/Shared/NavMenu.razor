@@ -1,6 +1,6 @@
 ﻿@using System.Collections
 @using Infraestructura.Models.Authentication
-
+@layout MainLayout
 <div align="center">
     <img src="images/internea.png" alt="Internet" style=" height: 57px; width: 130px; margin: 10px;" />
 </div>
@@ -13,7 +13,7 @@
     </MudNavLink>
 
     <MudNavGroup Title="Pasajes" Icon="@Icons.Material.Outlined.ConfirmationNumber">
-        <MudNavLink Href="/ventas" Icon="@Icons.Material.Outlined.PointOfSale">Venta de Pasajes</MudNavLink>
+        <MudNavLink Href="/VentaAdmin" Icon="@Icons.Material.Outlined.PointOfSale">Venta de Pasajes</MudNavLink>
         <MudNavLink Href="/reservas" Icon="@Icons.Material.Outlined.Bookmark">Reservas</MudNavLink>
         <MudNavLink Href="/cancelaciones" Icon="@Icons.Material.Outlined.Cancel">Cancelaciones</MudNavLink>
     </MudNavGroup>
