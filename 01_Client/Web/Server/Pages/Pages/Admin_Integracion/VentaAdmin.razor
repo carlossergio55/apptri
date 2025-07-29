@@ -1,5 +1,74 @@
 ﻿@page "/VentaAdmin"
 @using MudBlazor
-
 @inherits MainBaseComponent
 @layout MainLayout
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-4">
+    <MudText Typo="Typo.h4" Class="mb-4 text-center">💳 Tarjeta de Fidelidad - Bolo Chaqueño</MudText>
+
+    <!-- Formulario de Registro Visual -->
+    <MudPaper Class="pa-4 mb-4">
+        <MudText Typo="Typo.h6" Class="mb-2">Registrar Cliente</MudText>
+
+        <MudGrid>
+            <MudItem xs="12" sm="6">
+                <MudTextField T="string" Label="Nombre completo" Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudTextField T="string" Label="Teléfono" Variant="Variant.Outlined" />
+            </MudItem>
+        </MudGrid>
+
+        <MudGrid Class="mt-2">
+            <MudItem xs="12" sm="6">
+                <MudNumericField T="int" Label="Puntos acumulados" Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudNumericField T="decimal" Label="Monto total Bs." Variant="Variant.Outlined" />
+            </MudItem>
+        </MudGrid>
+
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-3">Agregar Cliente</MudButton>
+    </MudPaper>
+
+    <!-- Tabla Visual de Clientes -->
+    <MudPaper Class="pa-4">
+        <MudText Typo="Typo.h6" Class="mb-2">Lista de Clientes</MudText>
+
+        <MudTable T="Cliente" Dense="true" Hover="true" Items="@clientes">
+            <HeaderContent>
+                <MudTh>Nombre</MudTh>
+                <MudTh>Teléfono</MudTh>
+                <MudTh>Puntos</MudTh>
+                <MudTh>Monto Bs.</MudTh>
+                <MudTh>Acciones</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>@context.Nombre</MudTd>
+                <MudTd>@context.Telefono</MudTd>
+                <MudTd>@context.Puntos</MudTd>
+                <MudTd>@context.MontoTotal</MudTd>
+                <MudTd>
+                    <MudButton Size="Size.Small" Variant="Variant.Outlined" Color="Color.Info">Editar</MudButton>
+                    <MudButton Size="Size.Small" Variant="Variant.Text" Color="Color.Error">Eliminar</MudButton>
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    public class Cliente
+    {
+        public string Nombre { get; set; }
+        public string Telefono { get; set; }
+        public int Puntos { get; set; }
+        public decimal MontoTotal { get; set; }
+    }
+
+    List<Cliente> clientes = new()
+    {
+        new Cliente { Nombre = "Juan Pérez", Telefono = "71234567", Puntos = 10, MontoTotal = 100 },
+        new Cliente { Nombre = "Ana Flores", Telefono = "78965432", Puntos = 12, MontoTotal = 130 },
+    };
+}

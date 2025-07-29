@@ -1,0 +1,84 @@
+﻿@page "/EncomiendaAdmin"
+@using Infraestructura.Models.Integracion
+@using MudBlazor
+@inherits MainBaseComponent
+@layout MainLayout
+
+<MudPaper Class="pa-4">
+    <MudText Typo="Typo.h5" Class="mb-4">Gestión de Encomiendas</MudText>
+
+    <EditForm Model="@nuevaEncomienda" OnValidSubmit="@RegistrarEncomienda">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <MudGrid GutterSize="3">
+            <MudItem xs="12" sm="6">
+                <MudTextField Label="Remitente" For="@(() => nuevaEncomienda.Remitente)" @bind-Value="nuevaEncomienda.Remitente" />
+            </MudItem>
+
+            <MudItem xs="12" sm="6">
+                <MudTextField Label="Destinatario" For="@(() => nuevaEncomienda.Destinatario)" @bind-Value="nuevaEncomienda.Destinatario" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudTextField Label="Descripción" For="@(() => nuevaEncomienda.Descripcion)" @bind-Value="nuevaEncomienda.Descripcion" Lines="3" TextArea="true" />
+            </MudItem>
+
+            <MudItem xs="6" sm="3">
+                <MudNumericField T="decimal" Label="Peso (kg)" For="@(() => nuevaEncomienda.Peso)" @bind-Value="nuevaEncomienda.Peso" />
+            </MudItem>
+
+            <MudItem xs="6" sm="3">
+                <MudNumericField T="decimal" Label="Precio (Bs)" For="@(() => nuevaEncomienda.Precio)" @bind-Value="nuevaEncomienda.Precio" />
+            </MudItem>
+
+            <MudItem xs="12" sm="6">
+                <MudTextField Label="Guía de Carga" @bind-Value="nuevaEncomienda.GuiaCarga" />
+            </MudItem>
+
+            <MudItem xs="12" sm="6">
+                <MudNumericField T="int" Label="ID de Viaje" For="@(() => nuevaEncomienda.IdViaje)" @bind-Value="nuevaEncomienda.IdViaje" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudButton Type="Submit" Variant="Variant.Filled" Color="Color.Primary">Registrar Encomienda</MudButton>
+            </MudItem>
+        </MudGrid>
+    </EditForm>
+
+    <MudDivider Class="my-4" />
+
+    <MudText Typo="Typo.h6" Class="mb-2">Lista de Encomiendas</MudText>
+
+    <MudTable Items="@encomiendas" Dense="true" Hover="true">
+        <HeaderContent>
+            <MudTh>Remitente</MudTh>
+            <MudTh>Destinatario</MudTh>
+            <MudTh>Descripción</MudTh>
+            <MudTh>Peso</MudTh>
+            <MudTh>Precio</MudTh>
+            <MudTh>Guía</MudTh>
+            <MudTh>ID Viaje</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>@context.Remitente</MudTd>
+            <MudTd>@context.Destinatario</MudTd>
+            <MudTd>@context.Descripcion</MudTd>
+            <MudTd>@context.Peso</MudTd>
+            <MudTd>@context.Precio Bs</MudTd>
+            <MudTd>@context.GuiaCarga</MudTd>
+            <MudTd>@context.IdViaje</MudTd>
+        </RowTemplate>
+    </MudTable>
+</MudPaper>
+
+@code {
+    private EncomiendaDto nuevaEncomienda = new();
+    private List<EncomiendaDto> encomiendas = new();
+
+    private void RegistrarEncomienda()
+    {
+        encomiendas.Add(nuevaEncomienda);
+        nuevaEncomienda = new(); // Limpiar formulario
+    }
+}

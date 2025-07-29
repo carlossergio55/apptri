@@ -1,0 +1,56 @@
+﻿@page "/ChoferAdmin"
+
+@layout MainLayout
+
+@using MudBlazor
+
+<MudPaper Class="pa-4">
+    <MudText Typo="Typo.h5" Class="mb-4">Registro de Choferes</MudText>
+
+    <EditForm Model="@nuevoChofer" OnValidSubmit="@RegistrarChofer">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <MudGrid GutterSize="3">
+            <MudItem xs="12" sm="6">
+                <MudTextField Label="Nombre completo" For="@(() => nuevoChofer.Nombre)" @bind-Value="nuevoChofer.Nombre" />
+            </MudItem>
+
+            <MudItem xs="6" sm="3">
+                <MudNumericField T="int" Label="Carnet de Identidad" For="@(() => nuevoChofer.Carnet)" @bind-Value="nuevoChofer.Carnet" />
+            </MudItem>
+
+            <MudItem xs="6" sm="3">
+                <MudNumericField T="int" Label="Celular" For="@(() => nuevoChofer.Celular)" @bind-Value="nuevoChofer.Celular" />
+            </MudItem>
+
+            <MudItem xs="12" sm="6">
+                <MudTextField Label="Licencia de Conducir" For="@(() => nuevoChofer.Licencia)" @bind-Value="nuevoChofer.Licencia" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudButton Type="Submit" Variant="Variant.Filled" Color="Color.Primary">Registrar Chofer</MudButton>
+            </MudItem>
+        </MudGrid>
+    </EditForm>
+
+    <MudDivider Class="my-4" />
+
+    <MudText Typo="Typo.h6" Class="mb-2">Choferes Registrados</MudText>
+
+    <MudGrid GutterSize="3">
+        @foreach (var chofer in listaChoferes)
+        {
+            <MudItem xs="12" sm="6" md="4" lg="3">
+                <MudCard Class="pa-2 elevation-4">
+                    <MudCardContent>
+                        <MudText Typo="Typo.subtitle1" Color="Color.Primary">@chofer.Nombre</MudText>
+                        <MudText>C.I.: @chofer.Carnet</MudText>
+                        <MudText>Celular: @chofer.Celular</MudText>
+                        <MudText>Licencia: @chofer.Licencia</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        }
+    </MudGrid>
+</MudPaper>

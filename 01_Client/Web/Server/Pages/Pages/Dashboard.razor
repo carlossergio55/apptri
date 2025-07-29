@@ -8,69 +8,42 @@
     <MudText Typo="Typo.h5" Class="mb-4">Resumen General</MudText>
 
     <MudGrid GutterSize="3">
-
-        <!-- Progreso -->
+        <!-- Pasajes vendidos hoy -->
         <MudItem xs="12" sm="6" md="3">
             <MudCard>
                 <MudCardContent>
-                    <MudText Typo="Typo.subtitle1">Progreso</MudText>
-                    <MudText Typo="Typo.h4" Color="Color.Info">@($"{Math.Round(closeRatioPercentage)}%")</MudText>
-                    <MudProgressLinear Color="Color.Info" Value="@closeRatioPercentage" />
+                    <MudText Typo="Typo.subtitle1">Pasajes vendidos hoy</MudText>
+                    <MudText Typo="Typo.h4" Color="Color.Primary">@pasajesVendidosHoy</MudText>
                 </MudCardContent>
             </MudCard>
         </MudItem>
 
-        <!-- Issues Abiertos -->
+        <!-- Encomiendas enviadas -->
         <MudItem xs="12" sm="6" md="3">
             <MudCard>
                 <MudCardContent>
-                    <MudText Typo="Typo.subtitle1">Issues Abiertos</MudText>
-                    <MudText Typo="Typo.h4" Color="Color.Success">@openIssues?.Count()</MudText>
+                    <MudText Typo="Typo.subtitle1">Encomiendas enviadas</MudText>
+                    <MudText Typo="Typo.h4" Color="Color.Info">@encomiendasEnviadas</MudText>
                 </MudCardContent>
             </MudCard>
         </MudItem>
 
-        <!-- Issues Cerrados -->
+        <!-- Viajes programados -->
         <MudItem xs="12" sm="6" md="3">
             <MudCard>
                 <MudCardContent>
-                    <MudText Typo="Typo.subtitle1">Issues Cerrados</MudText>
-                    <MudText Typo="Typo.h4" Color="Color.Error">@closedIssues?.Count()</MudText>
+                    <MudText Typo="Typo.subtitle1">Viajes programados hoy</MudText>
+                    <MudText Typo="Typo.h4" Color="Color.Success">@viajesHoy</MudText>
                 </MudCardContent>
             </MudCard>
         </MudItem>
 
-        <!-- Total Issues -->
+        <!-- Unidades en mantenimiento -->
         <MudItem xs="12" sm="6" md="3">
             <MudCard>
                 <MudCardContent>
-                    <MudText Typo="Typo.subtitle1">Total Issues</MudText>
-                    <MudText Typo="Typo.h4">@issues?.Count()</MudText>
-                </MudCardContent>
-            </MudCard>
-        </MudItem>
-
-    </MudGrid>
-
-    <MudGrid GutterSize="3" Class="mt-4">
-        <!-- Comparativa Semanal (puedes usar MudChart si quieres simplificar más) -->
-        <MudItem xs="12" md="8">
-            <MudCard>
-                <MudCardContent>
-                    <MudText Typo="Typo.subtitle1">Comparativa de Issues</MudText>
-                    <!-- Aquí puedes insertar un gráfico con MudChart si deseas -->
-                    <MudText Class="mt-2">Aquí puedes insertar un gráfico de líneas semanal si lo deseas.</MudText>
-                </MudCardContent>
-            </MudCard>
-        </MudItem>
-
-        <!-- Distribución por Etiquetas (gráfico opcional) -->
-        <MudItem xs="12" md="4">
-            <MudCard>
-                <MudCardContent>
-                    <MudText Typo="Typo.subtitle1">Distribución por Etiquetas</MudText>
-                    <!-- También podrías usar MudChart aquí si quieres un Doughnut Chart -->
-                    <MudText Class="mt-2">Aquí puedes insertar una gráfica de etiquetas si lo deseas.</MudText>
+                    <MudText Typo="Typo.subtitle1">Unidades en mantenimiento</MudText>
+                    <MudText Typo="Typo.h4" Color="Color.Error">@unidadesMantenimiento</MudText>
                 </MudCardContent>
             </MudCard>
         </MudItem>
@@ -78,37 +51,17 @@
 </MudPaper>
 
 @code {
-    IEnumerable<Issue> issues = new List<Issue>();
-    IEnumerable<Issue> openIssues = new List<Issue>();
-    IEnumerable<Issue> closedIssues = new List<Issue>();
-    double closeRatioPercentage = 75;
+    int pasajesVendidosHoy = 0;
+    int encomiendasEnviadas = 0;
+    int viajesHoy = 0;
+    int unidadesMantenimiento = 0;
 
-    class Issue
+    protected override async Task OnInitializedAsync()
     {
-        public string Title { get; set; }
-        public IssueState State { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public DateTime? ClosedAt { get; set; }
-        public User User { get; set; }
-        public List<Label> Labels { get; set; }
-    }
-
-    class User
-    {
-        public string Login { get; set; }
-        public string AvatarUrl { get; set; }
-    }
-
-    class Label
-    {
-        public string Name { get; set; }
-        public string Color { get; set; }
-    }
-
-    enum IssueState
-    {
-        Open,
-        Closed,
-        All
+        // Simulación de carga de datos - reemplazar por acceso a tus servicios reales
+        pasajesVendidosHoy = 125;
+        encomiendasEnviadas = 37;
+        viajesHoy = 9;
+        unidadesMantenimiento = 2;
     }
 }
