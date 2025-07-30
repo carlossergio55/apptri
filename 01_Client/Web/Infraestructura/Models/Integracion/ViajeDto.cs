@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace Infraestructura.Models.Integracion
 {
-    internal class ViajeDto
+    public class ViajeDto
     {
         public int IdViaje { get; set; }
-        public DateTime Fecha { get; set; }
+        public DateTime? Fecha { get; set; }
         public string HoraSalida { get; set; }
         public string Estado { get; set; }
         public int IdRuta { get; set; }

@@ -1,0 +1,40 @@
+﻿@page "/BusAdmin"
+@using Infraestructura.Models.Integracion
+@using MudBlazor
+@inherits MainBaseComponent
+@layout MainLayout
+
+
+<MudDivider />
+<MudText Typo="Typo.h6" Align="Align.Center" Color="Color.Success">
+    <b>LISTA DE CHOFERES</b>
+</MudText>
+<MudDivider />
+
+<!-- Tabla -->
+<MudTable Items="@_bus" Filterable="true" Sortable="true" Bordered="true"
+          Hover="true" Dense="true" RowsPerPage="25"
+          RowsPerPageOptions="new int[]{10,25,50,100}">
+    <HeaderContent>
+        <MudTh> COD.</MudTh>
+
+        <MudTh>Opciones</MudTh>
+    </HeaderContent>
+
+    <RowTemplate>
+        <MudTd>@context.IdBus</MudTd>
+    
+        <MudTd>
+            <MudTooltip Text="EDITAR" Placement="Placement.Top">
+                <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Warning" Size="Size.Small" />
+            </MudTooltip>
+            <MudTooltip Text="ELIMINAR" Placement="Placement.Top">
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" />
+            </MudTooltip>
+        </MudTd>
+    </RowTemplate>
+
+    <PagerContent>
+        <MudTablePager />
+    </PagerContent>
+</MudTable>

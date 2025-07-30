@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Infraestructura.Models.Integracion
 {
-    internal class BusDto
+    public class BusDto
     {
         public int IdBus { get; set; }
         public string Placa { get; set; }
