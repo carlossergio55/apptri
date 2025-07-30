@@ -15,7 +15,7 @@ namespace Infraestructura.Models.Integracion
         public string Nombre { get; set; }
 
         [Required(ErrorMessage = "El número de carnet es obligatorio")]
-        [Range(1000000, 99999999, ErrorMessage = "Carnet inválido")]
+        [Range(1000000, 999999999, ErrorMessage = "Carnet inválido")]
         public int Carnet { get; set; }
 
         [Required(ErrorMessage = "El número de celular es obligatorio")]

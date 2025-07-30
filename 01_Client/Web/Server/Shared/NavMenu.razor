@@ -111,7 +111,7 @@
         protected override async Task OnInitializedAsync()
         {
             var resultado = await _Storage.DatosMenu();
-            _menuLista = resultado?.ToList() ?? new List<SegMenuResponse>(); // <- CORREGIDO
+            _menuLista = resultado?.ToList() ?? new List<SegMenuResponse>(); 
             _menuListaPrinci = _menuLista.Where(x => x.parentid < 0).ToList();
         }
 
