@@ -1,3 +1,4 @@
+using Dominio.Entities.Integracion;
 using Infraestructura.Abstract;
 using Infraestructura.Models.Integracion;
 using Microsoft.AspNetCore.Components.Forms;
@@ -15,14 +16,23 @@ namespace Server.Pages.Pages.Admin_Integracion
 
         public EncomiendaDto _Encomienda = new EncomiendaDto();
         public List<EncomiendaDto> _encomiendas = new();
+        public List<ViajeDto> _viajes = new();
 
         // --- CRUD -------------------------------------------------------------/Encomienda/encomienda
 
         private async Task GetEncomiendas()
         {
-            var res = await _Rest.GetAsync<List<EncomiendaDto>>("Encomienda/encomienda"); 
+            var res = await _Rest.GetAsync<List<EncomiendaDto>>("Encomienda/encomienda");
             if (res.State == State.Success)
                 _encomiendas = res.Data;
+            else
+                _MessageShow(res.Message, State.Warning);
+        }
+        private async Task GetViajes()
+        {
+            var res = await _Rest.GetAsync<List<ViajeDto>>("Viaje/viaje");
+            if (res.State == State.Success)
+                _viajes = res.Data;
             else
                 _MessageShow(res.Message, State.Warning);
         }
@@ -82,7 +92,11 @@ namespace Server.Pages.Pages.Admin_Integracion
 
         // --- Init -------------------------------------------------------------
 
-        protected override async Task OnInitializedAsync() => await GetEncomiendas();
+        protected override async Task OnInitializedAsync() 
+        {
+            await GetEncomiendas();
+            await GetViajes();
+        }
     }
 }
 

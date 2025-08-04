@@ -99,7 +99,7 @@ namespace Server.Pages.Pages.Admin_Integracion
             _Viaje = new ViajeDto();
             await GetViajes();
             ToggleExpand();
-        }
+        }   
 
         private void FormEditar(ViajeDto dto)
         {

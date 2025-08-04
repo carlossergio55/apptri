@@ -4,37 +4,106 @@
 @inherits MainBaseComponent
 @layout MainLayout
 
+<MudCard>
 
-<MudDivider />
-<MudText Typo="Typo.h6" Align="Align.Center" Color="Color.Success">
-    <b>LISTA DE CHOFERES</b>
-</MudText>
-<MudDivider />
+    <!-- Panel para agregar/editar -->
+    <MudExpansionPanels MultiExpansion="false">
+        <MudExpansionPanel @bind-IsExpanded="expande" HideIcon="true">
+            <TitleContent>
+                <MudContainer MaxWidth="MaxWidth.ExtraSmall" Class="mb-5">
+                    <MudButton Variant="Variant.Outlined" Color="@(expande? Color.Error: Color.Success)"
+                               OnClick="@ToggleExpand">
+                        @(expande ? "CERRAR" : "AGREGAR")
+                    </MudButton>
+                </MudContainer>
+            </TitleContent>
 
-<!-- Tabla -->
-<MudTable Items="@_bus" Filterable="true" Sortable="true" Bordered="true"
-          Hover="true" Dense="true" RowsPerPage="25"
-          RowsPerPageOptions="new int[]{10,25,50,100}">
-    <HeaderContent>
-        <MudTh> COD.</MudTh>
+            <ChildContent>
+                <MudCard>
+                    <EditForm Model="@_Bus" OnValidSubmit="OnValidBus">
+                        <DataAnnotationsValidator />
+                        <MudCardContent>
+                            <MudGrid>
 
-        <MudTh>Opciones</MudTh>
-    </HeaderContent>
+                                <MudItem xs="12" sm="6" md="4">
+                                    <MudTextField @bind-Value="_Bus.Placa" Label="PLACA:"
+                                                  Variant="Variant.Outlined" Margin="Margin.Dense"
+                                                  MaxLength="20" Required="true" />
+                                </MudItem>
 
-    <RowTemplate>
-        <MudTd>@context.IdBus</MudTd>
-    
-        <MudTd>
-            <MudTooltip Text="EDITAR" Placement="Placement.Top">
-                <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Warning" Size="Size.Small" />
-            </MudTooltip>
-            <MudTooltip Text="ELIMINAR" Placement="Placement.Top">
-                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" />
-            </MudTooltip>
-        </MudTd>
-    </RowTemplate>
+                                <MudItem xs="12" sm="6" md="4">
+                                    <MudTextField @bind-Value="_Bus.Modelo" Label="MODELO:"
+                                                  Variant="Variant.Outlined" Margin="Margin.Dense"
+                                                  MaxLength="50" Required="true" />
+                                </MudItem>
 
-    <PagerContent>
-        <MudTablePager />
-    </PagerContent>
-</MudTable>
+                                <MudItem xs="12" sm="6" md="4">
+                                    <MudNumericField @bind-Value="_Bus.Capacidad" T="int"
+                                                     Label="CAPACIDAD:"
+                                                     Variant="Variant.Outlined" Margin="Margin.Dense"
+                                                     Required="true" />
+                                </MudItem>
+
+                            </MudGrid>
+                        </MudCardContent>
+
+                        <MudCardActions>
+                            <MudButton ButtonType="ButtonType.Submit"
+                                       Variant="Variant.Outlined" Color="Color.Success" Class="ml-auto">
+                                GUARDAR
+                            </MudButton>
+                            <MudButton Variant="Variant.Outlined" Color="Color.Default"
+                                       OnClick="@ResetBus">
+                                LIMPIAR FORMULARIO
+                            </MudButton>
+                        </MudCardActions>
+                    </EditForm>
+                </MudCard>
+            </ChildContent>
+        </MudExpansionPanel>
+    </MudExpansionPanels>
+
+    <MudDivider />
+    <MudText Typo="Typo.h5" Color="Color.Primary" Align="Align.Center">
+        <MudIcon Icon="@Icons.Material.Filled.DirectionsBus" Class="me-2" />
+        <b>LISTA DE BUSES</b>
+        <MudIcon Icon="@Icons.Material.Filled.DirectionsBus" Class="me-2" />
+    </MudText>
+    <MudDivider />
+  
+
+
+    <!-- Tabla de Buses -->
+    <MudTable Items="@_buses" Filterable="true" Sortable="true" Bordered="true"
+              Hover="true" Dense="true" RowsPerPage="25"
+              RowsPerPageOptions="new int[]{10,25,50,100}">
+        <HeaderContent>
+            <MudTh>CÓD.</MudTh>
+            <MudTh>PLACA</MudTh>
+            <MudTh>MODELO</MudTh>
+            <MudTh>CAPACIDAD</MudTh>
+            <MudTh>OPCIONES</MudTh>
+        </HeaderContent>
+
+        <RowTemplate>
+            <MudTd>@context.IdBus</MudTd>
+            <MudTd>@context.Placa</MudTd>
+            <MudTd>@context.Modelo</MudTd>
+            <MudTd>@context.Capacidad</MudTd>
+            <MudTd>
+                <MudTooltip Text="EDITAR" Placement="Placement.Top">
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Warning" Size="Size.Small"
+                                   OnClick="@(() => FormEditar(context))" />
+                </MudTooltip>
+                <MudTooltip Text="ELIMINAR" Placement="Placement.Top">
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small"
+                                   OnClick="@(() => Eliminar(context.IdBus))" />
+                </MudTooltip>
+            </MudTd>
+        </RowTemplate>
+
+        <PagerContent>
+            <MudTablePager />
+        </PagerContent>
+    </MudTable>
+</MudCard>

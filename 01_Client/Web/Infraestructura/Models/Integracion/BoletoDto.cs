@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Infraestructura.Models.Integracion
 {
-    internal class BoletoDto
+    public class BoletoDto
     {
         public int IdBoleto { get; set; }
         public decimal Precio { get; set; }

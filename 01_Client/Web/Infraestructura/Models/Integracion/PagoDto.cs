@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Infraestructura.Models.Integracion
 {
-    internal class PagoDto
+    public class PagoDto
     {
         public int IdPago { get; set; }
         public string TipoPago { get; set; }

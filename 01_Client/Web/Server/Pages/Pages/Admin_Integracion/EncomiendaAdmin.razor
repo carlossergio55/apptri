@@ -68,6 +68,15 @@
                                                      Label="ID VIAJE:" Variant="Variant.Outlined" Margin="Margin.Dense"
                                                      Required="true" />
                                 </MudItem>
+                                <MudItem xs="12" sm="6" md="4">
+                                    <MudText Typo="Typo.caption" Class="mb-1"><strong></strong></MudText>
+                                    <TAutoComplete TItem="ViajeDto"
+                                                   Valores="@_viajes"
+                                                   Value="IdViaje"
+                                                   Descripcion="Id"
+                                                   @bind-DataValue="_Encomienda.IdViaje"
+                                                   PlaceHolder="SELECCIONE UN VIAJE" />
+                                </MudItem>
 
                                 <!-- Guía de carga -->
                                 <MudItem xs="12" sm="6" md="3">

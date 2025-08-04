@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Infraestructura.Models.Integracion
 {
-    internal class ClienteDto
+    public class ClienteDto
     {
         public int IdCliente { get; set; }
         public string Nombre { get; set; }
