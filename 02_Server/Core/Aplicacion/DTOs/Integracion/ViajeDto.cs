@@ -15,6 +15,9 @@ namespace Aplicacion.DTOs.Integracion
         public String HoraSalida { get; set; }
 
         public string Estado { get; set; }
+        public string Direccion { get; set; }    // "IDA" | "VUELTA"
+        public int? DesdeParadaId { get; set; }
+        public int? HastaParadaId { get; set; }
 
         public int IdRuta { get; set; }
 

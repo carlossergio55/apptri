@@ -1,11 +1,7 @@
 ﻿using Dominio.Common;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Dominio.Entities.Integracion
 {
@@ -13,18 +9,51 @@ namespace Dominio.Entities.Integracion
     public class Encomienda : AuditableBaseEntity
     {
         [Key]
+        [Column("id_encomienda")]
         public int IdEncomienda { get; set; }
-        public string Remitente { get; set; }
-        public string Destinatario { get; set; }
-        public string Descripcion { get; set; }
 
+        [Column("remitente"), MaxLength(40)]
+        public string Remitente { get; set; } = string.Empty;
+
+        [Column("destinatario"), MaxLength(40)]
+        public string Destinatario { get; set; } = string.Empty;
+
+        [Column("descripcion")]
+        public string? Descripcion { get; set; }
+
+        [Column("id_viaje")]
         public int IdViaje { get; set; }
-        [ForeignKey("IdViaje")]
-        public virtual Viaje Viaje { get; set; }
+        [ForeignKey(nameof(IdViaje))]
+        public virtual Viaje Viaje { get; set; } = null!;
+
+        [Column("precio", TypeName = "numeric(10,2)")]
         public decimal Precio { get; set; }
+
+        [Column("estado"), MaxLength(20)]
         public string Estado { get; set; } = "en camino";
+
+        [Column("peso", TypeName = "numeric(10,2)")]
         public decimal Peso { get; set; }
+
+        [Column("pagado")]
         public bool Pagado { get; set; } = false;
-        public string GuiaCarga { get; set; }
+
+        // ===== FK a GUIA_CARGA =====
+        [Column("id_guia_carga")]
+        public int IdGuiaCarga { get; set; }
+
+        [ForeignKey(nameof(IdGuiaCarga))]
+        public virtual GuiaCarga Guia { get; set; } = null!;
+
+        // ===== Tramo (origen/destino) =====
+        [Column("origen_parada_id")]
+        public int? OrigenParadaId { get; set; }
+        [ForeignKey(nameof(OrigenParadaId))]
+        public virtual Parada? OrigenParada { get; set; }
+
+        [Column("destino_parada_id")]
+        public int? DestinoParadaId { get; set; }
+        [ForeignKey(nameof(DestinoParadaId))]
+        public virtual Parada? DestinoParada { get; set; }
     }
 }

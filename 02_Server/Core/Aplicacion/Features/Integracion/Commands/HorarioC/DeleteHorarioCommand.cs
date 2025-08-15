@@ -2,7 +2,6 @@
 using Aplicacion.Wrappers;
 using Dominio.Entities.Integracion;
 using MediatR;
-using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,8 +11,6 @@ namespace Aplicacion.Features.Integracion.Commands.HorarioC
     public class DeleteHorarioCommand : IRequest<Response<int>>
     {
         public int IdHorario { get; set; }
-
-       
     }
 
     public class DeleteHorarioCommandHandler : IRequestHandler<DeleteHorarioCommand, Response<int>>
@@ -29,7 +26,7 @@ namespace Aplicacion.Features.Integracion.Commands.HorarioC
         {
             var horario = await _repositoryAsync.GetByIdAsync(request.IdHorario);
             if (horario == null)
-                throw new KeyNotFoundException("Registro no encontrado");
+                throw new KeyNotFoundException("Registro no encontrado.");
 
             await _repositoryAsync.DeleteAsync(horario);
             return new Response<int>(horario.IdHorario);

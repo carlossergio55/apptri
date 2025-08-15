@@ -1,11 +1,7 @@
 ﻿using Dominio.Common;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Dominio.Entities.Integracion
 {
@@ -13,32 +9,50 @@ namespace Dominio.Entities.Integracion
     public class Boleto : AuditableBaseEntity
     {
         [Key]
+        [Column("id_boleto")]
         public int IdBoleto { get; set; }
 
+        [Column("precio", TypeName = "numeric(10,2)")]
         public decimal Precio { get; set; }
 
-        public string Estado { get; set; }
+        [Column("estado")]
+        [MaxLength(20)]
+        public string Estado { get; set; } = "Pagado";
 
-        public DateTime FechaCompra { get; set; }
+        [Column("fecha_compra")]
+        public DateTime FechaCompra { get; set; } = DateTime.Now;
 
-        // Relaciones foráneas
+        // ===== Relaciones foráneas =====
+        [Column("id_viaje")]
         public int IdViaje { get; set; }
-        [ForeignKey("IdViaje")]
-        public virtual Viaje Viaje { get; set; }
+        [ForeignKey(nameof(IdViaje))]
+        public virtual Viaje Viaje { get; set; } = null!;
 
+        [Column("id_cliente")]
         public int IdCliente { get; set; }
-        [ForeignKey("IdCliente")]
-        public virtual Cliente Cliente { get; set; }
+        [ForeignKey(nameof(IdCliente))]
+        public virtual Cliente Cliente { get; set; } = null!;
 
+        [Column("id_asiento")]
         public int IdAsiento { get; set; }
-        [ForeignKey("IdAsiento")]
-        public virtual Asiento Asiento { get; set; }
+        [ForeignKey(nameof(IdAsiento))]
+        public virtual Asiento Asiento { get; set; } = null!;
 
-        //public int IdVendedor { get; set; }
-        //[ForeignKey("IdVendedor")]
-        //public virtual Usuario Vendedor { get; set; }
+        // (Opcional) pago asociado
+        [Column("id_pago")]
         public int? IdPago { get; set; }
-        [ForeignKey("IdPago")]
+        [ForeignKey(nameof(IdPago))]
         public virtual Pago? Pago { get; set; }
+
+        // ===== NUEVO: Tramo (origen/destino) =====
+        [Column("origen_parada_id")]
+        public int? OrigenParadaId { get; set; }
+        [ForeignKey(nameof(OrigenParadaId))]
+        public virtual Parada? OrigenParada { get; set; }
+
+        [Column("destino_parada_id")]
+        public int? DestinoParadaId { get; set; }
+        [ForeignKey(nameof(DestinoParadaId))]
+        public virtual Parada? DestinoParada { get; set; }
     }
 }

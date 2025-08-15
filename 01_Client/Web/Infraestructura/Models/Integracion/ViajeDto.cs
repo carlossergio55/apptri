@@ -1,19 +1,32 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations;
 
 namespace Infraestructura.Models.Integracion
 {
     public class ViajeDto
     {
         public int IdViaje { get; set; }
-        public DateTime? Fecha { get; set; }
-        public string HoraSalida { get; set; }
-        public string Estado { get; set; }
+
+        [Required]
+        public DateTime Fecha { get; set; }
+
+       
+        public string HoraSalida { get; set; } = "00:00";
+
+        public string Estado { get; set; } = "PROGRAMADO";
+
+        // Nuevos
+        public string Direccion { get; set; } = "IDA"; // "IDA" | "VUELTA"
+        public int? DesdeParadaId { get; set; }
+        public int? HastaParadaId { get; set; }
+
+        [Required]
         public int IdRuta { get; set; }
+
+        [Required]
         public int IdChofer { get; set; }
+
+        [Required]
         public int IdBus { get; set; }
     }
 }

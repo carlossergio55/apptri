@@ -1,18 +1,17 @@
 ﻿@page "/EncomiendaAdmin"
+@using Microsoft.AspNetCore.Components.Forms
 @using Infraestructura.Models.Integracion
 @using MudBlazor
 @inherits MainBaseComponent
 @layout MainLayout
 
 <MudCard>
-
-    <!-- Panel con formulario -->
     <MudExpansionPanels MultiExpansion="false">
         <MudExpansionPanel @bind-IsExpanded="expande" HideIcon="true">
-
             <TitleContent>
                 <MudContainer MaxWidth="MaxWidth.ExtraSmall" Class="mb-5">
-                    <MudButton Variant="Variant.Outlined" Color="@(expande? Color.Error: Color.Success)"
+                    <MudButton Variant="Variant.Outlined"
+                               Color="@(expande? Color.Error: Color.Success)"
                                OnClick="@ToggleExpand">
                         @(expande ? "CERRAR" : "AGREGAR")
                     </MudButton>
@@ -21,81 +20,110 @@
 
             <ChildContent>
                 <MudCard>
-                    <EditForm Model="@_Encomienda" OnValidSubmit="OnValidEncomienda">
+                    <EditForm Model="@_Encomienda" OnValidSubmit="@OnValidEncomienda">
                         <DataAnnotationsValidator />
 
                         <MudCardContent>
                             <MudGrid>
 
-                                <!-- Remitente -->
+                                @* Remitente *@
                                 <MudItem xs="12" sm="6" md="4">
                                     <MudTextField @bind-Value="_Encomienda.Remitente"
                                                   Label="REMITENTE:" Variant="Variant.Outlined" Margin="Margin.Dense"
                                                   Required="true" MaxLength="100" />
                                 </MudItem>
 
-                                <!-- Destinatario -->
+                                @* Destinatario *@
                                 <MudItem xs="12" sm="6" md="4">
                                     <MudTextField @bind-Value="_Encomienda.Destinatario"
                                                   Label="DESTINATARIO:" Variant="Variant.Outlined" Margin="Margin.Dense"
                                                   Required="true" MaxLength="100" />
                                 </MudItem>
 
-                                <!-- Descripción -->
+                                @* Descripción *@
                                 <MudItem xs="12" sm="12" md="4">
                                     <MudTextField @bind-Value="_Encomienda.Descripcion"
                                                   Label="DESCRIPCIÓN:" Variant="Variant.Outlined" Margin="Margin.Dense"
                                                   MaxLength="200" />
                                 </MudItem>
 
-                                <!-- Peso -->
+                                @* Peso *@
                                 <MudItem xs="12" sm="6" md="3">
                                     <MudNumericField @bind-Value="_Encomienda.Peso" T="decimal"
                                                      Label="PESO (Kg):" Variant="Variant.Outlined" Margin="Margin.Dense"
                                                      Required="true" />
                                 </MudItem>
 
-                                <!-- Precio -->
+                                @* Precio *@
                                 <MudItem xs="12" sm="6" md="3">
                                     <MudNumericField @bind-Value="_Encomienda.Precio" T="decimal"
                                                      Label="PRECIO (Bs):" Variant="Variant.Outlined" Margin="Margin.Dense"
                                                      Required="true" />
                                 </MudItem>
 
-                                <!-- IdViaje -->
+                                @* VIAJE (usa variables int? en el .razor.cs) *@
+                                <MudItem xs="12" sm="6" md="4">
+                                    <MudText Typo="Typo.caption" Class="mb-1"><strong>VIAJE</strong></MudText>
+                                    <MudSelect T="int?" @bind-Value="_viajeSel" Label="SELECCIONE UN VIAJE"
+                                               Variant="Variant.Outlined" Dense="true">
+                                        @foreach (var v in _viajes)
+                                        {
+                                            <MudSelectItem Value="@((int?)v.IdViaje)">
+                                                @($"Viaje #{v.IdViaje} • {v.Fecha:dd/MM} {v.HoraSalida}")
+                                            </MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </MudItem>
+
+
+                                @* ORIGEN / DESTINO *@
+                                <MudItem xs="12" sm="6" md="4">
+                                    <MudText Typo="Typo.caption" Class="mb-1"><strong>ORIGEN</strong></MudText>
+                                    <MudSelect T="int?" @bind-Value="_origenSel" Label="SELECCIONE ORIGEN"
+                                               Variant="Variant.Outlined" Dense="true">
+                                        @foreach (var p in _paradas)
+                                        {
+                                            <MudSelectItem Value="@((int?)p.IdParada)">@p.Nombre</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </MudItem>
+
+
+                                <MudItem xs="12" sm="6" md="4">
+                                    <MudText Typo="Typo.caption" Class="mb-1"><strong>DESTINO</strong></MudText>
+                                    <MudSelect T="int?" @bind-Value="_destinoSel" Label="SELECCIONE DESTINO"
+                                               Variant="Variant.Outlined" Dense="true">
+                                        @foreach (var p in _paradas)
+                                        {
+                                            <MudSelectItem Value="@((int?)p.IdParada)">@p.Nombre</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </MudItem>
+
+
+                                @* Guía *@
                                 <MudItem xs="12" sm="6" md="3">
-                                    <MudNumericField @bind-Value="_Encomienda.IdViaje" T="int"
-                                                     Label="ID VIAJE:" Variant="Variant.Outlined" Margin="Margin.Dense"
-                                                     Required="true" />
+                                    <MudTextField @bind-Value="_Encomienda.IdGuiaCarga"
+                                                  Label="ID GUÍA (interno)" Variant="Variant.Outlined"
+                                                  Margin="Margin.Dense" Disabled="true" />
                                 </MudItem>
                                 <MudItem xs="12" sm="6" md="4">
-                                    <MudText Typo="Typo.caption" Class="mb-1"><strong></strong></MudText>
-                                    <TAutoComplete TItem="ViajeDto"
-                                                   Valores="@_viajes"
-                                                   Value="IdViaje"
-                                                   Descripcion="Id"
-                                                   @bind-DataValue="_Encomienda.IdViaje"
-                                                   PlaceHolder="SELECCIONE UN VIAJE" />
+                                    <MudTextField @bind-Value="_Encomienda.CodigoGuia"
+                                                  Label="CÓDIGO GUÍA (SAM-0123)" Variant="Variant.Outlined"
+                                                  Margin="Margin.Dense" />
                                 </MudItem>
 
-                                <!-- Guía de carga -->
-                                <MudItem xs="12" sm="6" md="3">
-                                    <MudTextField @bind-Value="_Encomienda.GuiaCarga"
-                                                  Label="GUÍA CARGA:" Variant="Variant.Outlined" Margin="Margin.Dense"
-                                                  MaxLength="50" />
-                                </MudItem>
-
-                                <!-- Estado -->
+                                @* Estado *@
                                 <MudItem xs="12" sm="6" md="3">
                                     <MudTextField @bind-Value="_Encomienda.Estado"
                                                   Label="ESTADO:" Variant="Variant.Outlined" Margin="Margin.Dense"
                                                   MaxLength="50" />
                                 </MudItem>
 
-                                <!-- Pagado -->
+                                @* Pagado *@
                                 <MudItem xs="12" sm="6" md="3">
-                                    <MudSwitch @bind-Checked="_Encomienda.Pagado" Color="Color.Success"
-                                               Label="@("PAGADO")" />
+                                    <MudSwitch @bind-Checked="_Encomienda.Pagado"
+                                               Color="Color.Success" Label="@("PAGADO")" />
                                 </MudItem>
 
                             </MudGrid>
@@ -114,30 +142,26 @@
                     </EditForm>
                 </MudCard>
             </ChildContent>
+
         </MudExpansionPanel>
     </MudExpansionPanels>
 
     <MudDivider />
-    <MudText Typo="Typo.h6" Align="Align.Center" Color="Color.Success">
-        <b>LISTA DE ENCOMIENDAS</b>
-    </MudText>
+    <MudText Typo="Typo.h6" Align="Align.Center" Color="Color.Success"><b>LISTA DE ENCOMIENDAS</b></MudText>
     <MudDivider />
 
-    <!-- Tabla -->
     <MudTable Items="@_encomiendas" Filterable="true" Sortable="true" Bordered="true"
               Hover="true" Dense="true" RowsPerPage="25"
               RowsPerPageOptions="new int[]{10,25,50,100}">
-
         <HeaderContent>
             <MudTh style="width:5%;max-width:60px;">
-                <MudTableSortLabel SortBy="new Func<EncomiendaDto, object>(x => x.IdEncomienda)">
-                    COD.
-                </MudTableSortLabel>
+                <MudTableSortLabel SortBy="new Func<EncomiendaDto, object>(x => x.IdEncomienda)">COD.</MudTableSortLabel>
             </MudTh>
             <MudTh><MudTableSortLabel SortBy="new Func<EncomiendaDto, object>(x => x.Remitente)">REMITENTE</MudTableSortLabel></MudTh>
             <MudTh><MudTableSortLabel SortBy="new Func<EncomiendaDto, object>(x => x.Destinatario)">DESTINATARIO</MudTableSortLabel></MudTh>
             <MudTh><MudTableSortLabel SortBy="new Func<EncomiendaDto, object>(x => x.Peso)">PESO</MudTableSortLabel></MudTh>
             <MudTh><MudTableSortLabel SortBy="new Func<EncomiendaDto, object>(x => x.Precio)">PRECIO</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<EncomiendaDto, object>(x => x.CodigoGuia)">GUÍA</MudTableSortLabel></MudTh>
             <MudTh><MudTableSortLabel SortBy="new Func<EncomiendaDto, object>(x => x.Estado)">ESTADO</MudTableSortLabel></MudTh>
             <MudTh>Opciones</MudTh>
         </HeaderContent>
@@ -148,6 +172,7 @@
             <MudTd>@context.Destinatario</MudTd>
             <MudTd>@context.Peso</MudTd>
             <MudTd>@context.Precio</MudTd>
+            <MudTd>@context.CodigoGuia</MudTd>
             <MudTd>@context.Estado</MudTd>
             <MudTd>
                 <MudTooltip Text="EDITAR" Placement="Placement.Top">

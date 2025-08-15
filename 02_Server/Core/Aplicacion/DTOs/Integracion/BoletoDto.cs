@@ -17,5 +17,7 @@ namespace Aplicacion.DTOs.Integracion
         public int IdCliente { get; set; }
         public int IdAsiento { get; set; }
         public int? IdPago { get; set; }
+        public int? OrigenParadaId { get; set; }
+        public int? DestinoParadaId { get; set; }
     }
 }

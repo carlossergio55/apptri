@@ -9,14 +9,21 @@ namespace Aplicacion.DTOs.Integracion
     public class EncomiendaDto
     {
         public int IdEncomienda { get; set; }
-        public string Remitente { get; set; }
-        public string Destinatario { get; set; }
-        public string Descripcion { get; set; }
+        public string Remitente { get; set; } = string.Empty;
+        public string Destinatario { get; set; } = string.Empty;
+        public string? Descripcion { get; set; }
         public int IdViaje { get; set; }
         public decimal Precio { get; set; }
-        public string Estado { get; set; }
+        public string Estado { get; set; } = "en camino";
         public decimal Peso { get; set; }
         public bool Pagado { get; set; }
-        public string GuiaCarga { get; set; }
+
+        // === Nueva relación ===
+        public int IdGuiaCarga { get; set; }
+        public string CodigoGuia { get; set; } = string.Empty;
+
+        // Tramo
+        public int? OrigenParadaId { get; set; }
+        public int? DestinoParadaId { get; set; }
     }
 }

@@ -4,40 +4,47 @@ using Aplicacion.Wrappers;
 using AutoMapper;
 using Dominio.Entities.Integracion;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Aplicacion.Features.Integracion.Commands.EncomiendaC
 {
-
     public class CreateEncomiendaCommand : IRequest<Response<int>>
     {
-        public EncomiendaDto Encomienda { get; set; }
+        public EncomiendaDto Encomienda { get; set; } = null!;
     }
 
     public class CreateEncomiendaCommandHandler : IRequestHandler<CreateEncomiendaCommand, Response<int>>
     {
-        private readonly IRepositoryAsync<Encomienda> _repositoryAsync;
+        private readonly IRepositoryAsync<Encomienda> _repoEncomienda;
+        private readonly IRepositoryAsync<GuiaCarga> _repoGuia;
         private readonly IMapper _mapper;
-        public CreateEncomiendaCommandHandler(IRepositoryAsync<Encomienda> repositoryAsync, IMapper mapper)
+
+        public CreateEncomiendaCommandHandler(
+            IRepositoryAsync<Encomienda> repoEncomienda,
+            IRepositoryAsync<GuiaCarga> repoGuia,
+            IMapper mapper)
         {
-            _repositoryAsync = repositoryAsync;
+            _repoEncomienda = repoEncomienda;
+            _repoGuia = repoGuia;
             _mapper = mapper;
         }
 
-        public async Task<Response<int>> Handle(CreateEncomiendaCommand request, CancellationToken cancellationToken)
+        public async Task<Response<int>> Handle(CreateEncomiendaCommand request, CancellationToken ct)
         {
-            var nuevoRegistro = _mapper.Map<Encomienda>(request.Encomienda);
-            var data = await _repositoryAsync.AddAsync(nuevoRegistro);
-            return new Response<int>(data.IdEncomienda);
+            var dto = request.Encomienda;
+
+            // Si no hay FK de guía pero sí viene el código, creamos la guía primero
+            if (dto.IdGuiaCarga <= 0 && !string.IsNullOrWhiteSpace(dto.CodigoGuia))
+            {
+                var guia = new GuiaCarga { Codigo = dto.CodigoGuia };
+                var savedGuia = await _repoGuia.AddAsync(guia);
+                dto.IdGuiaCarga = savedGuia.IdGuiaCarga;
+            }
+
+            var entity = _mapper.Map<Encomienda>(dto);
+            var saved = await _repoEncomienda.AddAsync(entity);
+            return new Response<int>(saved.IdEncomienda);
         }
-
-      
     }
-
-   
 }

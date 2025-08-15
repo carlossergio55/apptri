@@ -17,7 +17,7 @@ namespace WebApi.Controllers.Integracion
             Ok(await Mediator.Send(new GetAllBoletoQuery()));
 
         [HttpPost("guardar")]
-        [Authorize]
+        
         public async Task<IActionResult> Post(CreateBoletoCommand command) =>
             Ok(await Mediator.Send(command));
 

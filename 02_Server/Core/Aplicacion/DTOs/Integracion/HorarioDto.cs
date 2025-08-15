@@ -10,7 +10,10 @@ namespace Aplicacion.DTOs.Integracion
     {
         public int IdHorario { get; set; }
         public TimeSpan HoraSalida { get; set; }
-        public string DiaSemana { get; set; }
+        public string DiaSemana { get; set; }    // si luego migras a SMALLINT, aquí cambiamos a short
+        public string Direccion { get; set; }    // "IDA" | "VUELTA"
+        public int? DesdeParadaId { get; set; }
+        public int? HastaParadaId { get; set; }
         public int IdRuta { get; set; }
     }
 }

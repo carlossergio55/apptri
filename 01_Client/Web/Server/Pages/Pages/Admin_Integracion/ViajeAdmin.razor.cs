@@ -1,60 +1,48 @@
 using Infraestructura.Abstract;
 using Infraestructura.Models.Integracion;
 using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
+
 namespace Server.Pages.Pages.Admin_Integracion
 {
-    public partial  class ViajeAdmin
+    public partial class ViajeAdmin
     {
         private bool expande = false;
 
-        public ViajeDto _Viaje = new ViajeDto();
+        public ViajeDto _Viaje = new();
 
         public List<ViajeDto> _viajes = new();
         public List<ChoferDto> _chofer = new();
         public List<BusDto> _bus = new();
 
-
-        public string HoraSalida { get; set; }
-
-
-        public TimeSpan HoraSalidaTime
-        {
-            get => TimeSpan.TryParse(HoraSalida, out var ts) ? ts : default;
-            set => HoraSalida = value.ToString(@"hh\:mm");
-        }
-
+        // === NUEVOS: backing fields para binds ===
+        private DateTime? _fechaSel;      // MudDatePicker usa DateTime?
+        private int? _choferSel;          // selects de chofer/bus usan int?
+        private int? _busSel;
 
         // ----------- CRUD -----------------------------------------------------
 
         private async Task GetViajes()
         {
             var res = await _Rest.GetAsync<List<ViajeDto>>("Viaje/viaje");
-            if (res.State == State.Success)
-                _viajes = res.Data;
-            else
-                _MessageShow(res.Message, State.Warning);
+            if (res.State == State.Success) _viajes = res.Data;
+            else _MessageShow(res.Message, State.Warning);
         }
+
         private async Task GetChofer()
         {
             var res = await _Rest.GetAsync<List<ChoferDto>>("Chofer/chofer");
-            if (res.State == State.Success)
-                _chofer = res.Data;
-            else
-                _MessageShow(res.Message, State.Warning);
+            if (res.State == State.Success) _chofer = res.Data;
+            else _MessageShow(res.Message, State.Warning);
         }
+
         private async Task GetBus()
         {
             var res = await _Rest.GetAsync<List<BusDto>>("Bus/bus");
-            if (res.State == State.Success)
-                _bus = res.Data;
-            else
-                _MessageShow(res.Message, State.Warning);
+            if (res.State == State.Success) _bus = res.Data;
+            else _MessageShow(res.Message, State.Warning);
         }
 
         private async Task Save(ViajeDto dto)
@@ -93,21 +81,39 @@ namespace Server.Pages.Pages.Admin_Integracion
 
         private async Task OnValidViaje(EditContext _)
         {
+            // Sincronizar backing fields -> DTO
+            _Viaje.Fecha = _fechaSel ?? DateTime.Today;
+            if (_choferSel.HasValue) _Viaje.IdChofer = _choferSel.Value;
+            if (_busSel.HasValue) _Viaje.IdBus = _busSel.Value;
+
             if (_Viaje.IdViaje > 0) await Update(_Viaje);
             else await Save(_Viaje);
 
-            _Viaje = new ViajeDto();
+            ResetViaje();
             await GetViajes();
             ToggleExpand();
-        }   
+        }
 
         private void FormEditar(ViajeDto dto)
         {
             _Viaje = dto;
+
+            // Precargar selects y fecha
+            _fechaSel = dto.Fecha;
+            _choferSel = dto.IdChofer;
+            _busSel = dto.IdBus;
+
             ToggleExpand();
         }
 
-        private void ResetViaje() => _Viaje = new ViajeDto();
+        private void ResetViaje()
+        {
+            _Viaje = new ViajeDto();
+            _fechaSel = null;
+            _choferSel = null;
+            _busSel = null;
+        }
+
         private void ToggleExpand() => expande = !expande;
 
         // ----------- Init -----------------------------------------------------
@@ -118,6 +124,5 @@ namespace Server.Pages.Pages.Admin_Integracion
             await GetChofer();
             await GetBus();
         }
-       
     }
 }

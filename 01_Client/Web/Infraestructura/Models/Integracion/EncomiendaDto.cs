@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// Infraestructura/Models/Integracion/EncomiendaDto.cs
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Infraestructura.Models.Integracion
 {
@@ -12,13 +8,12 @@ namespace Infraestructura.Models.Integracion
         public int IdEncomienda { get; set; }
 
         [Required(ErrorMessage = "El remitente es obligatorio")]
-        public string Remitente { get; set; }
+        public string Remitente { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "El destinatario es obligatorio")]
-        public string Destinatario { get; set; }
+        public string Destinatario { get; set; } = string.Empty;
 
-        [Required]
-        public string Descripcion { get; set; }
+        public string? Descripcion { get; set; }
 
         [Range(0.01, 1000, ErrorMessage = "Peso inválido")]
         public decimal Peso { get; set; }
@@ -29,8 +24,15 @@ namespace Infraestructura.Models.Integracion
         [Required]
         public int IdViaje { get; set; }
 
-        public string GuiaCarga { get; set; }
-        public string Estado { get; set; } = "Pendiente";
+        // ----- Guía de carga (nuevo esquema) -----
+        public int IdGuiaCarga { get; set; }                 // FK (lo llena el back si mandas CodigoGuia)
+        public string CodigoGuia { get; set; } = string.Empty; // Visible en UI
+
+        public string Estado { get; set; } = "en camino";
         public bool Pagado { get; set; }
+
+        // ----- Tramo (nuevos) -----
+        public int? OrigenParadaId { get; set; }
+        public int? DestinoParadaId { get; set; }
     }
 }

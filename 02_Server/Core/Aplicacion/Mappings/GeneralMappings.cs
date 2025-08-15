@@ -30,14 +30,18 @@ namespace Aplicacion.Mappings
             CreateMap<Cliente, ClienteDto>();
             CreateMap<Ruta, RutaDto>();
             CreateMap<Usuario, UsuarioDto>();
-            CreateMap<Horario, HorarioDto>()
-                .ForMember(dest => dest.HoraSalida, opt => opt.MapFrom(src => src.HoraSalida.ToString(@"hh\:mm")));
+            CreateMap<Horario, HorarioDto>();
             CreateMap<Asiento, AsientoDto>();
             CreateMap<Viaje, ViajeDto>();
             CreateMap<Boleto, BoletoDto>();
-            CreateMap<Encomienda, EncomiendaDto>();
+            CreateMap<Encomienda, EncomiendaDto>()
+            .ForMember(dest => dest.CodigoGuia, opt => opt.MapFrom(src => src.Guia.Codigo));
             CreateMap<Pago, PagoDto>();
+            CreateMap<Parada, ParadaDto>();
+            CreateMap<RutaParada, RutaParadaDto>();
+            CreateMap<TarifaTramo, TarifaTramoDto>();
 
+            CreateMap<GuiaCarga, GuiaCargaDto>().ReverseMap();
 
 
             #endregion
@@ -59,7 +63,10 @@ namespace Aplicacion.Mappings
             CreateMap<BoletoDto, Boleto>();
             CreateMap<EncomiendaDto, Encomienda>();
             CreateMap<PagoDto, Pago>();
-
+            CreateMap<ParadaDto, Parada>();
+            CreateMap<RutaParadaDto, RutaParada>();
+            CreateMap<TarifaTramoDto, TarifaTramo>();
+            CreateMap<EncomiendaDto, Encomienda>();
 
 
             #endregion
