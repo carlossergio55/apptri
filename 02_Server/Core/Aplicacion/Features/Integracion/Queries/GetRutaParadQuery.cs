@@ -1,19 +1,20 @@
 ﻿using Aplicacion.DTOs.Integracion;
 using Aplicacion.Interfaces;
 using Aplicacion.Wrappers;
+using Ardalis.Specification;
 using AutoMapper;
 using Dominio.Entities.Integracion;
 using MediatR;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Aplicacion.Features.Integracion.Queries
 {
-    // GET: todas las asociaciones Ruta–Parada (ordenadas por Ruta y Orden)
-    public class GetAllRutaParadaQuery : IRequest<Response<List<RutaParadaDto>>> { }
+    // 1️⃣ Record de la Query con parámetro opcional
+    public record GetAllRutaParadaQuery(int? IdRuta = null) : IRequest<Response<List<RutaParadaDto>>>;
 
+    // 2️⃣ Handler
     public class GetAllRutaParadaQueryHandler
         : IRequestHandler<GetAllRutaParadaQuery, Response<List<RutaParadaDto>>>
     {
@@ -23,15 +24,31 @@ namespace Aplicacion.Features.Integracion.Queries
         public GetAllRutaParadaQueryHandler(IRepositoryAsync<RutaParada> repo, IMapper mapper)
             => (_repo, _mapper) = (repo, mapper);
 
-        public async Task<Response<List<RutaParadaDto>>> Handle(GetAllRutaParadaQuery request, CancellationToken ct)
+        public async Task<Response<List<RutaParadaDto>>> Handle(GetAllRutaParadaQuery request, CancellationToken cancellationToken)
         {
-            var items = (await _repo.ListAsync())
-                        .OrderBy(x => x.IdRuta)
-                        .ThenBy(x => x.Orden)
-                        .ToList();
+            var list = await _repo.ListAsync(
+                new RutaParadaConNavegacionSpec(request.IdRuta),
+                cancellationToken
+            );
 
-            var dtos = _mapper.Map<List<RutaParadaDto>>(items);
-            return new Response<List<RutaParadaDto>>(dtos);
+            var dtoList = _mapper.Map<List<RutaParadaDto>>(list);
+            return new Response<List<RutaParadaDto>>(dtoList);
+        }
+    }
+
+    // 3️⃣ Especificación
+    public class RutaParadaConNavegacionSpec : Specification<RutaParada>
+    {
+        public RutaParadaConNavegacionSpec(int? idRuta)
+        {
+            Query.Include(x => x.Ruta)
+                 .Include(x => x.Parada);
+
+            if (idRuta.HasValue)
+                Query.Where(x => x.IdRuta == idRuta.Value);
+
+            Query.OrderBy(x => x.IdRuta)
+                 .ThenBy(x => x.Orden);
         }
     }
 }

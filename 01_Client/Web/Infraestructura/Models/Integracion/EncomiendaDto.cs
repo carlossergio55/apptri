@@ -12,7 +12,7 @@ namespace Infraestructura.Models.Integracion
 
         [Required(ErrorMessage = "El destinatario es obligatorio")]
         public string Destinatario { get; set; } = string.Empty;
-
+        public string? Guiacarga { get; set; }
         public string? Descripcion { get; set; }
 
         [Range(0.01, 1000, ErrorMessage = "Peso inválido")]

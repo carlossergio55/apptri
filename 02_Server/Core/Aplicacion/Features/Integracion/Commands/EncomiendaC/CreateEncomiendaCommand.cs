@@ -35,11 +35,11 @@ namespace Aplicacion.Features.Integracion.Commands.EncomiendaC
             var dto = request.Encomienda;
 
             // Si no hay FK de guía pero sí viene el código, creamos la guía primero
-            if (dto.IdGuiaCarga <= 0 && !string.IsNullOrWhiteSpace(dto.CodigoGuia))
+            if (dto.IdEncomienda <= 0 && !string.IsNullOrWhiteSpace(dto.CodigoGuia))
             {
                 var guia = new GuiaCarga { Codigo = dto.CodigoGuia };
                 var savedGuia = await _repoGuia.AddAsync(guia);
-                dto.IdGuiaCarga = savedGuia.IdGuiaCarga;
+                dto.IdEncomienda = savedGuia.IdGuiaCarga;
             }
 
             var entity = _mapper.Map<Encomienda>(dto);

@@ -37,22 +37,18 @@ namespace Server.Pages.Pages.Admin_Integracion
         // ---------- CRUD ----------
         private async Task GetRutaParadas()
         {
-            if (_rutaSel is null) { _rutaParadas = new(); return; }
-
             try
             {
-                var res = await _Rest.GetAsync<List<RutaParadaDto>>(
-                    $"RutaParada/ruta-parada?idRuta={_rutaSel.Value}"
-                );
-
-                if (res.State == State.Success)
-                    _rutaParadas = res.Data?.OrderBy(x => x.Orden).ToList() ?? new();
-                else
-                    _MessageShow(res.Message, State.Warning);
+                var _result = await _Rest.GetAsync<List<RutaParadaDto>>("RutaParada/GetAllRutaParadaFull");
+                _Loading.Hide();
+                //_MessageShow(_result.Message, _result.State);
+                if (_result.State != State.Success)
+                    return;
+                _rutaParadas = _result.Data;
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                _MessageShow($"Error al obtener rutas-paradas: {ex.Message}", State.Error);
+                _MessageShow(e.Message, State.Error);
             }
         }
 
@@ -93,7 +89,7 @@ namespace Server.Pages.Pages.Admin_Integracion
             try
             {
                 _Loading.Show();
-                var r = await _Rest.PostAsync<int?>("RutaParada/guardar", new { Item = dto });
+                var r = await _Rest.PostAsync<int?>("RutaParada/guardar", new { RutaParada = dto });
                 _MessageShow(r.Message, r.State);
 
                 if (r.State != State.Success && r.Errors != null)

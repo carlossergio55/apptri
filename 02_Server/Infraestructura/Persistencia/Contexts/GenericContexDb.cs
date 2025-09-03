@@ -79,7 +79,7 @@ namespace Persistencia.Contexts
                 // Relación con GuiaCarga
                 e.HasOne(x => x.Guia)
                  .WithMany(g => g.Encomiendas)
-                 .HasForeignKey(x => x.IdGuiaCarga)
+                 .HasForeignKey(x => x.IdEncomienda)
                  .OnDelete(DeleteBehavior.Restrict);
             });
 

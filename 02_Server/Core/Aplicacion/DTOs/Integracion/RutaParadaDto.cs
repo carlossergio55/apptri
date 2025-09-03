@@ -6,5 +6,7 @@
         public int IdRuta { get; set; }
         public int IdParada { get; set; }
         public int Orden { get; set; }
+        public RutaDto Ruta { get; set; }
+        public ParadaDto Parada { get; set; }
     }
 }

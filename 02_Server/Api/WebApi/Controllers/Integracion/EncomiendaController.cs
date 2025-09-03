@@ -11,6 +11,10 @@ namespace WebApi.Controllers.Integracion
     [ApiController]
     public class EncomiendaController : BaseApiController
     {
+        [HttpGet("GetAllGuia")]
+        public async Task<IActionResult> GetAllEncomiendas([FromQuery] string? guiacarga)
+    => Ok(await Mediator.Send(new GetAllEncomiendaGuiaQuery(guiacarga)));
+
         [HttpGet("encomienda")]
         [Authorize]
         public async Task<IActionResult> Get() =>

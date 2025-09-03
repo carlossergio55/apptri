@@ -1,8 +1,15 @@
 ﻿@page "/rastreo"
 @layout PublicLayout
+@using Infraestructura.Models.Integracion
 @using MudBlazor
 @inject NavigationManager Nav
 @inject ISnackbar Snackbar
+@using Infraestructura.Models.Clasificador
+@using Microsoft.AspNetCore.Components
+@using Syncfusion.Blazor.Grids
+@using System.Globalization
+@inherits MainBaseComponent
+
 <link href="styles/Integracion/rastreo.css" rel="stylesheet" />
 
 
@@ -15,7 +22,7 @@
             <MudText Typo="Typo.h4" Class="rastreo-titulo mx-auto">
                 RASTREO DE CARGA
             </MudText>
-           
+
         </MudStack>
         <MudText Typo="Typo.h4" Class="rastreo-texto mx-auto">
             Este servicio le permite conocer la ubicación y estado de su carga o encomienda en tiempo real
@@ -40,22 +47,51 @@
                       Immediate="true" />
 
 
-
-
         <!-- Botón buscar -->
         <MudStack Justify="Justify.Center" AlignItems="AlignItems.Center">
             <MudButton Variant="Variant.Filled"
                        Class="rastreo-boton-buscar"
-                       EndIcon="@Icons.Material.Filled.Search">
+                       EndIcon="@Icons.Material.Filled.Search"
+                       OnClick="BuscarPorGuia">
                 Buscar
             </MudButton>
+
+            @if (MostrandoResultado)
+            {
+                <MudPaper Elevation="2" Class="mt-6 p-4 rounded-lg bg-grey-lighten-5">
+
+                    <MudText Typo="Typo.h6" Class="mb-4 text-primary">📦 Información de la Encomienda</MudText>
+
+                    <MudGrid>
+                        <MudItem xs="12" sm="6">
+                            <MudText Typo="Typo.subtitle2">Guía de Carga:</MudText>
+                            <MudText Typo="Typo.body1">@EncomiendaEncontrada.Guiacarga</MudText>
+                        </MudItem>
+
+                        <MudItem xs="12" sm="6">
+                            <MudText Typo="Typo.subtitle2">Remitente:</MudText>
+                            <MudText Typo="Typo.body1">@EncomiendaEncontrada.Remitente</MudText>
+                        </MudItem>
+
+                        <MudItem xs="12" sm="6">
+                            <MudText Typo="Typo.subtitle2">Destinatario:</MudText>
+                            <MudText Typo="Typo.body1">@EncomiendaEncontrada.Destinatario</MudText>
+                        </MudItem>
+
+                        <MudItem xs="12" sm="6">
+                            <MudText Typo="Typo.subtitle2">Descripción:</MudText>
+                            <MudText Typo="Typo.body1">@EncomiendaEncontrada.Descripcion</MudText>
+                        </MudItem>
+
+                        @* Puedes agregar más datos como estado, peso, etc. si están en tu DTO *@
+                    </MudGrid>
+
+                </MudPaper>
+            }
+
         </MudStack>
 
     </MudPaper>
 </MudContainer>
 
 
-@code {
-    private string numeroGuia;
-
-}

@@ -12,18 +12,20 @@ namespace WebApi.Controllers.Integracion
     public class RutaParadaController : BaseApiController
     {
         // Obtener todas las asociaciones Ruta–Parada
-        [HttpGet("ruta-parada")]
-        public async Task<IActionResult> Get()
-        {
-            return Ok(await Mediator.Send(new GetAllRutaParadaQuery()));
-        }
+        //[HttpGet("ruta-parada")]
+        //public async Task<IActionResult> Getw()
+        //{
+        //    return Ok(await Mediator.Send(new GetAllRutaParadaQuery()));
+        //}
 
         // Obtener todas las paradas de una ruta específica
-        [HttpGet("ruta-parada/{idRuta}")]
-        public async Task<IActionResult> GetByRuta(int idRuta)
-        {
-            return Ok(await Mediator.Send(new GetAllRutaParadaQuery { IdRuta = idRuta }));
-        }
+        [HttpGet("GetAllRutaParadaFull")]
+        public async Task<IActionResult> GetAllRutaParadaFull()
+    => Ok(await Mediator.Send(new GetAllRutaParadaFullQuery()));
+
+        [HttpGet("GetAllIdRutaParada")]
+        public async Task<IActionResult> GetAllRutaParada([FromQuery] int? idRuta)
+            => Ok(await Mediator.Send(new GetAllRutaParadaQuery(idRuta)));
 
         // Crear nueva relación Ruta–Parada
         [HttpPost("guardar")]

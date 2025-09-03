@@ -51,7 +51,7 @@ namespace Aplicacion.Features.Integracion.Commands.EncomiendaC
             encomienda.Pagado = request.Pagado;
 
            
-            encomienda.IdGuiaCarga = request.IdGuiaCarga;
+            encomienda.IdEncomienda = request.  IdEncomienda;
             encomienda.OrigenParadaId = request.OrigenParadaId;
             encomienda.DestinoParadaId = request.DestinoParadaId;
 

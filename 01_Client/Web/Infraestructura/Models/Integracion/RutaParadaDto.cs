@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Infraestructura.Models.Integracion;
+using System.ComponentModel.DataAnnotations;
 
 namespace Infraestructura.Models.Integracion
 {
@@ -14,5 +15,8 @@ namespace Infraestructura.Models.Integracion
 
         [Range(0, 999, ErrorMessage = "Orden inválido")]
         public int Orden { get; set; }
+        public RutaDto Ruta { get; set; }
+        public ParadaDto Parada { get; set; }
     }
 }
+

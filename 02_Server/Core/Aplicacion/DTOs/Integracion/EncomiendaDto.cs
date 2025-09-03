@@ -12,6 +12,7 @@ namespace Aplicacion.DTOs.Integracion
         public string Remitente { get; set; } = string.Empty;
         public string Destinatario { get; set; } = string.Empty;
         public string? Descripcion { get; set; }
+        public string? Guiacarga { get; set; }
         public int IdViaje { get; set; }
         public decimal Precio { get; set; }
         public string Estado { get; set; } = "en camino";
@@ -19,7 +20,7 @@ namespace Aplicacion.DTOs.Integracion
         public bool Pagado { get; set; }
 
         // === Nueva relación ===
-        public int IdGuiaCarga { get; set; }
+  
         public string CodigoGuia { get; set; } = string.Empty;
 
         // Tramo
