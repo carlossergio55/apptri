@@ -33,7 +33,7 @@ namespace Persistencia.Contexts
         public DbSet<RutaParada> RutaParada { get; set; }
         public DbSet<TarifaTramo> TarifaTramo { get; set; }
         public DbSet<GuiaCarga> GuiaCarga { get; set; }
-
+        public DbSet<Sucursal> Sucursal { get; set; }
 
         #endregion
 
@@ -106,14 +106,21 @@ namespace Persistencia.Contexts
             modelBuilder.Entity<RutaParada>(e =>
             {
                 e.ToTable("ruta_parada", "public");
-                e.HasKey(x => new { x.IdRuta, x.IdParada });
+                e.HasKey(x => x.IdRutaParada);  // 👈 Usa el serial como PK real
+                e.Property(x => x.IdRutaParada)
+                    .HasColumnName("id_ruta_parada")
+                    .ValueGeneratedOnAdd();     // 👈 importante para serial
+
                 e.Property(x => x.IdRuta).HasColumnName("id_ruta");
                 e.Property(x => x.IdParada).HasColumnName("id_parada");
                 e.Property(x => x.Orden).HasColumnName("orden");
+
                 e.HasIndex(x => new { x.IdRuta, x.Orden }).HasDatabaseName("ix_ruta_parada_ruta_orden");
+
                 e.HasOne(x => x.Ruta).WithMany().HasForeignKey(x => x.IdRuta).OnDelete(DeleteBehavior.Cascade);
                 e.HasOne(x => x.Parada).WithMany().HasForeignKey(x => x.IdParada).OnDelete(DeleteBehavior.Cascade);
             });
+
 
             // ---------- TarifaTramo ----------
             modelBuilder.Entity<TarifaTramo>(e =>

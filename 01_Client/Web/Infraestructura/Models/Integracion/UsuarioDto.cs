@@ -13,5 +13,10 @@ namespace Infraestructura.Models.Integracion
         public string Correo { get; set; }
         public string Contraseña { get; set; }
         public string Tipo { get; set; }
+
+       
+        public int? IdSucursal { get; set; }
+        public string? NombreSucursal { get; set; }   
+        public SucursalDto? Sucursal { get; set; }    
     }
 }

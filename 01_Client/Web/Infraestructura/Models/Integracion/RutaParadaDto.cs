@@ -4,10 +4,12 @@ namespace Infraestructura.Models.Integracion
 {
     public class RutaParadaDto
     {
-        [Required]
+        public int IdRutaParada { get; set; }  
+
+        [Required(ErrorMessage = "La ruta es obligatoria")]
         public int IdRuta { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "La parada es obligatoria")]
         public int IdParada { get; set; }
 
         [Range(0, 999, ErrorMessage = "Orden inválido")]

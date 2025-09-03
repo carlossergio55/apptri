@@ -14,7 +14,7 @@
 
     <MudNavGroup Title="Pasajes" Icon="@Icons.Material.Outlined.ConfirmationNumber">
         <MudNavLink Href="/VentaAdmin" Icon="@Icons.Material.Outlined.PointOfSale">Venta de Pasajes</MudNavLink>
-        <MudNavLink Href="/reservas" Icon="@Icons.Material.Outlined.Bookmark">Reservas</MudNavLink>
+       
         <MudNavLink Href="/ViajeAdmin" Icon="@Icons.Material.Outlined.Cancel">Viajes</MudNavLink>
     </MudNavGroup>
 
@@ -31,10 +31,16 @@
     </MudNavGroup>
 
     <MudNavGroup Title="Unidades" Icon="@Icons.Material.Outlined.DirectionsBus">
-        <MudNavLink Href="/BusAdmin" Icon="@Icons.Material.Outlined.DirectionsBusFilled">Buses</MudNavLink>
-        
-        <MudNavLink Href="/rutas" Icon="@Icons.Material.Outlined.Map">Rutas</MudNavLink>
+        <MudNavLink Href="/BusAdmin" Icon="@Icons.Material.Outlined.DirectionsBusFilled">Buses</MudNavLink>      
     </MudNavGroup>
+
+    <MudNavGroup Title="Rutas" Icon="@Icons.Material.Outlined.Map">
+        <MudNavLink Href="/ParadaAdmin"      Icon="@Icons.Material.Outlined.Place">Paradas</MudNavLink>
+        <MudNavLink Href="/RutaAdmin"        Icon="@Icons.Material.Outlined.AltRoute">Rutas</MudNavLink>
+        <MudNavLink Href="/RutaParadaAdmin"  Icon="@Icons.Material.Outlined.Timeline">Ruta – Parada</MudNavLink>
+        <MudNavLink Href="/HorarioAdmin"     Icon="@Icons.Material.Outlined.AccessTime">Horarios</MudNavLink>
+    </MudNavGroup>
+
 
     <MudNavGroup Title="Reportes" Icon="@Icons.Material.Outlined.BarChart">
         <MudNavLink Href="/reportes/ventas" Icon="@Icons.Material.Outlined.Money">Ventas</MudNavLink>

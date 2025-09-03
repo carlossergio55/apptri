@@ -1,4 +1,4 @@
-﻿@page "/RutaAdmin"
+﻿@page "/ParadaAdmin"
 @using Infraestructura.Models.Integracion
 @using MudBlazor
 @inherits MainBaseComponent
@@ -14,63 +14,40 @@
                     <MudButton Variant="Variant.Outlined"
                                Color="@(expande ? Color.Error : Color.Success)"
                                OnClick="@ToggleExpand">
-                        @(expande ? "CERRAR" : "AGREGAR RUTA")
+                        @(expande ? "CERRAR" : "AGREGAR PARADA")
                     </MudButton>
                 </MudContainer>
             </TitleContent>
 
             <ChildContent>
                 <MudCard>
-                    <EditForm Model="@_Ruta" OnValidSubmit="@OnValidRuta">
+                    <EditForm Model="@_Parada" OnValidSubmit="@OnValidParada">
                         <DataAnnotationsValidator />
-                        <ValidationSummary />
 
                         <MudCardContent>
                             <MudGrid>
-                                <MudItem xs="12" sm="6" md="4">
-                                    <MudTextField @bind-Value="_Ruta.Origen"
-                                                  Label="ORIGEN"
+                                <MudItem xs="12" sm="6" md="6">
+                                    <MudTextField @bind-Value="_Parada.Nombre"
+                                                  Label="NOMBRE DE LA PARADA"
                                                   Variant="Variant.Outlined"
                                                   Margin="Margin.Dense"
-                                                  Required="true" />
-                                </MudItem>
-
-                                <MudItem xs="12" sm="6" md="4">
-                                    <MudTextField @bind-Value="_Ruta.Destino"
-                                                  Label="DESTINO"
-                                                  Variant="Variant.Outlined"
-                                                  Margin="Margin.Dense"
-                                                  Required="true" />
-                                </MudItem>
-
-                                <MudItem xs="12" sm="6" md="4">
-                                    <MudTextField @bind-Value="_Ruta.Duracion"
-                                                  Label="DURACIÓN (HH:mm)"
-                                                  Variant="Variant.Outlined"
-                                                  Margin="Margin.Dense" />
-
-
-                                </MudItem>
-
-                                <MudItem xs="12" sm="6" md="4" class="d-flex align-center">
-                                    <MudSwitch @bind-Checked="_Ruta.EsExtendido"
-                                               Color="Color.Primary"
-                                               Label="RUTA EXTENDIDA" />
+                                                  Required="true"
+                                                  MaxLength="60" />
+                                    <ValidationMessage For="@(() => _Parada.Nombre)" />
                                 </MudItem>
                             </MudGrid>
                         </MudCardContent>
 
                         <MudCardActions>
                             <MudButton ButtonType="ButtonType.Submit"
-                                       Disabled="@_isSubmitting"
                                        Variant="Variant.Outlined"
                                        Color="Color.Success"
                                        Class="ml-auto">
-                                @(_isSubmitting ? "GUARDANDO..." : "GUARDAR")
+                                GUARDAR
                             </MudButton>
                             <MudButton Variant="Variant.Outlined"
                                        Color="Color.Default"
-                                       OnClick="@ResetRuta">
+                                       OnClick="@ResetParada">
                                 LIMPIAR
                             </MudButton>
                         </MudCardActions>
@@ -82,12 +59,12 @@
 
     <MudDivider />
     <MudText Typo="Typo.h6" Align="Align.Center" Color="Color.Success">
-        <b>LISTA DE RUTAS</b>
+        <b>LISTA DE PARADAS</b>
     </MudText>
     <MudDivider />
 
     <!-- Tabla -->
-    <MudTable Items="@_rutas"
+    <MudTable Items="@_paradas"
               Filterable="true"
               Sortable="true"
               Bordered="true"
@@ -97,38 +74,27 @@
               RowsPerPageOptions="new int[]{10,25,50,100}">
 
         <HeaderContent>
-            <MudTh style="width:8%">COD.</MudTh>
-            <MudTh>ORIGEN</MudTh>
-            <MudTh>DESTINO</MudTh>
-            <MudTh>DURACIÓN</MudTh>
-            <MudTh style="width:12%">EXTENDIDA</MudTh>
+            <MudTh style="width:10%">COD.</MudTh>
+            <MudTh>NOMBRE</MudTh>
             <MudTh style="width:140px">OPCIONES</MudTh>
         </HeaderContent>
 
         <RowTemplate>
-            <MudTd>@context.IdRuta</MudTd>
-            <MudTd>@context.Origen</MudTd>
-            <MudTd>@context.Destino</MudTd>
-            <MudTd>@context.Duracion</MudTd>
-            <MudTd>
-                <MudChip Color="@(context.EsExtendido? Color.Primary: Color.Default)" Variant="Variant.Outlined">
-                    @(context.EsExtendido ? "Sí" : "No")
-                </MudChip>
-            </MudTd>
+            <MudTd>@context.IdParada</MudTd>
+            <MudTd>@context.Nombre</MudTd>
             <MudTd>
                 <MudTooltip Text="EDITAR" Placement="Placement.Top">
                     <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                    Color="Color.Warning"
                                    Size="Size.Small"
-                                   OnClick="@(() => FormEditar(context))"
-                                   AriaLabel="Editar Ruta" />
+                                   OnClick="@(() => FormEditar(context))" />
                 </MudTooltip>
+
                 <MudTooltip Text="ELIMINAR" Placement="Placement.Top">
                     <MudIconButton Icon="@Icons.Material.Filled.Delete"
                                    Color="Color.Error"
                                    Size="Size.Small"
-                                   OnClick="@(() => Eliminar(context.IdRuta))"
-                                   AriaLabel="Eliminar Ruta" />
+                                   OnClick="@(() => Eliminar(context.IdParada))" />
                 </MudTooltip>
             </MudTd>
         </RowTemplate>

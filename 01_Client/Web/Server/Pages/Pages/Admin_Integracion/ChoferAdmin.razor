@@ -81,7 +81,7 @@
     <MudDivider />
 
     <!-- Tabla -->
-    <MudTable Items="@_chofer" Filterable="true" Sortable="true" Bordered="true"
+    <MudTable Items="@_choferes" Filterable="true" Sortable="true" Bordered="true"
               Hover="true" Dense="true" RowsPerPage="25"
               RowsPerPageOptions="new int[]{10,25,50,100}">
         <HeaderContent>
@@ -93,23 +93,27 @@
         <MudTh>Opciones</MudTh>
         </HeaderContent>
 
-        <RowTemplate>
-            <MudTd>@context.IdChofer</MudTd>
-            <MudTd>@context.Nombre</MudTd>
-            <MudTd>@context.Carnet</MudTd>
-            <MudTd>@context.Celular</MudTd>
-            <MudTd>@context.Licencia</MudTd>
-        <MudTd>
-            <MudTooltip Text="EDITAR" Placement="Placement.Top">
-                <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Warning" Size="Size.Small"
-                               />
-            </MudTooltip>
-            <MudTooltip Text="ELIMINAR" Placement="Placement.Top">
-                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small"
-                              />
-            </MudTooltip>
-        </MudTd>
+        <RowTemplate Context="chofer">
+            <MudTd>@chofer.IdChofer</MudTd>
+            <MudTd>@chofer.Nombre</MudTd>
+            <MudTd>@chofer.Carnet</MudTd>
+            <MudTd>@chofer.Celular</MudTd>
+            <MudTd>@chofer.Licencia</MudTd>
+            <MudTd>
+                <MudTooltip Text="EDITAR" Placement="Placement.Top">
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                   Color="Color.Warning" Size="Size.Small"
+                                   OnClick="@(() => Update(chofer))" />
+                </MudTooltip>
+
+                <MudTooltip Text="ELIMINAR" Placement="Placement.Top">
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                   Color="Color.Error" Size="Size.Small"
+                                   OnClick="@(() => Eliminar(chofer.IdChofer))" />
+                </MudTooltip>
+            </MudTd>
         </RowTemplate>
+
 
         <PagerContent>
             <MudTablePager />

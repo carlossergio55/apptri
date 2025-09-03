@@ -11,25 +11,25 @@ using System.Threading.Tasks;
 
 namespace Aplicacion.Features.Integracion.Queries
 {
-    public class GetRutaParadaByRutaQuery : IRequest<Response<List<RutaParadaDto>>>
-    {
-        public int IdRuta { get; set; }
-    }
+    // GET: todas las asociaciones Ruta–Parada (ordenadas por Ruta y Orden)
+    public class GetAllRutaParadaQuery : IRequest<Response<List<RutaParadaDto>>> { }
 
-    public class GetRutaParadaByRutaQueryHandler
-        : IRequestHandler<GetRutaParadaByRutaQuery, Response<List<RutaParadaDto>>>
+    public class GetAllRutaParadaQueryHandler
+        : IRequestHandler<GetAllRutaParadaQuery, Response<List<RutaParadaDto>>>
     {
         private readonly IRepositoryAsync<RutaParada> _repo;
         private readonly IMapper _mapper;
-        public GetRutaParadaByRutaQueryHandler(IRepositoryAsync<RutaParada> repo, IMapper mapper)
+
+        public GetAllRutaParadaQueryHandler(IRepositoryAsync<RutaParada> repo, IMapper mapper)
             => (_repo, _mapper) = (repo, mapper);
 
-        public async Task<Response<List<RutaParadaDto>>> Handle(GetRutaParadaByRutaQuery request, CancellationToken ct)
+        public async Task<Response<List<RutaParadaDto>>> Handle(GetAllRutaParadaQuery request, CancellationToken ct)
         {
             var items = (await _repo.ListAsync())
-                        .Where(x => x.IdRuta == request.IdRuta)
-                        .OrderBy(x => x.Orden)
+                        .OrderBy(x => x.IdRuta)
+                        .ThenBy(x => x.Orden)
                         .ToList();
+
             var dtos = _mapper.Map<List<RutaParadaDto>>(items);
             return new Response<List<RutaParadaDto>>(dtos);
         }

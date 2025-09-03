@@ -11,32 +11,44 @@ namespace WebApi.Controllers.Integracion
     [ApiController]
     public class RutaParadaController : BaseApiController
     {
-        // Obtener paradas de una ruta (ordenadas)
-        [HttpGet("ruta-parada/{idRuta}")]
-        [Authorize]
-        public async Task<IActionResult> GetByRuta(int idRuta) =>
-            Ok(await Mediator.Send(new GetRutaParadaByRutaQuery { IdRuta = idRuta }));
+        // Obtener todas las asociaciones Ruta–Parada
+        [HttpGet("ruta-parada")]
+        public async Task<IActionResult> Get()
+        {
+            return Ok(await Mediator.Send(new GetAllRutaParadaQuery()));
+        }
 
-        // Crear relación ruta-parada
+        // Obtener todas las paradas de una ruta específica
+        [HttpGet("ruta-parada/{idRuta}")]
+        public async Task<IActionResult> GetByRuta(int idRuta)
+        {
+            return Ok(await Mediator.Send(new GetAllRutaParadaQuery { IdRuta = idRuta }));
+        }
+
+        // Crear nueva relación Ruta–Parada
         [HttpPost("guardar")]
         [Authorize]
-        public async Task<IActionResult> Post([FromBody] CreateRutaParadaCommand command) =>
-            Ok(await Mediator.Send(command));
-
-        // Actualizar orden (PK compuesta en ruta)
-        [HttpPut("{idRuta}/{idParada}")]
-        [Authorize]
-        public async Task<IActionResult> Put(int idRuta, int idParada, [FromBody] UpdateRutaParadaCommand command)
+        public async Task<IActionResult> Post(CreateRutaParadaCommand command)
         {
-            if (idRuta != command.IdRuta || idParada != command.IdParada)
-                return BadRequest("Ids de ruta no coinciden con el payload.");
             return Ok(await Mediator.Send(command));
         }
 
-        // Eliminar relación
-        [HttpDelete("{idRuta}/{idParada}")]
+        // Actualizar relación Ruta–Parada
+        [HttpPut("{id}")]
         [Authorize]
-        public async Task<IActionResult> Delete(int idRuta, int idParada) =>
-            Ok(await Mediator.Send(new DeleteRutaParadaCommand { IdRuta = idRuta, IdParada = idParada }));
+        public async Task<IActionResult> Put(int id, UpdateRutaParadaCommand command)
+        {
+            if (id != command.IdRutaParada)
+                return BadRequest("El ID no coincide con el payload.");
+            return Ok(await Mediator.Send(command));
+        }
+
+        // Eliminar relación Ruta–Parada
+        [HttpDelete("{id}")]
+        [Authorize]
+        public async Task<IActionResult> Delete(int id)
+        {
+            return Ok(await Mediator.Send(new DeleteRutaParadaCommand { IdRutaParada = id }));
+        }
     }
 }

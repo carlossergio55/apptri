@@ -29,7 +29,10 @@ namespace Aplicacion.Mappings
             CreateMap<Chofer, ChoferDto>();
             CreateMap<Cliente, ClienteDto>();
             CreateMap<Ruta, RutaDto>();
-            CreateMap<Usuario, UsuarioDto>();
+            CreateMap<Usuario, UsuarioDto>()
+               .ForMember(d => d.IdSucursal, o => o.MapFrom(s => s.IdSucursal))
+               .ForMember(d => d.NombreSucursal, o => o.MapFrom(s => s.Sucursal != null ? s.Sucursal.Nombre : null))
+               .ForMember(d => d.Sucursal, o => o.MapFrom(s => s.Sucursal));
             CreateMap<Horario, HorarioDto>();
             CreateMap<Asiento, AsientoDto>();
             CreateMap<Viaje, ViajeDto>();
@@ -42,7 +45,7 @@ namespace Aplicacion.Mappings
             CreateMap<TarifaTramo, TarifaTramoDto>();
 
             CreateMap<GuiaCarga, GuiaCargaDto>().ReverseMap();
-
+            CreateMap<Sucursal, SucursalDto>().ReverseMap();
 
             #endregion
             //TODO: Agregar aqui el registro de mapeo para ejecucion de comandos  direccion  ModeloDto --> EntidadDominio Ej. : CreateMap<ProductoDto, CapProducto>();
@@ -67,7 +70,7 @@ namespace Aplicacion.Mappings
             CreateMap<RutaParadaDto, RutaParada>();
             CreateMap<TarifaTramoDto, TarifaTramo>();
             CreateMap<EncomiendaDto, Encomienda>();
-
+            CreateMap<SucursalDto, Sucursal>();
 
             #endregion
         }

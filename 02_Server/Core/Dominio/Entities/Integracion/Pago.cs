@@ -15,13 +15,13 @@ namespace Dominio.Entities.Integracion
         [Key]
         public int IdPago { get; set; }
 
-        public string TipoPago { get; set; } // Ej: "Boleto", "Encomienda", etc.
+        public string TipoPago { get; set; } 
 
-        public int IdReferencia { get; set; } // Puede ser id_boleto o id_encomienda, según el contexto
+        public int IdReferencia { get; set; } 
 
         public decimal Monto { get; set; }
 
-        public string Metodo { get; set; } // Ej: "Efectivo", "QR", "Tarjeta", etc.
+        public string Metodo { get; set; } 
 
         public DateTime FechaPago { get; set; }
 
