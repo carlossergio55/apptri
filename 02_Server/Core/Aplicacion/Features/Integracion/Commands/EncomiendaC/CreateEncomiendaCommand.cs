@@ -16,34 +16,22 @@ namespace Aplicacion.Features.Integracion.Commands.EncomiendaC
 
     public class CreateEncomiendaCommandHandler : IRequestHandler<CreateEncomiendaCommand, Response<int>>
     {
-        private readonly IRepositoryAsync<Encomienda> _repoEncomienda;
-        private readonly IRepositoryAsync<GuiaCarga> _repoGuia;
+        private readonly IRepositoryAsync<Encomienda> _repositoryAsync;
         private readonly IMapper _mapper;
 
-        public CreateEncomiendaCommandHandler(
-            IRepositoryAsync<Encomienda> repoEncomienda,
-            IRepositoryAsync<GuiaCarga> repoGuia,
-            IMapper mapper)
+        public CreateEncomiendaCommandHandler(IRepositoryAsync<Encomienda> repositoryAsync, IMapper mapper)
         {
-            _repoEncomienda = repoEncomienda;
-            _repoGuia = repoGuia;
+            _repositoryAsync = repositoryAsync;
             _mapper = mapper;
         }
 
-        public async Task<Response<int>> Handle(CreateEncomiendaCommand request, CancellationToken ct)
+        public async Task<Response<int>> Handle(CreateEncomiendaCommand request, CancellationToken cancellationToken)
         {
-            var dto = request.Encomienda;
+            var entity = _mapper.Map<Encomienda>(request.Encomienda);
 
-            // Si no hay FK de guía pero sí viene el código, creamos la guía primero
-            if (dto.IdEncomienda <= 0 && !string.IsNullOrWhiteSpace(dto.CodigoGuia))
-            {
-                var guia = new GuiaCarga { Codigo = dto.CodigoGuia };
-                var savedGuia = await _repoGuia.AddAsync(guia);
-                dto.IdEncomienda = savedGuia.IdGuiaCarga;
-            }
+            
 
-            var entity = _mapper.Map<Encomienda>(dto);
-            var saved = await _repoEncomienda.AddAsync(entity);
+            var saved = await _repositoryAsync.AddAsync(entity);
             return new Response<int>(saved.IdEncomienda);
         }
     }

@@ -33,5 +33,12 @@ namespace WebApi.Controllers.Integracion
         [Authorize]
         public async Task<IActionResult> Delete(int id) =>
             Ok(await Mediator.Send(new DeleteViajeCommand { IdViaje = id }));
+
+
+
+        [HttpPost("generar-proximos")]
+        [Authorize]
+        public async Task<IActionResult> GenerarProximos([FromBody] GenerarViajesProximosCommand cmd)
+    => Ok(await Mediator.Send(cmd));
     }
 }

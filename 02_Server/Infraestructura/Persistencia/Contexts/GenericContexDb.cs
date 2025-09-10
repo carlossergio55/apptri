@@ -32,7 +32,7 @@ namespace Persistencia.Contexts
         public DbSet<Parada> Parada { get; set; }
         public DbSet<RutaParada> RutaParada { get; set; }
         public DbSet<TarifaTramo> TarifaTramo { get; set; }
-        public DbSet<GuiaCarga> GuiaCarga { get; set; }
+ 
         public DbSet<Sucursal> Sucursal { get; set; }
 
         #endregion
@@ -50,14 +50,17 @@ namespace Persistencia.Contexts
             });
 
             // ---------- Viaje ----------
+            // Persistencia.Contexts.GenericContexDb.OnModelCreating
             modelBuilder.Entity<Viaje>(e =>
             {
                 e.Property(v => v.HoraSalida).HasColumnType("time(0)");
                 e.Property(v => v.Direccion).HasMaxLength(10);
-                e.HasOne(v => v.Ruta).WithMany().HasForeignKey(v => v.IdRuta).OnDelete(DeleteBehavior.Restrict);
-                e.HasOne(v => v.Chofer).WithMany().HasForeignKey(v => v.IdChofer).OnDelete(DeleteBehavior.Restrict);
-                e.HasOne(v => v.Bus).WithMany().HasForeignKey(v => v.IdBus).OnDelete(DeleteBehavior.Restrict);
+
+                e.HasIndex(v => new { v.IdRuta, v.Fecha, v.HoraSalida, v.Direccion })
+                 .IsUnique()
+                 .HasDatabaseName("uq_viaje_ruta_fecha_hora_dir");
             });
+
 
             // ---------- Boleto ----------
             modelBuilder.Entity<Boleto>(e =>
@@ -67,30 +70,78 @@ namespace Persistencia.Contexts
                 e.HasIndex(b => new { b.IdViaje, b.IdAsiento }).IsUnique().HasDatabaseName("uq_boleto_viaje_asiento");
             });
 
-            // ---------- Encomienda ----------
+
+
+            // ---------- Encomienda (sin relación a GuiaCarga) ----------
             modelBuilder.Entity<Encomienda>(e =>
             {
-                e.Property(x => x.Precio).HasColumnType("numeric(10,2)");
-                e.Property(x => x.Peso).HasColumnType("numeric(10,2)");
-                e.Property(x => x.Estado).HasMaxLength(20);
-                e.HasIndex(x => x.IdViaje).HasDatabaseName("ix_encomienda_viaje");
+                e.ToTable("encomienda", "public");
+                e.HasKey(x => x.IdEncomienda);
 
-                
-                // Relación con GuiaCarga
-                e.HasOne(x => x.Guia)
-                 .WithMany(g => g.Encomiendas)
-                 .HasForeignKey(x => x.IdEncomienda)
-                 .OnDelete(DeleteBehavior.Restrict);
+                e.Property(x => x.IdEncomienda).HasColumnName("id_encomienda");
+
+                e.Property(x => x.Remitente)
+                    .HasColumnName("remitente")
+                    .HasMaxLength(40)
+                    .IsRequired();
+
+                e.Property(x => x.Destinatario)
+                    .HasColumnName("destinatario")
+                    .HasMaxLength(40)
+                    .IsRequired();
+
+                e.Property(x => x.Descripcion)
+                    .HasColumnName("descripcion");
+
+                // La columna generada por trigger (no seteada por la app)
+                e.Property(x => x.Guiacarga)
+                    .HasColumnName("guiacarga")
+                    .HasMaxLength(6);
+
+                e.Property(x => x.IdViaje)
+                    .HasColumnName("id_viaje")
+                    .IsRequired();
+
+                e.Property(x => x.Precio)
+                    .HasColumnName("precio")
+                    .HasColumnType("numeric(10,2)");
+
+                e.Property(x => x.Estado)
+                    .HasColumnName("estado")
+                    .HasMaxLength(20);
+
+                e.Property(x => x.Peso)
+                    .HasColumnName("peso")
+                    .HasColumnType("numeric(10,2)");
+
+                e.Property(x => x.Pagado)
+                    .HasColumnName("pagado");
+
+                e.Property(x => x.OrigenParadaId)
+                    .HasColumnName("origen_parada_id");
+
+                e.Property(x => x.DestinoParadaId)
+                    .HasColumnName("destino_parada_id");
+
+                // Relaciones reales de Encomienda
+                e.HasOne(x => x.Viaje)
+                    .WithMany()
+                    .HasForeignKey(x => x.IdViaje)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                e.HasOne(x => x.OrigenParada)
+                    .WithMany()
+                    .HasForeignKey(x => x.OrigenParadaId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                e.HasOne(x => x.DestinoParada)
+                    .WithMany()
+                    .HasForeignKey(x => x.DestinoParadaId)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
 
-            // ---------- GuiaCarga (NUEVO) ----------
-            modelBuilder.Entity<GuiaCarga>(e =>
-            {
-                e.ToTable("guia_carga", "public");
-                e.HasKey(g => g.IdGuiaCarga);
-                e.Property(g => g.Codigo).HasColumnName("codigo").HasMaxLength(20).IsRequired();
-                e.HasIndex(g => g.Codigo).IsUnique();
-            });
+
+
 
             // ---------- Parada ----------
             modelBuilder.Entity<Parada>(e =>
@@ -106,10 +157,10 @@ namespace Persistencia.Contexts
             modelBuilder.Entity<RutaParada>(e =>
             {
                 e.ToTable("ruta_parada", "public");
-                e.HasKey(x => x.IdRutaParada);  // 👈 Usa el serial como PK real
+                e.HasKey(x => x.IdRutaParada);  
                 e.Property(x => x.IdRutaParada)
                     .HasColumnName("id_ruta_parada")
-                    .ValueGeneratedOnAdd();     // 👈 importante para serial
+                    .ValueGeneratedOnAdd(); 
 
                 e.Property(x => x.IdRuta).HasColumnName("id_ruta");
                 e.Property(x => x.IdParada).HasColumnName("id_parada");

@@ -1,0 +1,192 @@
+﻿@page "/HorarioAdmin"
+@using Infraestructura.Models.Integracion
+@using MudBlazor
+@inherits MainBaseComponent
+@layout MainLayout
+
+<MudCard>
+
+    <!-- Panel con formulario -->
+    <MudExpansionPanels MultiExpansion="false">
+        <MudExpansionPanel @bind-IsExpanded="expande" HideIcon="true">
+            <TitleContent>
+                <MudContainer MaxWidth="@MaxWidth.ExtraSmall" Class="mb-5">
+                    <MudButton Variant="@Variant.Outlined"
+                               Color="@(expande ? Color.Error : Color.Success)"
+                               OnClick="@ToggleExpand">
+                        @(expande ? "CERRAR" : "AGREGAR HORARIO")
+                    </MudButton>
+                </MudContainer>
+            </TitleContent>
+
+            <ChildContent>
+                <MudCard>
+                    <EditForm Model="@_Horario" OnValidSubmit="@OnValidHorario">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+
+                        <MudCardContent>
+                            <MudGrid>
+
+                                <!-- Id interno (solo display) -->
+                                <MudItem xs="12" sm="6" md="3">
+                                    <MudTextField T="int" @bind-Value="_Horario.IdHorario"
+                                                  Label="ID (interno)"
+                                                  Variant="@Variant.Outlined"
+                                                  Margin="@Margin.Dense"
+                                                  Disabled="true" />
+                                </MudItem>
+
+                                <!-- Ruta -->
+                                <MudItem xs="12" sm="6" md="3">
+                                    <MudSelect T="int"
+                                               @bind-Value="IdRutaSel"
+                                               Label="RUTA"
+                                               Variant="@Variant.Outlined"
+                                               Dense="true"
+                                               Required="true">
+                                        @foreach (var r in _rutas)
+                                        {
+                                            <MudSelectItem T="int" Value="@r.IdRuta">
+                                                @($"{r.Origen} → {r.Destino}")
+                                            </MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </MudItem>
+
+                                <!-- Hora salida -->
+                                <MudItem xs="12" sm="6" md="3">
+                                    <MudTextField T="string"
+                                                  @bind-Value="_Horario.HoraSalida"
+                                                  Label="HORA SALIDA (HH:mm)"
+                                                  Variant="@Variant.Outlined"
+                                                  Margin="@Margin.Dense"
+                                                  Mask="_maskHora" />
+                                </MudItem>
+
+                                <!-- Día semana -->
+                                <MudItem xs="12" sm="6" md="3">
+                                    <MudSelect T="string" @bind-Value="_Horario.DiaSemana"
+                                               Label="DÍA"
+                                               Variant="@Variant.Outlined"
+                                               Dense="true"
+                                               Required="true">
+                                        @foreach (var d in _dias)
+                                        {
+                                            <MudSelectItem T="string" Value="@d">@d</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </MudItem>
+
+                                <!-- Dirección -->
+                                <MudItem xs="12" sm="6" md="3">
+                                    <MudSelect T="string"
+                                               @bind-Value="_Horario.Direccion"
+                                               Label="DIRECCIÓN"
+                                               Dense="true"
+                                               Required="true">
+                                        <MudSelectItem T="string" Value="@("IDA")">IDA</MudSelectItem>
+                                        <MudSelectItem T="string" Value="@("VUELTA")">VUELTA</MudSelectItem>
+                                    </MudSelect>
+                                </MudItem>
+
+                                <!-- Desde/Hasta (opcionales) -->
+                                <MudItem xs="12" sm="6" md="3">
+                                    <MudSelect T="int?" @bind-Value="_Horario.DesdeParadaId"
+                                               Clearable="true"
+                                               Label="DESDE PARADA"
+                                               Variant="@Variant.Outlined" Dense="true">
+                                        @foreach (var p in _paradas)
+                                        {
+                                            <MudSelectItem T="int?" Value="@((int?)p.IdParada)">@p.Nombre</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </MudItem>
+
+                                <MudItem xs="12" sm="6" md="3">
+                                    <MudSelect T="int?" @bind-Value="_Horario.HastaParadaId"
+                                               Clearable="true"
+                                               Label="HASTA PARADA"
+                                               Variant="@Variant.Outlined" Dense="true">
+                                        @foreach (var p in _paradas)
+                                        {
+                                            <MudSelectItem T="int?" Value="@((int?)p.IdParada)">@p.Nombre</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </MudItem>
+
+                            </MudGrid>
+                        </MudCardContent>
+
+                        <MudCardActions>
+                            <MudButton ButtonType="@ButtonType.Submit"
+                                       Disabled="@_isSubmitting"
+                                       Variant="@Variant.Outlined"
+                                       Color="@Color.Success"
+                                       Class="ml-auto">
+                                @(_isSubmitting ? "GUARDANDO..." : "GUARDAR")
+                            </MudButton>
+                            <MudButton Variant="@Variant.Outlined"
+                                       Color="@Color.Default"
+                                       OnClick="@ResetHorario">
+                                LIMPIAR
+                            </MudButton>
+                        </MudCardActions>
+                    </EditForm>
+                </MudCard>
+            </ChildContent>
+        </MudExpansionPanel>
+    </MudExpansionPanels>
+
+    <MudDivider />
+    <MudText Typo="@Typo.h6" Align="@Align.Center" Color="@Color.Success">
+        <b>LISTA DE HORARIOS</b>
+    </MudText>
+    <MudDivider />
+
+    <!-- Tabla -->
+    <MudTable Items="@_horarios"
+              Filterable="true" Sortable="true" Bordered="true"
+              Hover="true" Dense="true" RowsPerPage="25"
+              RowsPerPageOptions="new int[]{10,25,50,100}">
+
+        <HeaderContent>
+            <MudTh style="width:8%">ID</MudTh>
+            <MudTh>RUTA</MudTh>
+            <MudTh>HORA</MudTh>
+            <MudTh>DÍA</MudTh>
+            <MudTh>DIRECCIÓN</MudTh>
+            <MudTh>DESDE</MudTh>
+            <MudTh>HASTA</MudTh>
+            <MudTh style="width:140px">OPCIONES</MudTh>
+        </HeaderContent>
+
+        <RowTemplate Context="h">
+            <MudTd>@h.IdHorario</MudTd>
+            <MudTd>@NombreRuta(h.IdRuta)</MudTd>
+            <MudTd>@h.HoraSalida</MudTd>
+            <MudTd>@h.DiaSemana</MudTd>
+            <MudTd>@h.Direccion</MudTd>
+            <MudTd>@NombreParada(h.DesdeParadaId)</MudTd>
+            <MudTd>@NombreParada(h.HastaParadaId)</MudTd>
+            <MudTd>
+                <MudTooltip Text="EDITAR" Placement="@Placement.Top">
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                   Color="@Color.Warning" Size="@Size.Small"
+                                   OnClick="@(() => FormEditar(h))"
+                                   AriaLabel="Editar horario" />
+                </MudTooltip>
+                <MudTooltip Text="ELIMINAR" Placement="@Placement.Top">
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                   Color="@Color.Error" Size="@Size.Small"
+                                   OnClick="@(async () => await Eliminar(h.IdHorario))"
+                                   AriaLabel="Eliminar horario" />
+                </MudTooltip>
+            </MudTd>
+        </RowTemplate>
+
+        <PagerContent>
+            <MudTablePager />
+        </PagerContent>
+    </MudTable>
+</MudCard>

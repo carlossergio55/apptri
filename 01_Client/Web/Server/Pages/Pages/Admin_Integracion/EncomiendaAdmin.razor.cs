@@ -1,7 +1,10 @@
-using Infraestructura.Abstract;
+﻿using Infraestructura.Abstract;
 using Infraestructura.Models.Integracion;
 using Microsoft.AspNetCore.Components.Forms;
+using MudBlazor;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Server.Pages.Pages.Admin_Integracion
@@ -9,130 +12,254 @@ namespace Server.Pages.Pages.Admin_Integracion
     public partial class EncomiendaAdmin
     {
         private bool expande = false;
+        private bool _isSubmitting = false;
 
-        public EncomiendaDto _Encomienda = new();
+        // Estados permitidos (para el MudSelect)
+        private static readonly string[] _estados = new[]
+        {
+            "en camino", "en destino", "entregado", "devuelta"
+        };
+
+        // Filtro
+        private string? _filtroGuiacarga;
+
+        // Form
+        public EncomiendaDto _E = new();
+
+        // Listas
         public List<EncomiendaDto> _encomiendas = new();
         public List<ViajeDto> _viajes = new();
         public List<ParadaDto> _paradas = new();
+        public List<RutaDto> _rutas = new();
 
-        // Selecciones de los Autocomplete (nullable)
-        private int? _viajeSel;
-        private int? _origenSel;
-        private int? _destinoSel;
+        // ===== Helpers de UI =====
+        private void ToggleExpand() => expande = !expande;
 
-        protected override async Task OnInitializedAsync()
+        private void ResetForm()
         {
-            await GetEncomiendas();
-            await GetViajes();
-            await GetParadas();
+            _E = new EncomiendaDto
+            {
+                Estado = "en camino",
+                Pagado = false
+            };
         }
 
+        private string ViajeEtiqueta(ViajeDto v)
+        {
+            var ruta = _rutas.FirstOrDefault(r => r.IdRuta == v.IdRuta);
+            var rname = ruta is null ? $"Ruta {v.IdRuta}" : $"{ruta.Origen} → {ruta.Destino}";
+            return $"{v.Fecha:dd/MM/yyyy} {v.HoraSalida} · {rname}";
+        }
+
+        private IEnumerable<ParadaDto> ParadasFiltradasParaViaje(int idViaje)
+        {
+            var v = _viajes.FirstOrDefault(x => x.IdViaje == idViaje);
+            if (v == null) return _paradas; // fallback: todas
+            // Si tienes "ruta_parada" en el front podrías filtrar por v.IdRuta. Por ahora devolvemos todas.
+            return _paradas;
+        }
+
+        private string FechaViaje(EncomiendaDto e)
+        {
+            var v = _viajes.FirstOrDefault(x => x.IdViaje == e.IdViaje);
+            return v is null ? "-" : v.Fecha.ToString("dd/MM/yyyy");
+        }
+
+        private string HoraViaje(EncomiendaDto e)
+        {
+            var v = _viajes.FirstOrDefault(x => x.IdViaje == e.IdViaje);
+            return v?.HoraSalida ?? "-";
+        }
+
+        private string RutaNombrePorViaje(int idViaje)
+        {
+            var v = _viajes.FirstOrDefault(x => x.IdViaje == idViaje);
+            if (v == null) return "-";
+            var r = _rutas.FirstOrDefault(x => x.IdRuta == v.IdRuta);
+            return r is null ? $"Ruta {v.IdRuta}" : $"{r.Origen} → {r.Destino}";
+        }
+
+        // ===== CRUD =====
         private async Task GetEncomiendas()
         {
-            var res = await _Rest.GetAsync<List<EncomiendaDto>>("Encomienda/encomienda");
-            if (res.State == State.Success) _encomiendas = res.Data;
-            else _MessageShow(res.Message, State.Warning);
+            try
+            {
+                var url = string.IsNullOrWhiteSpace(_filtroGuiacarga)
+                    ? "Encomienda/encomienda"
+                    : $"Encomienda/encomienda?guiacarga={Uri.EscapeDataString(_filtroGuiacarga)}";
+
+                var res = await _Rest.GetAsync<List<EncomiendaDto>>(url);
+                _encomiendas = res.State == State.Success ? (res.Data ?? new()) : new();
+                if (res.State != State.Success) _MessageShow(res.Message, State.Warning);
+            }
+            catch (Exception ex)
+            {
+                _MessageShow($"No se pudo obtener encomiendas: {ex.Message}", State.Error);
+                _encomiendas = new();
+            }
         }
 
         private async Task GetViajes()
         {
-            var res = await _Rest.GetAsync<List<ViajeDto>>("Viaje/viaje");
-            if (res.State == State.Success) _viajes = res.Data;
-            else _MessageShow(res.Message, State.Warning);
+            try
+            {
+                var res = await _Rest.GetAsync<List<ViajeDto>>("Viaje/viaje");
+                _viajes = res.State == State.Success ? (res.Data ?? new()) : new();
+                if (res.State != State.Success) _MessageShow(res.Message, State.Warning);
+            }
+            catch (Exception ex)
+            {
+                _MessageShow($"No se pudo obtener viajes: {ex.Message}", State.Error);
+                _viajes = new();
+            }
         }
 
         private async Task GetParadas()
         {
-            var res = await _Rest.GetAsync<List<ParadaDto>>("Parada/parada");
-            if (res.State == State.Success) _paradas = res.Data;
-            else _MessageShow(res.Message, State.Warning);
+            try
+            {
+                var res = await _Rest.GetAsync<List<ParadaDto>>("Parada/parada");
+                _paradas = res.State == State.Success ? (res.Data ?? new()) : new();
+                if (res.State != State.Success) _MessageShow(res.Message, State.Warning);
+            }
+            catch (Exception ex)
+            {
+                _MessageShow($"No se pudo obtener paradas: {ex.Message}", State.Error);
+                _paradas = new();
+            }
         }
 
-        private async Task OnValidEncomienda(EditContext _)
+        private async Task GetRutas()
         {
-            // Pasar las selecciones (int?) al DTO antes de guardar
-            _Encomienda.IdViaje = _viajeSel ?? _Encomienda.IdViaje;
-            _Encomienda.OrigenParadaId = _origenSel;
-            _Encomienda.DestinoParadaId = _destinoSel;
-
-            if (_Encomienda.IdEncomienda > 0)
-                await Update(_Encomienda);
-            else
-                await Save(_Encomienda);
-
-            // Reset
-            _Encomienda = new EncomiendaDto();
-            _viajeSel = _origenSel = _destinoSel = null;
-
-            await GetEncomiendas();
-            ToggleExpand();
+            try
+            {
+                var res = await _Rest.GetAsync<List<RutaDto>>("Ruta/ruta");
+                _rutas = res.State == State.Success ? (res.Data ?? new()) : new();
+                if (res.State != State.Success) _MessageShow(res.Message, State.Warning);
+            }
+            catch (Exception ex)
+            {
+                _MessageShow($"No se pudo obtener rutas: {ex.Message}", State.Error);
+                _rutas = new();
+            }
         }
 
         private async Task Save(EncomiendaDto dto)
         {
-            _Loading.Show();
-            var r = await _Rest.PostAsync<int?>("Encomienda/guardar", new { Encomienda = dto });
-            _Loading.Hide();
-            _MessageShow(r.Message, r.State);
-            if (r.State != State.Success) r.Errors.ForEach(e => _MessageShow(e, State.Warning));
+            try
+            {
+                _Loading.Show();
+                var r = await _Rest.PostAsync<int?>("Encomienda/guardar", new { Encomienda = dto });
+                _MessageShow(r.Message, r.State);
+
+                if (r.State != State.Success && r.Errors != null)
+                    foreach (var e in r.Errors) _MessageShow(e, State.Warning);
+            }
+            catch (Exception ex)
+            {
+                _MessageShow($"Error al guardar: {ex.Message}", State.Error);
+            }
+            finally
+            {
+                _Loading.Hide();
+            }
         }
 
         private async Task Update(EncomiendaDto dto)
         {
-            _Loading.Show();
-            var r = await _Rest.PutAsync<int>("Encomienda", dto, dto.IdEncomienda);
-            _Loading.Hide();
-            _MessageShow(r.Message, r.State);
+            try
+            {
+                _Loading.Show();
+                var r = await _Rest.PutAsync<int>("Encomienda", dto, dto.IdEncomienda);
+                _MessageShow(r.Message, r.State);
+            }
+            catch (Exception ex)
+            {
+                _MessageShow($"Error al actualizar: {ex.Message}", State.Error);
+            }
+            finally
+            {
+                _Loading.Hide();
+            }
         }
 
-        private void FormEditar(EncomiendaDto dto)
+        private async Task Eliminar(int id)
         {
-            _Encomienda = new EncomiendaDto
+            await _MessageConfirm("¿Eliminar la encomienda?", async () =>
+            {
+                try
+                {
+                    var r = await _Rest.DeleteAsync<int>("Encomienda", id);
+                    if (!r.Succeeded) _MessageShow(r.Message, State.Error);
+                    else
+                    {
+                        _MessageShow(r.Message, r.State);
+                        await GetEncomiendas();
+                        StateHasChanged();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _MessageShow($"Error al eliminar: {ex.Message}", State.Error);
+                }
+            });
+        }
+
+        private async Task OnValidSubmit(EditContext _)
+        {
+            if (_isSubmitting) return;
+            _isSubmitting = true;
+
+            try
+            {
+                if (_E.IdViaje <= 0)
+                {
+                    _MessageShow("Debe seleccionar un Viaje.", State.Warning);
+                    return;
+                }
+
+                if (_E.IdEncomienda > 0) await Update(_E);
+                else await Save(_E);
+
+                ResetForm();
+                await GetEncomiendas();
+                if (expande) ToggleExpand();
+            }
+            finally
+            {
+                _isSubmitting = false;
+            }
+        }
+
+        private void Editar(EncomiendaDto dto)
+        {
+            _E = new EncomiendaDto
             {
                 IdEncomienda = dto.IdEncomienda,
                 Remitente = dto.Remitente,
                 Destinatario = dto.Destinatario,
+                Guiacarga = dto.Guiacarga,
                 Descripcion = dto.Descripcion,
                 Peso = dto.Peso,
                 Precio = dto.Precio,
                 IdViaje = dto.IdViaje,
-                IdGuiaCarga = dto.IdGuiaCarga,
-                CodigoGuia = dto.CodigoGuia,
                 Estado = dto.Estado,
                 Pagado = dto.Pagado,
                 OrigenParadaId = dto.OrigenParadaId,
                 DestinoParadaId = dto.DestinoParadaId
             };
 
-            // Pre-cargar selecciones en los Autocomplete
-            _viajeSel = dto.IdViaje;
-            _origenSel = dto.OrigenParadaId;
-            _destinoSel = dto.DestinoParadaId;
-
-            ToggleExpand();
+            if (!expande) ToggleExpand();
         }
 
-        private void ResetEncomienda()
+        // ===== Init =====
+        protected override async Task OnInitializedAsync()
         {
-            _Encomienda = new EncomiendaDto();
-            _viajeSel = _origenSel = _destinoSel = null;
-        }
-
-        private void ToggleExpand() => expande = !expande;
-
-        private async Task Eliminar(int id)
-        {
-            await _MessageConfirm("�Eliminar el registro?", async () =>
-            {
-                var r = await _Rest.DeleteAsync<int>("Encomienda", id);
-                if (!r.Succeeded) _MessageShow(r.Message, State.Error);
-                else
-                {
-                    _MessageShow(r.Message, r.State);
-                    await GetEncomiendas();
-                    StateHasChanged();
-                }
-            });
+            ResetForm();
+            await GetRutas();
+            await GetParadas();
+            await GetViajes();
+            await GetEncomiendas();
         }
     }
 }

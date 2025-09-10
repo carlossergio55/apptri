@@ -1,68 +1,63 @@
-﻿.rastreo-contenedor {
+﻿/* Contenedor: solo centrar y espaciar */
+.rastreo-contenedor {
     display: flex;
     justify-content: center;
+    padding: 16px; /* respiración lateral */
     width: 100%;
-    max-width: 95%; /* para pantallas pequeñas */
-    max-width: 600px; /* ancho máximo sin fijarlo */
-    margin: auto;
-    background-color: #fff;
-    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
-    border-radius: 30px;
     box-sizing: border-box;
-    padding: 10px;
 }
 
+/* Tarjeta: manda en el ancho */
 .rastreo-formulario {
     position: relative;
-    
-    background: linear-gradient(#fff, #808080) padding-box, linear-gradient(145deg, transparent 35%,#e81cff, #40c9ff) border-box;
+    width: min(640px, 100%); /* ancho máximo deseado */
+    margin: 0 auto; /* centrada */
+    background: linear-gradient(#fff, #808080) padding-box, linear-gradient(145deg, transparent 35%, #e81cff, #40c9ff) border-box;
     border: 3px solid transparent;
-    padding: 22px 22px;
+    padding: 22px;
     font-size: 14px;
     font-family: inherit;
     color: black;
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 8px;
     box-sizing: border-box;
-    border-radius: 6px;
+    border-radius: 12px; /* un poco más redondeada */
 }
 
+/* Título */
 .rastreo-titulo {
     text-align: center;
-    font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande", "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
-    margin: 10px 0 0px 0;
+    margin: 10px 0 0 0;
     font-size: 28px;
     font-weight: 800;
+    font-family: "Lucida Sans","Lucida Sans Regular","Lucida Grande", "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
 }
 
-
-
-
+/* Etiqueta */
 .custom-label {
     display: block;
     margin-bottom: .3rem;
     font-size: 0.9rem;
-    
     font-weight: bold;
     color: #05060f99;
-    transition: color 0.3s cubic-bezier(.25,.01,.25,1) 0s;
+    transition: color .3s cubic-bezier(.25,.01,.25,1) 0s;
 }
 
+/* Input: que ocupe todo el ancho de la tarjeta */
 .custom-input input {
-    max-width: 90px;
     width: 100%;
+    max-width: 100%; /* quita el límite de 90px */
     height: 40px;
     background-color: #05060f0a;
     border-radius: .5rem;
     padding: 0 10px;
 }
 
-
+/* Botón */
 .rastreo-boton-buscar {
     cursor: pointer;
-    margin: 1rem;
-    margin-bottom: 4rem;
+    margin: 1rem 0 4rem 0;
     border: none;
     border-radius: 9px;
     font-weight: bold;
@@ -72,7 +67,7 @@
     background-color: #aa84b5;
     color: black;
     box-shadow: 3px 8px 24px 0 #1f1b8f;
-    transition: all 0.3s ease-in-out;
+    transition: all .3s ease-in-out;
 }
 
     .rastreo-boton-buscar:hover {
@@ -80,3 +75,101 @@
         color: white;
         box-shadow: 2px 8px 24px 0 #834280;
     }
+/* Header */
+.rastreo-header-icon {
+    font-size: 26px;
+    margin-right: 6px;
+}
+
+.rastreo-estado-chip {
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+}
+
+/* Etiquetas */
+.rastreo-info .rastreo-field-label {
+    font-weight: 600;
+    color: #2b2b2b;
+    margin-bottom: 2px;
+}
+
+/* Timeline */
+/* Timeline (3 pasos) */
+.rastreo-timeline {
+    --tl-color: #6c63ff; /* color por defecto */
+    position: relative;
+    margin: 6px 0 18px;
+    padding: 22px 8px 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* <-- 3 columnas */
+    column-gap: 4px;
+    row-gap: 8px;
+    font-size: 12px;
+    color: #666;
+}
+
+    .rastreo-timeline .tl-line {
+        position: absolute;
+        top: 26px;
+        left: 8px;
+        right: 8px;
+        height: 4px;
+        background: #e6e6e6;
+        border-radius: 3px;
+    }
+
+    /* “bolitas” */
+    .rastreo-timeline .tl-step {
+        text-align: center;
+        position: relative;
+    }
+
+        .rastreo-timeline .tl-step::before {
+            content: "";
+            display: block;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #bdbdbd;
+            margin: 0 auto 6px;
+            box-shadow: 0 0 0 3px #fff inset;
+        }
+
+        .rastreo-timeline .tl-step.done::before,
+        .rastreo-timeline .tl-step.active::before {
+            background: var(--tl-color);
+        }
+
+        .rastreo-timeline .tl-step.active {
+            font-weight: 700;
+            color: #222;
+        }
+
+    /* Progreso de la línea en 3 tramos: 33/66/100% */
+    .rastreo-timeline.step-1 .tl-line {
+        background: linear-gradient(to right, var(--tl-color) 33.333%, #e6e6e6 0);
+    }
+
+    .rastreo-timeline.step-2 .tl-line {
+        background: linear-gradient(to right, var(--tl-color) 66.666%, #e6e6e6 0);
+    }
+
+    .rastreo-timeline.step-3 .tl-line {
+        background: linear-gradient(to right, var(--tl-color) 100%, #e6e6e6 0);
+    }
+
+    /* Colores por estado (solo 3) */
+    .rastreo-timeline.encamino {
+        --tl-color: #2196f3;
+    }
+    /* Info */
+    .rastreo-timeline.endestino {
+        --tl-color: #ff9800;
+    }
+    /* Warning */
+    .rastreo-timeline.entregado {
+        --tl-color: #4caf50;
+    }
+/* Success */
+

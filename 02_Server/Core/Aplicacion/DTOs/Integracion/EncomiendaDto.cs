@@ -19,10 +19,7 @@ namespace Aplicacion.DTOs.Integracion
         public decimal Peso { get; set; }
         public bool Pagado { get; set; }
 
-        // === Nueva relación ===
-  
-        public string CodigoGuia { get; set; } = string.Empty;
-
+ 
         // Tramo
         public int? OrigenParadaId { get; set; }
         public int? DestinoParadaId { get; set; }

@@ -19,8 +19,8 @@ namespace Aplicacion.Features.Integracion.Commands.EncomiendaC
         public string Estado { get; set; } = "en camino";
         public decimal Peso { get; set; }
         public bool Pagado { get; set; }
+        public string? Guiacarga { get; set; }
 
-        public int IdGuiaCarga { get; set; }
 
         public int? OrigenParadaId { get; set; }
         public int? DestinoParadaId { get; set; }
@@ -51,7 +51,7 @@ namespace Aplicacion.Features.Integracion.Commands.EncomiendaC
             encomienda.Pagado = request.Pagado;
 
            
-            encomienda.IdEncomienda = request.  IdEncomienda;
+            encomienda.Guiacarga = request.Guiacarga;
             encomienda.OrigenParadaId = request.OrigenParadaId;
             encomienda.DestinoParadaId = request.DestinoParadaId;
 

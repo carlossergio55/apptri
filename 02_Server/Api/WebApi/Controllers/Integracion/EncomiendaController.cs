@@ -11,19 +11,35 @@ namespace WebApi.Controllers.Integracion
     [ApiController]
     public class EncomiendaController : BaseApiController
     {
-        [HttpGet("GetAllGuia")]
-        public async Task<IActionResult> GetAllEncomiendas([FromQuery] string? guiacarga)
-    => Ok(await Mediator.Send(new GetAllEncomiendaGuiaQuery(guiacarga)));
+        // ============================
+        //   PÚBLICO (rastreo por guía)
+        //   GET /api/v1/Encomienda/track/{guiacarga}
+        //   GET /api/v1/Encomienda/track?guiacarga=ABC123
+        // ============================
+        [HttpGet("track/{guiacarga?}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> Track(string? guiacarga)
+        {
+            if (string.IsNullOrWhiteSpace(guiacarga))
+                return BadRequest("guiacarga requerida.");
 
+            return Ok(await Mediator.Send(new EncomiendaGuiaQuery { Guiacarga = guiacarga }));
+        }
+
+
+        // ============================
+        //   ADMIN (listado / gestión)
+        //   GET /api/v1/Encomienda/encomienda?guiacarga=...
+        // ============================
         [HttpGet("encomienda")]
         [Authorize]
-        public async Task<IActionResult> Get() =>
-            Ok(await Mediator.Send(new GetAllEncomiendaQuery()));
+        public async Task<IActionResult> Get([FromQuery] string? guiacarga = null)
+            => Ok(await Mediator.Send(new GetAllEncomiendaQuery { Guiacarga = guiacarga }));
 
         [HttpPost("guardar")]
         [Authorize]
-        public async Task<IActionResult> Post(CreateEncomiendaCommand command) =>
-            Ok(await Mediator.Send(command));
+        public async Task<IActionResult> Post(CreateEncomiendaCommand command)
+            => Ok(await Mediator.Send(command));
 
         [HttpPut("{id}")]
         [Authorize]
@@ -35,7 +51,7 @@ namespace WebApi.Controllers.Integracion
 
         [HttpDelete("{id}")]
         [Authorize]
-        public async Task<IActionResult> Delete(int id) =>
-            Ok(await Mediator.Send(new DeleteEncomiendaCommand { IdEncomienda = id }));
+        public async Task<IActionResult> Delete(int id)
+            => Ok(await Mediator.Send(new DeleteEncomiendaCommand { IdEncomienda = id }));
     }
 }

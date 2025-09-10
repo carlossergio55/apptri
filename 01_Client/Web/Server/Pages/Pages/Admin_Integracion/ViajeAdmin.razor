@@ -6,6 +6,19 @@
 @layout MainLayout
 
 <MudCard>
+
+    <!-- Acciones rápidas -->
+    <MudStack Row="true" Spacing="2" Class="p-4 pt-3">
+        <MudButton Color="Color.Success" Variant="Variant.Filled"
+                   OnClick="@(()=> GenerarProximos(14))">
+            GENERAR PRÓXIMOS 14 DÍAS
+        </MudButton>
+        <MudButton Color="Color.Info" Variant="Variant.Outlined"
+                   OnClick="@(()=> GenerarProximos(1))">
+            GENERAR MAÑANA
+        </MudButton>
+    </MudStack>
+
     <MudExpansionPanels MultiExpansion="false">
         <MudExpansionPanel @bind-IsExpanded="expande" HideIcon="true">
             <TitleContent>
@@ -26,29 +39,28 @@
                         <MudCardContent>
                             <MudGrid>
 
-                                <!-- Fecha (usar DateTime? local: _fechaSel) -->
+                                <!-- FECHA -->
                                 <MudItem xs="12" sm="6" md="4">
                                     <MudDatePicker @bind-Date="_fechaSel"
-                                                   Label="FECHA:"
+                                                   Label="FECHA"
                                                    Variant="Variant.Outlined"
                                                    Margin="Margin.Dense"
                                                    Required="true" />
                                 </MudItem>
 
-                                <!-- Hora salida (string en tu DTO) -->
+                                <!-- HORA -->
                                 <MudItem xs="12" sm="6" md="4">
                                     <MudGrid>
                                         <MudItem xs="8">
                                             <MudSelect Dense="true" T="string"
-                                                       Label="HORA SALIDA:"
+                                                       Label="HORA SALIDA"
                                                        @bind-Value="_Viaje.HoraSalida"
                                                        Variant="Variant.Outlined"
                                                        Margin="Margin.Dense">
-                                                <MudSelectItem T="string" Value='@("09:00")'>@("09:00")</MudSelectItem>
-                                                <MudSelectItem T="string" Value='@("12:00")'>@("12:00")</MudSelectItem>
-                                                <MudSelectItem T="string" Value='@("13:30")'>@("13:30")</MudSelectItem>
-                                                <MudSelectItem T="string" Value='@("14:00")'>@("14:00")</MudSelectItem>
-                                                <MudSelectItem T="string" Value='@("17:30")'>@("17:30")</MudSelectItem>
+                                                @foreach (var h in _horasPreset)
+                                                {
+                                                    <MudSelectItem T="string" Value="@h">@h</MudSelectItem>
+                                                }
                                             </MudSelect>
                                         </MudItem>
 
@@ -59,40 +71,53 @@
                                         </MudItem>
 
                                         <MudItem xs="12">
-                                            <MudTextField @bind-Value="_Viaje.HoraSalida"
+                                            <MudTextField T="string"
+                                                          @bind-Value="_Viaje.HoraSalida"
                                                           Label="Editar hora manualmente"
                                                           Variant="Variant.Outlined"
                                                           Margin="Margin.Dense"
-                                                          Required="true"
-                                                          MaxLength="8" />
+                                                          HelperText="Formato HH:mm"
+                                                          Mask="@_maskHora"
+                                                          Required="true" />
                                         </MudItem>
                                     </MudGrid>
                                 </MudItem>
 
-                                <!-- Estado -->
+                                <!-- ESTADO -->
                                 <MudItem xs="12" sm="6" md="4">
-                                    <MudTextField @bind-Value="_Viaje.Estado"
-                                                  Label="ESTADO:"
-                                                  Variant="Variant.Outlined"
-                                                  Margin="Margin.Dense"
-                                                  MaxLength="50" />
+                                    <MudSelect T="string"
+                                               @bind-Value="_Viaje.Estado"
+                                               Label="ESTADO"
+                                               Variant="Variant.Outlined"
+                                               Dense="true">
+                                        <MudSelectItem T="string" Value='@("PROGRAMADO")'>PROGRAMADO</MudSelectItem>
+                                        <MudSelectItem T="string" Value='@("EMBARCANDO")'>EMBARCANDO</MudSelectItem>
+                                        <MudSelectItem T="string" Value='@("ENRUTA")'>ENRUTA</MudSelectItem>
+                                        <MudSelectItem T="string" Value='@("FINALIZADO")'>FINALIZADO</MudSelectItem>
+                                        <MudSelectItem T="string" Value='@("CANCELADO")'>CANCELADO</MudSelectItem>
+                                    </MudSelect>
                                 </MudItem>
 
-                                <!-- Ruta (numérica por ahora) -->
+
+                                <!-- RUTA -->
                                 <MudItem xs="12" sm="6" md="4">
-                                    <MudNumericField @bind-Value="_Viaje.IdRuta" T="int"
-                                                     Label="ID RUTA:"
-                                                     Variant="Variant.Outlined"
-                                                     Margin="Margin.Dense"
-                                                     Required="true" />
+                                    <MudSelect T="int" @bind-Value="_Viaje.IdRuta"
+                                               Label="RUTA"
+                                               Variant="Variant.Outlined"
+                                               Dense="true"
+                                               Required="true">
+                                        @foreach (var r in _rutas)
+                                        {
+                                            <MudSelectItem Value="@r.IdRuta">@($"{r.Origen} → {r.Destino}")</MudSelectItem>
+                                        }
+                                    </MudSelect>
                                 </MudItem>
 
-                                <!-- Chofer -->
+                                <!-- CHOFER -->
                                 <MudItem xs="12" sm="6" md="4">
-                                    <MudText Typo="Typo.caption" Class="mb-1"><strong>CHOFER</strong></MudText>
                                     <MudSelect T="int?" @bind-Value="_choferSel"
                                                Variant="Variant.Outlined" Dense="true"
-                                               Label="SELECCIONE UN CHOFER">
+                                               Label="CHOFER">
                                         @foreach (var c in _chofer)
                                         {
                                             <MudSelectItem Value="@((int?)c.IdChofer)">@c.Nombre</MudSelectItem>
@@ -100,12 +125,11 @@
                                     </MudSelect>
                                 </MudItem>
 
-                                <!-- Bus -->
+                                <!-- BUS -->
                                 <MudItem xs="12" sm="6" md="4">
-                                    <MudText Typo="Typo.caption" Class="mb-1"><strong>BUS</strong></MudText>
                                     <MudSelect T="int?" @bind-Value="_busSel"
                                                Variant="Variant.Outlined" Dense="true"
-                                               Label="SELECCIONE UN BUS">
+                                               Label="BUS">
                                         @foreach (var b in _bus)
                                         {
                                             <MudSelectItem Value="@((int?)b.IdBus)">@b.Placa</MudSelectItem>
@@ -143,23 +167,31 @@
             <MudTh style="width:5%;max-width:60px;">
                 <MudTableSortLabel SortBy="new Func<ViajeDto, object>(x => x.IdViaje)">COD.</MudTableSortLabel>
             </MudTh>
-            <MudTh><MudTableSortLabel SortBy="new Func<ViajeDto, object>(x => x.Fecha)">FECHA</MudTableSortLabel></MudTh>
-            <MudTh><MudTableSortLabel SortBy="new Func<ViajeDto, object>(x => x.HoraSalida)">HORA</MudTableSortLabel></MudTh>
-            <MudTh><MudTableSortLabel SortBy="new Func<ViajeDto, object>(x => x.Estado)">ESTADO</MudTableSortLabel></MudTh>
-            <MudTh><MudTableSortLabel SortBy="new Func<ViajeDto, object>(x => x.IdRuta)">RUTA</MudTableSortLabel></MudTh>
-            <MudTh><MudTableSortLabel SortBy="new Func<ViajeDto, object>(x => x.IdChofer)">CHOFER</MudTableSortLabel></MudTh>
-            <MudTh><MudTableSortLabel SortBy="new Func<ViajeDto, object>(x => x.IdBus)">BUS</MudTableSortLabel></MudTh>
-            <MudTh>Opciones</MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<ViajeDto, object>(x => x.Fecha)">FECHA</MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<ViajeDto, object>(x => x.HoraSalida)">HORA</MudTableSortLabel>
+            </MudTh>
+            <MudTh>ESTADO</MudTh>
+            <MudTh>RUTA</MudTh>
+            <MudTh>CHOFER</MudTh>
+            <MudTh>BUS</MudTh>
+            <MudTh>OPCIONES</MudTh>
         </HeaderContent>
 
         <RowTemplate>
             <MudTd>@context.IdViaje</MudTd>
             <MudTd>@context.Fecha.ToString("dd/MM/yyyy")</MudTd>
             <MudTd>@context.HoraSalida</MudTd>
-            <MudTd>@context.Estado</MudTd>
-            <MudTd>@context.IdRuta</MudTd>
-            <MudTd>@context.IdChofer</MudTd>
-            <MudTd>@context.IdBus</MudTd>
+            <MudTd>
+                <MudChip Color="@EstadoColor(context.Estado)" Variant="Variant.Filled" Size="Size.Small">
+                    @context.Estado
+                </MudChip>
+            </MudTd>
+            <MudTd>@NombreRuta(context.IdRuta)</MudTd>
+            <MudTd>@NombreChofer(context.IdChofer)</MudTd>
+            <MudTd>@NombreBus(context.IdBus)</MudTd>
             <MudTd>
                 <MudTooltip Text="EDITAR" Placement="Placement.Top">
                     <MudIconButton Icon="@Icons.Material.Filled.Edit"

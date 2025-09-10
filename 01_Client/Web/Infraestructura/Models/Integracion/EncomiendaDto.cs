@@ -12,7 +12,10 @@ namespace Infraestructura.Models.Integracion
 
         [Required(ErrorMessage = "El destinatario es obligatorio")]
         public string Destinatario { get; set; } = string.Empty;
+
+        // Único campo de guía que usamos (opcional al crear; si viene vacío, el back lo genera)
         public string? Guiacarga { get; set; }
+
         public string? Descripcion { get; set; }
 
         [Range(0.01, 1000, ErrorMessage = "Peso inválido")]
@@ -24,14 +27,10 @@ namespace Infraestructura.Models.Integracion
         [Required]
         public int IdViaje { get; set; }
 
-        // ----- Guía de carga (nuevo esquema) -----
-        public int IdGuiaCarga { get; set; }                 // FK (lo llena el back si mandas CodigoGuia)
-        public string CodigoGuia { get; set; } = string.Empty; // Visible en UI
-
         public string Estado { get; set; } = "en camino";
         public bool Pagado { get; set; }
 
-        // ----- Tramo (nuevos) -----
+        // Tramo
         public int? OrigenParadaId { get; set; }
         public int? DestinoParadaId { get; set; }
     }

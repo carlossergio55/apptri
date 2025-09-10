@@ -2,96 +2,96 @@
 @layout PublicLayout
 @using Infraestructura.Models.Integracion
 @using MudBlazor
-@inject NavigationManager Nav
-@inject ISnackbar Snackbar
-@using Infraestructura.Models.Clasificador
-@using Microsoft.AspNetCore.Components
-@using Syncfusion.Blazor.Grids
-@using System.Globalization
 @inherits MainBaseComponent
 
 <link href="styles/Integracion/rastreo.css" rel="stylesheet" />
 
-
-<MudContainer MaxWidth="MaxWidth.Medium" Class="rastreo-contenedor mt-10">
+<MudContainer MaxWidth="MaxWidth.False" Class="rastreo-contenedor mt-10">
 
     <MudPaper Elevation="3" Class="rastreo-formulario p-6 rounded-xl">
 
-        <!-- Encabezado con título centrado y botón limpiar -->
-        <MudStack Direction="Row" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-6">
-            <MudText Typo="Typo.h4" Class="rastreo-titulo mx-auto">
-                RASTREO DE CARGA
-            </MudText>
-
+        <MudStack Direction="Row" Justify="Justify.Center" AlignItems="AlignItems.Center" Class="mb-2">
+            <MudText Typo="Typo.h4" Class="rastreo-titulo">RASTREO DE CARGA</MudText>
         </MudStack>
-        <MudText Typo="Typo.h4" Class="rastreo-texto mx-auto">
-            Este servicio le permite conocer la ubicación y estado de su carga o encomienda en tiempo real
+
+        <MudText Typo="Typo.body1" Class="rastreo-texto mx-auto mb-4">
+            Ingrese el número de guía para conocer el estado de su encomienda.
         </MudText>
 
-        @* Línea gruesa que cierra la sección *@
-        <MudDivider Style="background-color: lightblue; height: 2px;" Class="mt-4 mb-6" />
+        <MudDivider Style="background-color: lightblue; height: 2px;" Class="mt-2 mb-6" />
 
-
-
-        <MudText Typo="Typo.body1" Class="custom-label">
-            Ingrese el número de Guía de carga o encomienda
-        </MudText>
+        <MudText Typo="Typo.body1" Class="custom-label">Número de guía</MudText>
 
         <MudTextField @bind-Value="numeroGuia"
-                      Label=""
+                      Placeholder="Ej: 123-ABC"
                       Variant="Variant.Outlined"
                       Class="custom-input"
-                      Placeholder="Ej: 123-ABC"
                       Adornment="Adornment.Start"
                       AdornmentIcon="@Icons.Material.Filled.LocalShipping"
-                      Immediate="true" />
+                      Immediate="true"
+                      OnKeyDown="OnBuscarKeyDown" />
 
-
-        <!-- Botón buscar -->
-        <MudStack Justify="Justify.Center" AlignItems="AlignItems.Center">
+        <MudStack Justify="Justify.Center" AlignItems="AlignItems.Center" Class="mt-4">
             <MudButton Variant="Variant.Filled"
                        Class="rastreo-boton-buscar"
                        EndIcon="@Icons.Material.Filled.Search"
                        OnClick="BuscarPorGuia">
                 Buscar
             </MudButton>
-
-            @if (MostrandoResultado)
-            {
-                <MudPaper Elevation="2" Class="mt-6 p-4 rounded-lg bg-grey-lighten-5">
-
-                    <MudText Typo="Typo.h6" Class="mb-4 text-primary">📦 Información de la Encomienda</MudText>
-
-                    <MudGrid>
-                        <MudItem xs="12" sm="6">
-                            <MudText Typo="Typo.subtitle2">Guía de Carga:</MudText>
-                            <MudText Typo="Typo.body1">@EncomiendaEncontrada.Guiacarga</MudText>
-                        </MudItem>
-
-                        <MudItem xs="12" sm="6">
-                            <MudText Typo="Typo.subtitle2">Remitente:</MudText>
-                            <MudText Typo="Typo.body1">@EncomiendaEncontrada.Remitente</MudText>
-                        </MudItem>
-
-                        <MudItem xs="12" sm="6">
-                            <MudText Typo="Typo.subtitle2">Destinatario:</MudText>
-                            <MudText Typo="Typo.body1">@EncomiendaEncontrada.Destinatario</MudText>
-                        </MudItem>
-
-                        <MudItem xs="12" sm="6">
-                            <MudText Typo="Typo.subtitle2">Descripción:</MudText>
-                            <MudText Typo="Typo.body1">@EncomiendaEncontrada.Descripcion</MudText>
-                        </MudItem>
-
-                        @* Puedes agregar más datos como estado, peso, etc. si están en tu DTO *@
-                    </MudGrid>
-
-                </MudPaper>
-            }
-
         </MudStack>
+
+        @if (MostrandoResultado)
+        {
+            <MudPaper Elevation="2" Class="mt-6 p-4 rounded-lg bg-grey-lighten-5">
+
+                <!-- Header con estado -->
+                <MudStack Direction="Row" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-3 rastreo-header">
+                    <MudStack Direction="Row" AlignItems="AlignItems.Center" Spacing="1">
+                        <MudIcon Icon="@Icons.Material.Filled.Inventory2" Class="rastreo-header-icon" />
+                        <MudText Typo="Typo.h6" Class="text-primary">Información de la Encomienda</MudText>
+                    </MudStack>
+
+                    <MudChip Variant="Variant.Filled"
+                             StartIcon="@Icons.Material.Filled.LocalShipping"
+                             Color="@GetEstadoColor(EncomiendaEncontrada!.Estado)"
+                             Class="rastreo-estado-chip">
+                        @EncomiendaEncontrada!.Estado
+                    </MudChip>
+                </MudStack>
+
+                <!-- Timeline de estado -->
+                <div class="rastreo-timeline @GetEstadoCss(EncomiendaEncontrada!.Estado) step-@GetEstadoStep(EncomiendaEncontrada!.Estado)">
+                    <div class="tl-line"></div>
+                    <div class="@StepClass(1)">En camino</div>
+                    <div class="@StepClass(2)">En destino</div>
+                    <div class="@StepClass(3)">Entregado</div>
+                    
+                </div>
+
+                <!-- Datos -->
+                <MudGrid Class="rastreo-info">
+                    <MudItem xs="12" sm="6">
+                        <MudText Class="rastreo-field-label">Guía:</MudText>
+                        <MudText>@EncomiendaEncontrada!.Guiacarga</MudText>
+                    </MudItem>
+
+                    <MudItem xs="12" sm="6">
+                        <MudText Class="rastreo-field-label">Ruta:</MudText>
+                        <MudText>@RutaLabel(EncomiendaEncontrada!)</MudText>
+                    </MudItem>
+
+                    <MudItem xs="12" sm="6">
+                        <MudText Class="rastreo-field-label">Fecha de salida:</MudText>
+                        <MudText>@(EncomiendaEncontrada!.FechaViaje?.ToString("dd/MM/yyyy") ?? "-")</MudText>
+                    </MudItem>
+
+                    <MudItem xs="12" sm="6">
+                        <MudText Class="rastreo-field-label">Hora de salida:</MudText>
+                        <MudText>@(!string.IsNullOrWhiteSpace(EncomiendaEncontrada!.HoraSalida) ? EncomiendaEncontrada!.HoraSalida : "-")</MudText>
+                    </MudItem>
+                </MudGrid>
+            </MudPaper>
+        }
 
     </MudPaper>
 </MudContainer>
-
-

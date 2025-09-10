@@ -20,10 +20,14 @@ namespace Dominio.Entities.Integracion
 
         [Column("descripcion")]
         public string? Descripcion { get; set; }
+
+        
+        [Column("guiacarga"), MaxLength(6)]
         public string? Guiacarga { get; set; }
 
         [Column("id_viaje")]
         public int IdViaje { get; set; }
+
         [ForeignKey(nameof(IdViaje))]
         public virtual Viaje Viaje { get; set; } = null!;
 
@@ -39,17 +43,16 @@ namespace Dominio.Entities.Integracion
         [Column("pagado")]
         public bool Pagado { get; set; } = false;
 
-        // ===== FK a GUIA_CARGA =====
-        public virtual GuiaCarga Guia { get; set; } = null!;
-
         // ===== Tramo (origen/destino) =====
         [Column("origen_parada_id")]
         public int? OrigenParadaId { get; set; }
+
         [ForeignKey(nameof(OrigenParadaId))]
         public virtual Parada? OrigenParada { get; set; }
 
         [Column("destino_parada_id")]
         public int? DestinoParadaId { get; set; }
+
         [ForeignKey(nameof(DestinoParadaId))]
         public virtual Parada? DestinoParada { get; set; }
     }
