@@ -18,7 +18,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Net.Http;
 using ConfigurationPath = Server.Models.ConfigurationPath;
-
+using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 
 namespace Server
 {
@@ -41,6 +41,7 @@ namespace Server
             {
                 ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => { return true; }
             });
+         
 
             services.AddHttpClient("ApiSeg", c =>
             {
@@ -73,6 +74,7 @@ namespace Server
 
             services.AddRazorPages();
             services.AddServerSideBlazor(c => c.DetailedErrors = true);
+
             services.AddSiabysServices();
             services.AddMudServices(config =>
             {
