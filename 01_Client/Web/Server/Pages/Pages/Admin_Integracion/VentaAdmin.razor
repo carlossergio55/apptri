@@ -1,74 +1,373 @@
-﻿@page "/VentaAdmin"
+﻿@page "/venta-pasajes"
 @using MudBlazor
 @inherits MainBaseComponent
 @layout MainLayout
 @using System.Collections.Generic
-<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-4">
-    <MudText Typo="Typo.h4" Class="mb-4 text-center">💳 Tarjeta de Fidelidad - Bolo Chaqueño</MudText>
 
-    <!-- Formulario de Registro Visual -->
-    <MudPaper Class="pa-4 mb-4">
-        <MudText Typo="Typo.h6" Class="mb-2">Registrar Cliente</MudText>
+<MudPaper Class="p-4">
 
-        <MudGrid>
-            <MudItem xs="12" sm="6">
-                <MudTextField T="string" Label="Nombre completo" Variant="Variant.Outlined" />
-            </MudItem>
-            <MudItem xs="12" sm="6">
-                <MudTextField T="string" Label="Teléfono" Variant="Variant.Outlined" />
-            </MudItem>
-        </MudGrid>
+    <!-- Filtros superiores -->
+    <div class="flex items-center gap-3 mb-4">
+        <MudDatePicker T="DateTime?"
+                       @bind-Date="SelectedDate"
+                       Label="Fecha"
+                       DateFormat="dd/MM/yyyy"
+                       Immediate="@(true)"
+                       DisableToolbar="@(true)"
+                       Adornment="Adornment.Start"
+                       AdornmentIcon="@Icons.Material.Filled.Event"
+                       Class="w-64" />
 
-        <MudGrid Class="mt-2">
-            <MudItem xs="12" sm="6">
-                <MudNumericField T="int" Label="Puntos acumulados" Variant="Variant.Outlined" />
-            </MudItem>
-            <MudItem xs="12" sm="6">
-                <MudNumericField T="decimal" Label="Monto total Bs." Variant="Variant.Outlined" />
-            </MudItem>
-        </MudGrid>
+        <MudNumericField T="int"
+                         @bind-Value="_diasFiltro"
+                         Label="Días"
+                         Min="1" Max="30" Immediate="true" Class="w-28" />
 
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-3">Agregar Cliente</MudButton>
-    </MudPaper>
+        <MudButton Variant="Variant.Text" OnClick="@(async () => await SetHoy())">Hoy</MudButton>
+        <MudButton Variant="Variant.Text" OnClick="@(async () => await SetManana())">Mañana</MudButton>
 
-    <!-- Tabla Visual de Clientes -->
-    <MudPaper Class="pa-4">
-        <MudText Typo="Typo.h6" Class="mb-2">Lista de Clientes</MudText>
+        <MudSpacer />
+        <MudText Typo="Typo.h6">
+            Planilla – @(SelectedDate?.ToString("dd/MM/yyyy")) (+@_diasFiltro día(s))
+        </MudText>
+    </div>
 
-        <MudTable T="Cliente" Dense="true" Hover="true" Items="@clientes">
-            <HeaderContent>
-                <MudTh>Nombre</MudTh>
-                <MudTh>Teléfono</MudTh>
-                <MudTh>Puntos</MudTh>
-                <MudTh>Monto Bs.</MudTh>
-                <MudTh>Acciones</MudTh>
-            </HeaderContent>
-            <RowTemplate>
-                <MudTd>@context.Nombre</MudTd>
-                <MudTd>@context.Telefono</MudTd>
-                <MudTd>@context.Puntos</MudTd>
-                <MudTd>@context.MontoTotal</MudTd>
-                <MudTd>
-                    <MudButton Size="Size.Small" Variant="Variant.Outlined" Color="Color.Info">Editar</MudButton>
-                    <MudButton Size="Size.Small" Variant="Variant.Text" Color="Color.Error">Eliminar</MudButton>
-                </MudTd>
-            </RowTemplate>
-        </MudTable>
-    </MudPaper>
-</MudContainer>
+    <!-- Tabla de viajes -->
+    <MudTable Items="_planilla" Hover="true" Dense="true" Bordered="true" Loading="IsLoading">
+        <HeaderContent>
+            <MudTh>Fecha</MudTh>
+            <MudTh>Hora</MudTh>
+            <MudTh>Ruta</MudTh>
+            <MudTh>Bus</MudTh>
+            <MudTh>Chofer</MudTh>
+            <MudTh style="width:220px;">Ocupación</MudTh>
+            <MudTh>Estado</MudTh>
+            <MudTh style="width:300px;">Acciones</MudTh>
+        </HeaderContent>
 
-@code {
-    public class Cliente
-    {
-        public string Nombre { get; set; }
-        public string Telefono { get; set; }
-        public int Puntos { get; set; }
-        public decimal MontoTotal { get; set; }
+        <RowTemplate>
+            <MudTd>@context.Fecha.ToString("dd/MM")</MudTd>
+            <MudTd>@context.HoraSalida</MudTd>
+            <MudTd>@context.RutaNombre</MudTd>
+            <MudTd>@context.Placa</MudTd>
+            <MudTd>@context.ChoferNombre</MudTd>
+
+            <MudTd>
+                @{
+                    var pct = context.Capacidad > 0 ? (double)context.Ocupados / context.Capacidad * 100.0 : 0.0;
+                }
+                <MudProgressLinear Value="@pct" Class="mt-1" />
+                <MudText Typo="Typo.caption">@context.Ocupados/@context.Capacidad</MudText>
+            </MudTd>
+
+            <MudTd>
+                <MudChip Color="@EstadoColor(context.Estado)" Variant="Variant.Filled">
+                    @context.Estado
+                </MudChip>
+            </MudTd>
+
+            <MudTd>
+                <MudButton Disabled="@(!PuedeVender(context.Estado))"
+                           Variant="Variant.Filled"
+                           OnClick="@(async () => await AbrirVenta(context))">
+                    Vender
+                </MudButton>
+
+                <MudButton Class="ml-2"
+                           Variant="Variant.Outlined"
+                           OnClick="@(async () => await VerAsientos(context))">
+                    Asientos
+                </MudButton>
+
+                <MudIconButton Class="ml-2"
+                               Icon="@Icons.Material.Filled.Refresh"
+                               OnClick="@(async () => await RefrescarFila(context))"
+                               Color="Color.Success"
+                               AriaLabel="Refrescar fila" />
+            </MudTd>
+        </RowTemplate>
+
+        <NoRecordsContent>
+            <MudText>No hay viajes en el rango seleccionado.</MudText>
+        </NoRecordsContent>
+    </MudTable>
+</MudPaper>
+
+<!-- ===================== Diálogo de VENTA ===================== -->
+<MudDialog @bind-IsVisible="_ventaDialogVisible"
+           MaxWidth="MaxWidth.ExtraLarge"
+           FullWidth="true"
+           Position="DialogPosition.Center"
+           Class="venta-dialog">
+    <DialogContent>
+        @if (_ventaVm is null)
+        {
+            <MudProgressCircular />
+        }
+        else
+        {
+            <MudGrid>
+                <!-- Columna izquierda: Cliente + Pago + resumen selección -->
+                <MudItem xs="12" md="5" lg="4">
+                    <MudPaper Class="p-3">
+                        <MudText Typo="Typo.h6">
+                            Viaje @_ventaVm.HoraSalida – @_ventaVm.RutaNombre
+                        </MudText>
+                        <MudText Typo="Typo.body2" Class="mb-2">Bus: @_ventaVm.Placa</MudText>
+                        <MudDivider Class="my-2" />
+
+                        <MudText Typo="Typo.subtitle2">Cliente</MudText>
+
+                        <MudGrid Class="mb-2">
+                            <MudItem xs="6">
+                                <MudTextField @bind-Value="_cliente.Carnet" Label="Carnet / NIT" InputType="InputType.Number" />
+                            </MudItem>
+                            <MudItem xs="6">
+                                <MudTextField @bind-Value="_cliente.Celular" Label="Celular" InputType="InputType.Number" />
+                            </MudItem>
+                            <MudItem xs="12">
+                                <MudTextField @bind-Value="_cliente.Nombre" Label="Nombre o Razón social" Required="true" />
+                            </MudItem>
+                            <MudItem xs="12">
+                                <MudTextField @bind-Value="_cliente.Correo" Label="Correo" />
+                            </MudItem>
+                        </MudGrid>
+
+                        <MudText Typo="Typo.h6">Pago</MudText>
+
+                        <MudGrid>
+                            <MudItem xs="6">
+                                <MudNumericField T="decimal"
+                                                 @bind-Value="_precio"
+                                                 Label="Precio (Bs)*"
+                                                 Min="@(0.01M)"
+                                                 Immediate="true"
+                                                 Required="true" />
+                            </MudItem>
+                            <MudItem xs="6">
+                                <MudSelect @bind-Value="_pagoMetodo" Label="Medio de pago*" Required="true">
+                                    <MudSelectItem Value="@("EFECTIVO")">Efectivo</MudSelectItem>
+                                    <MudSelectItem Value="@("QR")">QR</MudSelectItem>
+                                    <MudSelectItem Value="@("TRANSFERENCIA")">Transferencia</MudSelectItem>
+                                </MudSelect>
+                            </MudItem>
+                        </MudGrid>
+
+                        @if (_pagoMetodo is "QR" or "TRANSFERENCIA")
+                        {
+                            <MudTextField @bind-Value="_pagoReferencia"
+                                          Label="Referencia / N° operación"
+                                          Required="true" />
+                        }
+
+                        <MudAlert Severity="Severity.Info" Class="mt-3">
+                            Seleccionados: <b>@_seleccionados.Count</b> — Total (Bs): <b>@_total.ToString("0.00")</b>
+                        </MudAlert>
+
+                        <MudStack Direction="Direction.Row" Spacing="1" Class="mt-2">
+                            <MudButton Variant="Variant.Outlined"
+                                       Color="Color.Default"
+                                       Disabled="@(_seleccionados.Count == 0)"
+                                       OnClick="@(() => LimpiarSeleccion())">
+                                Limpiar selección
+                            </MudButton>
+
+                            <MudButton Variant="Variant.Filled"
+                                       Color="Color.Primary"
+                                       Disabled="@(!_puedeConfirmarVentaMulti)"
+                                       OnClick="@(async () => await ConfirmarVentaMultiple())">
+                                Confirmar y emitir (@_seleccionados.Count)
+                            </MudButton>
+                        </MudStack>
+
+                        <MudButton Class="mt-2"
+                                   Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   Disabled="@(_asientoSeleccionado is null)"
+                                   OnClick="@(async () => await ConfirmarVenta())">
+                            Confirmar 1 asiento
+                        </MudButton>
+                    </MudPaper>
+                </MudItem>
+
+                <!-- Columna derecha: Acciones asiento + Mapa -->
+                <MudItem xs="12" md="7" lg="8">
+                    <MudStack Spacing="1">
+
+                        <!-- Acciones del asiento seleccionado (arriba) -->
+                        <MudPaper Class="p-3">
+                            <MudText Typo="Typo.subtitle2">Acciones de asiento</MudText>
+
+                            <MudStack Direction="Direction.Row" Spacing="1" AlignItems="AlignItems.Center">
+                                <MudButton Variant="Variant.Outlined"
+                                           Color="Color.Warning"
+                                           Disabled="@(_seatAction is null || _seatAction.EstadoSeat != "LIBRE")"
+                                           OnClick="@(async () => await ReservarAsiento())">
+                                    Reservar
+                                </MudButton>
+
+                                <MudButton Variant="Variant.Filled"
+                                           Color="Color.Success"
+                                           Disabled="@(_seatAction is null || _seatAction.EstadoSeat != "RESERVADO")"
+                                           OnClick="@(async () => await PagarReserva())">
+                                    Pagar reserva
+                                </MudButton>
+
+                                <MudButton Variant="Variant.Outlined"
+                                           Color="Color.Error"
+                                           Disabled="@(_seatAction is null || _seatAction.EstadoSeat != "RESERVADO")"
+                                           OnClick="@(async () => await AnularReserva())">
+                                    Anular reserva
+                                </MudButton>
+
+                                <MudButton Variant="Variant.Outlined"
+                                           Color="Color.Error"
+                                           Disabled="@(_seatAction is null || _seatAction.EstadoSeat != "OCUPADO")"
+                                           OnClick="@(async () => await AnularBoletoPagado())">
+                                    Anular (pago aparte)
+                                </MudButton>
+
+                                <MudDivider Vertical="true" Class="mx-2" />
+
+                                <MudButton Variant="Variant.Outlined"
+                                           Color="Color.Info"
+                                           Disabled="@(_seatAction is null || !_seatAction.IdBoleto.HasValue)"
+                                           OnClick="@IniciarReprogramacion">
+                                    Reprogramar
+                                </MudButton>
+                            </MudStack>
+
+                            @if (_reprogOrigenSeat is not null && _reprogDestinoSeat is null)
+                            {
+                                <MudAlert Severity="Severity.Info" Dense="true" Class="mt-2">
+                                    Origen elegido: asiento <b>@_reprogOrigenSeat.Numero</b>. Ahora elige un asiento <b>LIBRE</b> como destino (clic en el mapa).
+                                </MudAlert>
+                            }
+
+                            @if (_reprogDestinoSeat is not null)
+                            {
+                                <MudStack Direction="Direction.Row" Spacing="1" Class="mt-2">
+                                    <MudChip Color="Color.Info" Variant="Variant.Outlined">
+                                        Origen: @_reprogOrigenSeat?.Numero
+                                    </MudChip>
+                                    <MudChip Color="Color.Success" Variant="Variant.Outlined">
+                                        Destino: @_reprogDestinoSeat?.Numero
+                                    </MudChip>
+
+                                    <MudButton Variant="Variant.Filled"
+                                               Color="Color.Primary"
+                                               Disabled="@(!_puedeConfirmarReprogramacion)"
+                                               OnClick="@(async () => await ConfirmarReprogramacion())">
+                                        Confirmar reprogramación
+                                    </MudButton>
+                                </MudStack>
+                            }
+                        </MudPaper>
+
+                        <!-- Leyenda (abajo del mapa en tu pedido, pero la dejamos visible arriba del mapa) -->
+                        <MudStack Direction="Direction.Row" AlignItems="AlignItems.Center" Spacing="1">
+                            <MudChip Variant="Variant.Outlined" Color="Color.Default">Libre</MudChip>
+                            <MudChip Variant="Variant.Filled" Color="Color.Warning">Reservado</MudChip>
+                            <MudChip Variant="Variant.Filled" Color="Color.Error">Ocupado</MudChip>
+                            <MudChip Variant="Variant.Filled" Color="Color.Primary">Seleccionado</MudChip>
+                        </MudStack>
+
+                        <!-- Mapa de asientos -->
+                        <MudStack Spacing="1">
+                            @foreach (var r in _seatRows)
+                            {
+                                <MudGrid GutterSize="Size.Small" AlignItems="AlignItems.Center" Class="mt-1">
+                                    <MudItem Xs="2">@SeatButton(r.a1)</MudItem>
+                                    <MudItem Xs="2">@SeatButton(r.a2)</MudItem>
+                                    <MudItem Xs="1"></MudItem>  <!-- pasillo -->
+                                    <MudItem Xs="2">@SeatButton(r.a3)</MudItem>
+                                    <MudItem Xs="2">@SeatButton(r.a4)</MudItem>
+                                </MudGrid>
+                            }
+
+                            @if (_lastRow5 is { } r5)
+                            {
+                                <MudGrid GutterSize="Size.Small" AlignItems="AlignItems.Center" Class="mt-1">
+                                    <MudItem Xs="2">@SeatButton(r5.a1)</MudItem>
+                                    <MudItem Xs="2">@SeatButton(r5.a2)</MudItem>
+                                    <MudItem Xs="2">@SeatButton(r5.a3)</MudItem>  <!-- reemplaza pasillo -->
+                                    <MudItem Xs="2">@SeatButton(r5.a4)</MudItem>
+                                    <MudItem Xs="2">@SeatButton(r5.a5)</MudItem>
+                                </MudGrid>
+                            }
+                        </MudStack>
+                    </MudStack>
+                </MudItem>
+            </MudGrid>
+        }
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton Variant="Variant.Text" OnClick="@(() => CerrarDialogo())">Cerrar</MudButton>
+    </DialogActions>
+</MudDialog>
+
+<!-- ===================== Diálogo SOLO VER ASIENTOS ===================== -->
+<MudDialog @bind-IsVisible="_asientosDialogVisible"
+           MaxWidth="MaxWidth.Large"
+           FullWidth="true"
+           Position="DialogPosition.Center"
+           Class="asientos-dialog">
+    <DialogContent>
+        @if (_ventaVm is null)
+        {
+            <MudProgressCircular />
+        }
+        else
+        {
+            <MudText Typo="Typo.h6">Asientos – @_ventaVm.RutaNombre (@_ventaVm.HoraSalida)</MudText>
+            <MudDivider Class="my-2" />
+
+            @foreach (var r in _seatRows)
+            {
+                <MudGrid GutterSize="Size.Small" AlignItems="AlignItems.Center" Class="mt-1">
+                    <MudItem Xs="2">@StaticSeat(r.a1)</MudItem>
+                    <MudItem Xs="2">@StaticSeat(r.a2)</MudItem>
+                    <MudItem Xs="1"></MudItem> <!-- pasillo -->
+                    <MudItem Xs="2">@StaticSeat(r.a3)</MudItem>
+                    <MudItem Xs="2">@StaticSeat(r.a4)</MudItem>
+                </MudGrid>
+            }
+
+            @if (_lastRow5 is { } r5s)
+            {
+                <MudGrid GutterSize="Size.Small" AlignItems="AlignItems.Center" Class="mt-1">
+                    <MudItem Xs="2">@StaticSeat(r5s.a1)</MudItem>
+                    <MudItem Xs="2">@StaticSeat(r5s.a2)</MudItem>
+                    <MudItem Xs="2">@StaticSeat(r5s.a3)</MudItem>
+                    <MudItem Xs="2">@StaticSeat(r5s.a4)</MudItem>
+                    <MudItem Xs="2">@StaticSeat(r5s.a5)</MudItem>
+                </MudGrid>
+            }
+
+            <MudStack Direction="Direction.Row" AlignItems="AlignItems.Center" Spacing="1" Class="mt-2">
+                <MudChip Variant="Variant.Outlined" Color="Color.Default">Libre</MudChip>
+                <MudChip Variant="Variant.Filled" Color="Color.Warning">Reservado</MudChip>
+                <MudChip Variant="Variant.Filled" Color="Color.Error">Ocupado</MudChip>
+            </MudStack>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Text" OnClick="@(() => _asientosDialogVisible = false)">Cerrar</MudButton>
+    </DialogActions>
+</MudDialog>
+
+<style>
+    .venta-dialog .mud-dialog-content,
+    .asientos-dialog .mud-dialog-content {
+        max-height: 80vh;
+        overflow-y: auto;
     }
 
-    List<Cliente> clientes = new()
-    {
-        new Cliente { Nombre = "Juan Pérez", Telefono = "71234567", Puntos = 10, MontoTotal = 100 },
-        new Cliente { Nombre = "Ana Flores", Telefono = "78965432", Puntos = 12, MontoTotal = 130 },
-    };
-}
+    .seat-btn {
+        width: 50px;
+        height: 50px;
+        min-width: 50px;
+        padding: 0;
+    }
+</style>

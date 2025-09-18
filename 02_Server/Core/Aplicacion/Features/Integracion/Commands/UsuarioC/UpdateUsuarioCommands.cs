@@ -14,7 +14,7 @@ namespace Aplicacion.Features.Integracion.Commands.UsuarioC
         public int IdUsuario { get; set; }
         public string Nombre { get; set; }
         public string Correo { get; set; }
-        public string Contraseña { get; set; }
+        public string Contrasena { get; set; }
         public string Tipo { get; set; }
         public int? IdSucursal { get; set; }
     }
@@ -40,7 +40,7 @@ namespace Aplicacion.Features.Integracion.Commands.UsuarioC
             // Actualizar propiedades
             usuario.Nombre = request.Nombre;
             usuario.Correo = request.Correo;
-            usuario.Contraseña = request.Contraseña;
+            usuario.Contrasena = request.Contrasena;
             usuario.Tipo = request.Tipo;
 
             usuario.IdSucursal = request.IdSucursal;

@@ -1,0 +1,38 @@
+﻿@using MudBlazor
+<link href="~/styles/Integracion/aviso_dialog.css" rel="stylesheet" asp-append-version="true" />
+<MudDialog Class="@RootClass">
+    <TitleContent>
+        <div class="@TitleClass">@Title</div>
+    </TitleContent>
+
+    <DialogContent>
+        <div class="@ContentClass">
+            @((MarkupString)Message)
+        </div>
+    </DialogContent>
+
+    <DialogActions>
+        <div class="@ActionsClass">
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       Class="@OkButtonClass"
+                       OnClick="()=>MudDialog.Close(DialogResult.Ok(true))">
+                @OkText
+            </MudButton>
+        </div>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public string Title { get; set; } = "Aviso";
+    [Parameter] public string Message { get; set; } = "";
+
+    // clases para tu CSS externo
+    [Parameter] public string RootClass { get; set; } = "aviso-modal";
+    [Parameter] public string TitleClass { get; set; } = "aviso-titulo";
+    [Parameter] public string ContentClass { get; set; } = "aviso-contenido";
+    [Parameter] public string ActionsClass { get; set; } = "aviso-acciones";
+    [Parameter] public string OkButtonClass { get; set; } = "aviso-btn-primario";
+    [Parameter] public string OkText { get; set; } = "Entendido";
+}

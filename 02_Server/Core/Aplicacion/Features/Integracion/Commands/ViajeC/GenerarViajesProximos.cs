@@ -15,104 +15,98 @@ namespace Aplicacion.Features.Integracion.Commands.ViajeC
     {
         public DateTime Desde { get; set; }
         public int Dias { get; set; } = 14;
-
-        // Fallback si no hay pareja libre (no debería usarse normalmente)
         public int IdBusDefault { get; set; } = 1;
         public int IdChoferDefault { get; set; } = 1;
     }
 
     public record GenerarViajesResult(
         List<int> Creados,
-        List<(DateTime Fecha, int IdRuta, string Hora)> Existentes,
+        List<(DateTime Fecha, int IdRuta, string Hora, string Motivo)> Omitidos,
+        List<(DateTime Fecha, int IdRuta, string Hora, string Error)> Errores,
         int TotalProcesados);
 
     public class GenerarViajesProximosCommandHandler
         : IRequestHandler<GenerarViajesProximosCommand, Response<GenerarViajesResult>>
     {
         private readonly IRepositoryAsync<Viaje> _repoViaje;
+        private readonly IRepositoryAsync<Chofer> _repoChofer;
+        private readonly IRepositoryAsync<Bus> _repoBus;
 
-        public GenerarViajesProximosCommandHandler(IRepositoryAsync<Viaje> repoViaje)
+        public GenerarViajesProximosCommandHandler(
+            IRepositoryAsync<Viaje> repoViaje,
+            IRepositoryAsync<Chofer> repoChofer,
+            IRepositoryAsync<Bus> repoBus)
         {
             _repoViaje = repoViaje;
+            _repoChofer = repoChofer;
+            _repoBus = repoBus;
         }
 
         public async Task<Response<GenerarViajesResult>> Handle(GenerarViajesProximosCommand r, CancellationToken ct)
         {
             var creados = new List<int>();
-            var existentes = new List<(DateTime, int, string)>();
+            var omitidos = new List<(DateTime, int, string, string)>();
+            var errores = new List<(DateTime, int, string, string)>();
 
-            // Rutas
             const int RUTA_SERRANO = 1;
             const int RUTA_MENDOZA = 5;
 
-            // Horas
             var h0900 = TimeSpan.ParseExact("09:00", @"hh\:mm", CultureInfo.InvariantCulture);
             var h1730 = TimeSpan.ParseExact("17:30", @"hh\:mm", CultureInfo.InvariantCulture);
 
-            // Rotación fija (Chofer, Bus)
-            var parejas = new List<(int ChoferId, int BusId)>
-            {
-                (1, 1),
-                (4, 5),
-                (3, 2)
-            };
+            var choferes = (await _repoChofer.ListAsync(ct)).Select(c => c.IdChofer).ToList();
+            var buses = (await _repoBus.ListAsync(ct)).Select(b => b.IdBus).ToList();
+
+            if (!choferes.Any() || !buses.Any())
+                return new Response<GenerarViajesResult>(new GenerarViajesResult(creados, omitidos, errores, 0))
+                { Message = "No hay choferes o buses en BD.", Succeeded = false };
+
+            var parejas = new List<(int ChoferId, int BusId)>();
+            var max = Math.Max(choferes.Count, buses.Count);
+            for (int i = 0; i < max; i++)
+                parejas.Add((choferes[i % choferes.Count], buses[i % buses.Count]));
             var idxPareja = 0;
 
             var start = r.Desde.Date;
-            var end = start.AddDays(r.Dias); // exclusivo
+            var end = start.AddDays(r.Dias);
+            var todos = await _repoViaje.ListAsync(ct);
 
-            // Cache de viajes ya existentes en el rango (para evitar duplicados y choques)
-            var todos = await _repoViaje.ListAsync();
-
-            // Para no asignar el mismo chofer/bus en el MISMO horario (ej: dos viajes 17:30 el mismo día)
-            // clave: (Fecha, Hora) -> usados en ese slot
             var usadosPorSlot = new Dictionary<(DateTime Fecha, TimeSpan Hora), (HashSet<int> Buses, HashSet<int> Choferes)>();
 
             for (var d = start; d < end; d = d.AddDays(1))
             {
-                // slots del día
+                bool extendido = d.DayOfWeek == DayOfWeek.Thursday || d.DayOfWeek == DayOfWeek.Sunday;
+
                 var slots = new List<(int RutaId, TimeSpan Hora, string Dir)>
                 {
                     (RUTA_SERRANO, h0900, "IDA"),
-                    (RUTA_SERRANO, h1730, "IDA")
+                    (extendido ? RUTA_MENDOZA : RUTA_SERRANO, h1730, "IDA")
                 };
-                if (d.DayOfWeek == DayOfWeek.Thursday || d.DayOfWeek == DayOfWeek.Sunday)
-                    slots.Add((RUTA_MENDOZA, h1730, "IDA"));
 
                 foreach (var (rutaId, hora, dir) in slots)
-                {
                     await TryCreate(d, rutaId, hora, dir);
-                }
             }
 
             var result = new GenerarViajesResult(
                 Creados: creados,
-                Existentes: existentes,
-                TotalProcesados: creados.Count + existentes.Count
+                Omitidos: omitidos,
+                Errores: errores,
+                TotalProcesados: creados.Count + omitidos.Count + errores.Count
             );
 
             return new Response<GenerarViajesResult>(result)
             {
-                Message = "Generación completada."
+                Message = $"Generación completada. Creados: {creados.Count}, Omitidos: {omitidos.Count}, Errores: {errores.Count}"
             };
-
-            // --------- helpers internos ---------
 
             async Task TryCreate(DateTime fecha, int idRuta, TimeSpan hora, string dir)
             {
-                // ¿Ya existe ese viaje exacto?
-                var yaExiste = todos.Any(v =>
-                    v.IdRuta == idRuta &&
-                    v.Fecha.Date == fecha.Date &&
-                    v.HoraSalida == hora);
-
-                if (yaExiste)
+                if (todos.Any(v => v.IdRuta == idRuta && v.Fecha.Date == fecha.Date && v.HoraSalida == hora))
                 {
-                    existentes.Add((fecha, idRuta, hora.ToString(@"hh\:mm")));
+                    omitidos.Add((fecha, idRuta, hora.ToString(@"hh\:mm"), "Ya existe"));
                     return;
                 }
 
-                // Slot key para controlar chofer/bus en el mismo horario
                 var key = (fecha.Date, hora);
                 if (!usadosPorSlot.TryGetValue(key, out var usados))
                 {
@@ -120,7 +114,6 @@ namespace Aplicacion.Features.Integracion.Commands.ViajeC
                     usadosPorSlot[key] = usados;
                 }
 
-                // Buscar pareja libre (no usada en este slot, ni por "todos" ya existentes en este mismo horario)
                 (int ChoferId, int BusId) parejaElegida = default;
                 bool asignada = false;
 
@@ -128,23 +121,15 @@ namespace Aplicacion.Features.Integracion.Commands.ViajeC
                 {
                     var p = parejas[(idxPareja + t) % parejas.Count];
 
-                    bool choferLibreEnSlot = !usados.Choferes.Contains(p.ChoferId);
-                    bool busLibreEnSlot = !usados.Buses.Contains(p.BusId);
+                    bool choferLibreSlot = !usados.Choferes.Contains(p.ChoferId);
+                    bool busLibreSlot = !usados.Buses.Contains(p.BusId);
+                    bool choferLibreBD = !todos.Any(v => v.Fecha.Date == fecha.Date && v.HoraSalida == hora && v.IdChofer == p.ChoferId);
+                    bool busLibreBD = !todos.Any(v => v.Fecha.Date == fecha.Date && v.HoraSalida == hora && v.IdBus == p.BusId);
 
-                    bool choferLibreEnBD = !todos.Any(v =>
-                        v.Fecha.Date == fecha.Date &&
-                        v.HoraSalida == hora &&
-                        v.IdChofer == p.ChoferId);
-
-                    bool busLibreEnBD = !todos.Any(v =>
-                        v.Fecha.Date == fecha.Date &&
-                        v.HoraSalida == hora &&
-                        v.IdBus == p.BusId);
-
-                    if (choferLibreEnSlot && busLibreEnSlot && choferLibreEnBD && busLibreEnBD)
+                    if (choferLibreSlot && busLibreSlot && choferLibreBD && busLibreBD)
                     {
                         parejaElegida = p;
-                        idxPareja = (idxPareja + t + 1) % parejas.Count; // avanzar puntero de rotación
+                        idxPareja = (idxPareja + t + 1) % parejas.Count;
                         usados.Choferes.Add(p.ChoferId);
                         usados.Buses.Add(p.BusId);
                         asignada = true;
@@ -152,21 +137,16 @@ namespace Aplicacion.Features.Integracion.Commands.ViajeC
                     }
                 }
 
-                // Fallback (si no hay pareja libre, usa los defaults si no chocan en el slot)
                 if (!asignada)
                 {
                     var p = (ChoferId: r.IdChoferDefault, BusId: r.IdBusDefault);
 
-                    bool choferLibreEnSlot = !usados.Choferes.Contains(p.ChoferId);
-                    bool busLibreEnSlot = !usados.Buses.Contains(p.BusId);
+                    bool choferLibreSlot = !usados.Choferes.Contains(p.ChoferId);
+                    bool busLibreSlot = !usados.Buses.Contains(p.BusId);
+                    bool choferLibreBD = !todos.Any(v => v.Fecha.Date == fecha.Date && v.HoraSalida == hora && v.IdChofer == p.ChoferId);
+                    bool busLibreBD = !todos.Any(v => v.Fecha.Date == fecha.Date && v.HoraSalida == hora && v.IdBus == p.BusId);
 
-                    bool choferLibreEnBD = !todos.Any(v =>
-                        v.Fecha.Date == fecha.Date && v.HoraSalida == hora && v.IdChofer == p.ChoferId);
-
-                    bool busLibreEnBD = !todos.Any(v =>
-                        v.Fecha.Date == fecha.Date && v.HoraSalida == hora && v.IdBus == p.BusId);
-
-                    if (choferLibreEnSlot && busLibreEnSlot && choferLibreEnBD && busLibreEnBD)
+                    if (choferLibreSlot && busLibreSlot && choferLibreBD && busLibreBD)
                     {
                         parejaElegida = p;
                         usados.Choferes.Add(p.ChoferId);
@@ -175,7 +155,6 @@ namespace Aplicacion.Features.Integracion.Commands.ViajeC
                     }
                 }
 
-                // Si aún no asignamos, como última opción toma la siguiente pareja de rotación (podría chocar si no hay recursos)
                 if (!asignada)
                 {
                     var p = parejas[idxPareja];
@@ -196,11 +175,16 @@ namespace Aplicacion.Features.Integracion.Commands.ViajeC
                     IdChofer = parejaElegida.ChoferId
                 };
 
-                var saved = await _repoViaje.AddAsync(entity);
-                creados.Add(saved.IdViaje);
-
-                // Añadir al cache local para próximos chequeos dentro del mismo proceso
-                todos.Add(saved);
+                try
+                {
+                    var saved = await _repoViaje.AddAsync(entity, ct);
+                    creados.Add(saved.IdViaje);
+                    todos.Add(saved);
+                }
+                catch (Exception ex)
+                {
+                    errores.Add((fecha, idRuta, hora.ToString(@"hh\:mm"), ex.Message));
+                }
             }
         }
     }

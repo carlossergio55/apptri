@@ -13,7 +13,7 @@ using Persistencia;
 using Shared;
 using Webapi.Extensions;
 using WebApi.Filters;
-
+using Aplicacion.Features.Integracion.Background;
 
 
 
@@ -58,7 +58,8 @@ namespace Webapi
             services.AddPersistenciaInfraestructura(Configuration);
             services.AddSharedInfraestructura(Configuration);
             services.AddApiVersioningExtension();
-
+            services.Configure<TripGenerationOptions>(Configuration.GetSection("TripGeneration"));
+            services.AddHostedService<DailyTripGeneratorHostedService>();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "CapacitacionApi", Version = "v1" });
@@ -109,5 +110,10 @@ namespace Webapi
                 endpoints.MapControllers();
             });
         }
+
+
+
+
+
     }
 }

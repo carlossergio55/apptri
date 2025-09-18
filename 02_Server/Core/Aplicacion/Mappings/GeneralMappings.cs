@@ -30,10 +30,7 @@ namespace Aplicacion.Mappings
             CreateMap<Chofer, ChoferDto>();
             CreateMap<Cliente, ClienteDto>();
             CreateMap<Ruta, RutaDto>();
-            CreateMap<Usuario, UsuarioDto>()
-               .ForMember(d => d.IdSucursal, o => o.MapFrom(s => s.IdSucursal))
-               .ForMember(d => d.NombreSucursal, o => o.MapFrom(s => s.Sucursal != null ? s.Sucursal.Nombre : null))
-               .ForMember(d => d.Sucursal, o => o.MapFrom(s => s.Sucursal));
+            CreateMap<Usuario, UsuarioDto>();
             CreateMap<Horario, HorarioDto>();
             CreateMap<Asiento, AsientoDto>();
             CreateMap<Viaje, ViajeDto>()

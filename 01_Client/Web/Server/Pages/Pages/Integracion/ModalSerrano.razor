@@ -36,7 +36,7 @@
     <DialogActions>
         <div class="modal-destinos-boton-container">
             <MudButton OnClick="@ComprarPasaje" Class="modal-destinos-comprar" Variant="Variant.Filled" Color="Color.Primary">
-                COMPRAR PASAJE
+                PROXIMAMENTE
             </MudButton>
         </div>
     </DialogActions>
@@ -49,6 +49,6 @@
     void ComprarPasaje()
     {
         DialogInstance?.Close();
-        Nav.NavigateTo("/comprar");
+        Nav.NavigateTo("/Prox/Sucursal/Public");
     }
 }

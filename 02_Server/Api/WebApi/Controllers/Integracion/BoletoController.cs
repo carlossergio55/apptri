@@ -17,13 +17,18 @@ namespace WebApi.Controllers.Integracion
             Ok(await Mediator.Send(new GetAllBoletoQuery()));
 
         [HttpPost("guardar")]
-        
-        public async Task<IActionResult> Post(CreateBoletoCommand command) =>
+        public async Task<IActionResult> Post([FromBody] CreateBoletoCommand command) =>
+            Ok(await Mediator.Send(command));
+
+       
+        [HttpPost("reprogramar")]
+        [Authorize]
+        public async Task<IActionResult> Reprogramar([FromBody] ReprogramarBoletoCommand command) =>
             Ok(await Mediator.Send(command));
 
         [HttpPut("{id}")]
         [Authorize]
-        public async Task<IActionResult> Put(int id, UpdateBoletoCommand command)
+        public async Task<IActionResult> Put(int id, [FromBody] UpdateBoletoCommand command)
         {
             if (id != command.IdBoleto) return BadRequest();
             return Ok(await Mediator.Send(command));

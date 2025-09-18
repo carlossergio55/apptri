@@ -6,10 +6,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Timers;
 
 namespace Server.Pages.Pages.Admin_Integracion
 {
-    public partial class ViajeAdmin
+    public partial class ViajeAdmin : IDisposable
     {
         private bool expande = false;
 
@@ -31,6 +32,13 @@ namespace Server.Pages.Pages.Admin_Integracion
         private int? _choferSel;
         private int? _busSel;
 
+        // ====== Auto refresh / control de reentradas ======
+        private Timer? _timer;
+        private bool _isDisposed;
+        private bool _isRefreshing;
+        private DateTime _desdeEstado = DateTime.Today.AddDays(-1);
+        private DateTime _hastaEstado = DateTime.Today.AddDays(2);
+
         // ---------- Helpers UI ----------
         protected string NombreRuta(int idRuta)
         {
@@ -43,7 +51,7 @@ namespace Server.Pages.Pages.Admin_Integracion
 
         protected Color EstadoColor(string? estado)
         {
-            var e = (estado ?? "PROGRAMADO").ToUpperInvariant();
+            var e = (estado ?? "PROGRAMADO").Trim().ToUpperInvariant();
             return e switch
             {
                 "PROGRAMADO" => Color.Info,
@@ -55,13 +63,53 @@ namespace Server.Pages.Pages.Admin_Integracion
             };
         }
 
-        // ---------- CRUD ----------
-        private async Task GetViajes()
+        // Detecta viajes extendidos (Jue/Dom 17:30). Acepta "HH:mm" o "HH:mm:ss"
+        private static bool EsExtendido(ViajeDto v)
         {
-            var res = await _Rest.GetAsync<List<ViajeDto>>("Viaje/viaje");
-            if (res.State == State.Success) _viajes = res.Data ?? new();
-            else _MessageShow(res.Message, State.Warning);
+            var s = (v.HoraSalida ?? "").Trim();
+            if (string.IsNullOrEmpty(s)) return false;
+            if (s.Length >= 5) s = s[..5]; // normaliza "17:30:00" -> "17:30"
+            return s == "17:30" &&
+                   (v.Fecha.DayOfWeek == DayOfWeek.Thursday || v.Fecha.DayOfWeek == DayOfWeek.Sunday);
         }
+
+        // ---------- API helpers ----------
+        private async Task ActualizarEstados(bool mostrarMensaje = false)
+        {
+            var body = new { Desde = _desdeEstado, Hasta = _hastaEstado };
+            var r = await _Rest.PostAsync<object>("Viaje/actualizar-estados", body);
+            if (mostrarMensaje) _MessageShow(r.Message ?? "Estados actualizados.", r.State);
+        }
+
+        /// <summary>
+        /// Refresca estados + lista, evitando reentradas del timer y errores de render.
+        /// </summary>
+        private async Task ActualizarYRefrescarAsync(bool showToast = false)
+        {
+            if (_isDisposed || _isRefreshing) return;
+            _isRefreshing = true;
+            try
+            {
+                await ActualizarEstados(showToast);
+
+                var res = await _Rest.GetAsync<List<ViajeDto>>("Viaje/viaje");
+                if (res.State == State.Success) _viajes = res.Data ?? new();
+                else _MessageShow(res.Message, State.Warning);
+
+                if (!_isDisposed) StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                _MessageShow($"Error al refrescar viajes: {ex.Message}", State.Error);
+            }
+            finally
+            {
+                _isRefreshing = false;
+            }
+        }
+
+        // ---------- CRUD ----------
+        private async Task GetViajes() => await ActualizarYRefrescarAsync();
 
         private async Task GetChofer()
         {
@@ -143,7 +191,7 @@ namespace Server.Pages.Pages.Admin_Integracion
 
             ResetViaje();
             await GetViajes();
-            ToggleExpand();
+            Collapse();
         }
 
         private void FormEditar(ViajeDto dto)
@@ -166,7 +214,7 @@ namespace Server.Pages.Pages.Admin_Integracion
             _choferSel = dto.IdChofer;
             _busSel = dto.IdBus;
 
-            ToggleExpand();
+            Expand();
         }
 
         private void ResetViaje()
@@ -182,7 +230,8 @@ namespace Server.Pages.Pages.Admin_Integracion
             _busSel = null;
         }
 
-        private void ToggleExpand() => expande = !expande;
+        private void Expand() => expande = true;
+        private void Collapse() => expande = false;
 
         // ---------- Generar automáticos ----------
         protected async Task GenerarProximos(int dias)
@@ -193,8 +242,8 @@ namespace Server.Pages.Pages.Admin_Integracion
                 var body = new { Desde = DateTime.Now.Date, Dias = dias };
                 var r = await _Rest.PostAsync<object>("Viaje/generar-proximos", body);
                 _MessageShow(r.Message ?? "Generación completada.", r.State);
-                await GetViajes();
-                StateHasChanged();
+
+                await ActualizarYRefrescarAsync(showToast: true);
             }
             catch (Exception ex)
             {
@@ -206,7 +255,7 @@ namespace Server.Pages.Pages.Admin_Integracion
             }
         }
 
-        // ---------- Init ----------
+        // ---------- Init / Dispose ----------
         protected override async Task OnInitializedAsync()
         {
             ResetViaje();
@@ -214,6 +263,35 @@ namespace Server.Pages.Pages.Admin_Integracion
             await GetChofer();
             await GetBus();
             await GetViajes();
+
+            // refrescar automáticamente cada 60s (estados + lista) evitando reentradas
+            _timer = new Timer(60_000)
+            {
+                AutoReset = true,
+                Enabled = true
+            };
+            _timer.Elapsed += async (_, __) =>
+            {
+                if (_isDisposed) return;
+                try
+                {
+                    await InvokeAsync(async () => await ActualizarYRefrescarAsync());
+                }
+                catch { /* swallow to avoid breaking render loop */ }
+            };
+            _timer.Start();
+        }
+
+        public void Dispose()
+        {
+            _isDisposed = true;
+            if (_timer != null)
+            {
+                try { _timer.Stop(); }
+                catch { /* noop */ }
+                _timer.Dispose();
+                _timer = null;
+            }
         }
     }
 }

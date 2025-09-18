@@ -41,7 +41,7 @@
                                     <MudNumericField @bind-Value="_Bus.Capacidad" T="int"
                                                      Label="CAPACIDAD:"
                                                      Variant="Variant.Outlined" Margin="Margin.Dense"
-                                                     Required="true" />
+                                                     Required="true" Min="1" />
                                 </MudItem>
 
                             </MudGrid>
@@ -70,8 +70,6 @@
         <MudIcon Icon="@Icons.Material.Filled.DirectionsBus" Class="me-2" />
     </MudText>
     <MudDivider />
-  
-
 
     <!-- Tabla de Buses -->
     <MudTable Items="@_buses" Filterable="true" Sortable="true" Bordered="true"
@@ -98,6 +96,10 @@
                 <MudTooltip Text="ELIMINAR" Placement="Placement.Top">
                     <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small"
                                    OnClick="@(() => Eliminar(context.IdBus))" />
+                </MudTooltip>
+                <MudTooltip Text="ARREGLAR ASIENTOS (1..capacidad)" Placement="Placement.Top">
+                    <MudIconButton Icon="@Icons.Material.Filled.BuildCircle" Color="Color.Primary" Size="Size.Small"
+                                   OnClick="@(() => EnsureSeats(context))" />
                 </MudTooltip>
             </MudTd>
         </RowTemplate>

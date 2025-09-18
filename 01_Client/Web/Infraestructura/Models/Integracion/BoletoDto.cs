@@ -23,7 +23,8 @@ namespace Infraestructura.Models.Integracion
         public int IdAsiento { get; set; }
 
         public int? IdPago { get; set; }
+        public int? OrigenParadaId { get; set; }
+        public int? DestinoParadaId { get; set; }
 
-       
     }
 }

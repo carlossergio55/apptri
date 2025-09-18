@@ -1,0 +1,180 @@
+﻿/* ===== Variables y base ===== */
+:root {
+    --pox-primary: #1976d2; /* Primario (MudBlazor default) */
+    --pox-success: #2e7d32; /* Verde éxito */
+    --pox-wa: #25D366; /* Verde WhatsApp */
+    --pox-warning-bg: rgba(255,193,7,.12);
+    --pox-radius: 16px;
+    --pox-shadow: 0 8px 28px rgba(0,0,0,.08);
+}
+
+.pox-page-container {
+    /* el MudContainer ya controla el ancho, aquí afinamos paddings */
+    scroll-behavior: smooth;
+}
+
+/* ===== Hero / Aviso ===== */
+.pox-hero-alert {
+    border-radius: var(--pox-radius) !important;
+    box-shadow: var(--pox-shadow);
+    background: linear-gradient(135deg, var(--pox-warning-bg), rgba(255,193,7,.06)) !important;
+    border: 1px solid rgba(255,193,7,.25) !important;
+}
+
+.pox-hero-title {
+    font-weight: 800;
+    letter-spacing: .2px;
+}
+
+.pox-hero-text {
+    line-height: 1.6;
+}
+
+/* ===== CTA (Comprar desde Sucre) ===== */
+.pox-cta-row {
+    gap: .75rem;
+}
+
+.pox-cta-comprar {
+    border-radius: 999px !important;
+    padding: .65rem 1.25rem !important;
+    font-weight: 700;
+    box-shadow: var(--pox-shadow);
+    transition: transform .12s ease, box-shadow .12s ease, opacity .12s ease;
+}
+
+    .pox-cta-comprar:hover {
+        transform: translateY(-1px);
+    }
+
+    .pox-cta-comprar:active {
+        transform: translateY(0);
+        opacity: .95;
+    }
+
+/* ===== Grid de destinos / Tarjetas ===== */
+.pox-destinos-grid {
+    margin-top: .5rem;
+}
+
+.pox-card {
+    border-radius: var(--pox-radius) !important;
+    box-shadow: var(--pox-shadow);
+    transition: transform .12s ease, box-shadow .12s ease;
+    border: 1px solid rgba(0,0,0,.06);
+    background: linear-gradient(180deg, rgba(0,0,0,.015), rgba(0,0,0,0));
+}
+
+    .pox-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 34px rgba(0,0,0,.10);
+    }
+
+.pox-card-header .mud-card-header-content {
+    gap: .25rem;
+}
+
+.pox-card-header .mud-typography {
+    font-weight: 700;
+}
+
+.pox-card-content {
+    padding-top: .25rem;
+}
+
+.pox-card-line {
+    display: flex;
+    align-items: center;
+    gap: .35rem;
+    line-height: 1.5;
+    word-break: break-word;
+}
+
+/* ===== Acciones de tarjeta ===== */
+.pox-card-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    padding: .75rem 1rem 1rem 1rem;
+}
+
+/* Botón: Ver más */
+.pox-btn-vermas {
+    border-radius: 10px !important;
+    font-weight: 600;
+}
+
+/* Botón: Llamar */
+.pox-btn-llamar {
+    border-radius: 10px !important;
+    font-weight: 700;
+    border: 1px solid rgba(0,0,0,.08) !important;
+}
+
+/* Botón: WhatsApp */
+.pox-btn-whatsapp {
+    border-radius: 10px !important;
+    font-weight: 700;
+    color: var(--pox-wa) !important;
+    border: 1px solid var(--pox-wa) !important;
+    background: transparent !important;
+}
+
+    .pox-btn-whatsapp:hover {
+        color: #fff !important;
+        background: var(--pox-wa) !important;
+        border-color: var(--pox-wa) !important;
+        text-decoration: none !important;
+    }
+
+/* Asegurar que los <a> usados como botones no subrayen */
+.pox-card-actions a {
+    text-decoration: none;
+}
+
+/* ===== Responsivo ===== */
+@media (max-width: 900px) {
+    .pox-cta-row {
+        justify-content: flex-start;
+    }
+}
+
+@media (max-width: 600px) {
+    .pox-hero-title {
+        font-size: 1.15rem;
+    }
+
+    .pox-hero-text {
+        font-size: .95rem;
+    }
+
+    .pox-card-actions {
+        padding: .75rem;
+    }
+}
+
+/* ===== Modo oscuro (MudBlazor) ===== */
+.mud-theme-dark .pox-hero-alert {
+    background: linear-gradient(135deg, rgba(255,193,7,.18), rgba(255,193,7,.10)) !important;
+    border-color: rgba(255,193,7,.35) !important;
+}
+
+.mud-theme-dark .pox-card {
+    border-color: rgba(255,255,255,.08);
+    background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,0));
+    box-shadow: 0 8px 28px rgba(0,0,0,.35);
+}
+
+.mud-theme-dark .pox-btn-llamar {
+    border-color: rgba(255,255,255,.12) !important;
+}
+
+/* ===== Accesibilidad y focus ===== */
+.pox-card .mud-button-root:focus-visible,
+.pox-cta-comprar:focus-visible,
+.pox-btn-vermas:focus-visible,
+.pox-btn-llamar:focus-visible,
+.pox-btn-whatsapp:focus-visible {
+    outline: 3px solid rgba(25,118,210,.35);
+    outline-offset: 2px;
+}

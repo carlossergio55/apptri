@@ -1,11 +1,7 @@
 ﻿using Dominio.Common;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization; // si quieres ocultar en JSON
 
 namespace Dominio.Entities.Integracion
 {
@@ -18,21 +14,26 @@ namespace Dominio.Entities.Integracion
 
         [Column("nombre")]
         [MaxLength(40)]
-        public string Nombre { get; set; }
+        public string? Nombre { get; set; }
 
         [Column("correo")]
-        public string Correo { get; set; }
+        [MaxLength(100)]
+        public string? Correo { get; set; }
 
+        // BD: contrasena (nullable) | UI: "Contraseña"
         [Column("contrasena")]
-        public string Contraseña { get; set; }
+        [Display(Name = "Contraseña")]
+        [JsonIgnore] // Opcional: no exponer en respuestas JSON
+        public string? Contrasena { get; set; }
 
         [Column("tipo")]
-        public string Tipo { get; set; }
+        [MaxLength(20)]
+        public string? Tipo { get; set; }
 
-        // Relación con sucursal (FK)
         [Column("id_sucursal")]
-        public int? IdSucursal { get; set; }   // Nullable por ahora
-        [ForeignKey("IdSucursal")]
-        public virtual Sucursal Sucursal { get; set; }
+        public int? IdSucursal { get; set; }
+
+        [ForeignKey(nameof(IdSucursal))]
+        public virtual Sucursal? Sucursal { get; set; }
     }
 }

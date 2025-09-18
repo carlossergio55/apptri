@@ -15,7 +15,6 @@ namespace Infraestructura.Models.Integracion
 
         public string Estado { get; set; } = "PROGRAMADO";
 
-        // Nuevos
         public string Direccion { get; set; } = "IDA"; // "IDA" | "VUELTA"
         public int? DesdeParadaId { get; set; }
         public int? HastaParadaId { get; set; }

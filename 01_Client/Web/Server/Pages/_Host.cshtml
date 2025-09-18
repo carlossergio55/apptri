@@ -2,7 +2,7 @@
 @namespace Server.Pages
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @addTagHelper *, Syncfusion.Blazor
-
+@using Microsoft.AspNetCore.Components.Web   @* Necesario para HeadOutlet *@
 
 <!DOCTYPE html>
 <html lang="es">
@@ -11,14 +11,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Trans Integración</title>
     <base href="~/" />
+
+    <!-- Fuentes -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet" />
+
+    <!-- Frameworks (CSS) -->
     <link href="_content/MudBlazor/MudBlazor.min.css" rel="stylesheet" />
-    <link href="styles/Integracion/estilos.css" rel="stylesheet" />
+
+    <!-- Estilos del sitio -->
+    <link href="~/styles/Integracion/estilos.css" rel="stylesheet" asp-append-version="true" />
+    <link href="~/styles/Integracion/proximamente-public.css" rel="stylesheet" asp-append-version="true" />
+    <link href="~/styles/Integracion/aviso_dialog.css" rel="stylesheet" asp-append-version="true" />
+
+    <!-- Iconos (opcional) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+    <!-- Permite inyectar <HeadContent> -->
+    <HeadOutlet />
 </head>
+
 <body>
     <app>
         <component type="typeof(App)" render-mode="Server" />
-
     </app>
 
     <div id="blazor-error-ui">
@@ -32,10 +46,29 @@
         <a class="dismiss">🗙</a>
     </div>
 
+    <!-- Scripts Blazor/MudBlazor -->
     <script src="_framework/blazor.server.js"></script>
     <script src="_content/MudBlazor/MudBlazor.min.js"></script>
-    
-    <script src="_content/Syncfusion.Blazor/scripts/sf-blazor.min.js"></script>
+
+    <!-- Utilidades simples para localStorage -->
+    <script>
+        window.noticeStore = {
+          get: (k) => localStorage.getItem(k),
+          set: (k, v) => localStorage.setItem(k, v),
+          del: (k) => localStorage.removeItem(k)
+        };
+    </script>
+
+    <!-- Solo en desarrollo: forzar que aparezca siempre -->
+    <environment include="Development">
+        <script> window.noticeStore?.del('noticeSeenDate'); </script>
+    </environment>
+
+    <!-- Referencia JS-->
+    <script src="js/notice.js" asp-append-version="true"></script>
+    <environment include="Development">
+        <script> window.noticeStore?.del('noticeSeenDate'); </script>
+    </environment>
 
 </body>
 </html>

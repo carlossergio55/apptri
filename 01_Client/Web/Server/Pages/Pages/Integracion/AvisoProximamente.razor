@@ -1,0 +1,134 @@
+﻿@page "/Prox/Sucursal/Public"
+@layout PublicLayout
+@using Infraestructura.Models.Integracion
+@using MudBlazor
+@inject NavigationManager Nav
+@inject ISnackbar Snackbar
+@using Infraestructura.Models.Clasificador
+@using Microsoft.AspNetCore.Components
+@using Syncfusion.Blazor.Grids
+@using System.Globalization
+@inherits MainBaseComponent
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="pox-page-container py-10 px-4">
+
+    <!-- Aviso principal -->
+    <MudAlert Severity="Severity.Warning" Variant="Variant.Filled" Elevation="1" Class="pox-hero-alert mb-6">
+        <MudText Typo="Typo.h5" Class="pox-hero-title">Aviso importante</MudText>
+        <MudText Typo="Typo.body1" Class="pox-hero-text mt-2">
+            Por el momento <b>no es posible comprar por internet</b> mediante nuestro sistema.
+            Actualmente, las compras están disponibles <b>solo desde Sucre</b> hacia sus diferentes destinos,
+            debido a la <b>falta de Wi-Fi y equipos</b> en nuestras sucursales. Estamos trabajando para habilitarlas <b>pronto</b>.
+            Por ahora puedes llamar a las oficinas de destino para <b>reservar</b>, pagar por <b>transferencia o QR</b>,
+            <b>enviar el comprobante</b> a la oficina correspondiente y <b>recoger tu pasaje</b> antes de subir al bus.
+        </MudText>
+    </MudAlert>
+
+    <!-- CTA comprar desde Sucre -->
+    <MudStack Direction="Row" Class="pox-cta-row mb-8" Justify="Justify.FlexEnd" Spacing="2">
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="pox-cta-comprar"
+                   StartIcon="@Icons.Material.Filled.DirectionsBus"
+                   OnClick="@(() => Nav.NavigateTo("/comprar-public"))">
+            Comprar desde Sucre
+        </MudButton>
+    </MudStack>
+
+    <!-- Destinos -->
+    <MudGrid Class="pox-destinos-grid" GutterSize="GutterSize.Small">
+        @foreach (var d in Destinations)
+        {
+            <MudItem xs="12" md="4">
+                <MudCard Class="pox-card h-100 rounded-2xl">
+                    <MudCardHeader Class="pox-card-header"
+                                   Title="@d.Name"
+                                   SubTitle="Reservas por teléfono o WhatsApp" />
+                    <MudCardContent Class="pox-card-content">
+                        <MudStack Spacing="1">
+                            <MudText Typo="Typo.body2" Class="pox-card-line"><b>Teléfono:</b> @d.OfficePhone</MudText>
+                            <MudText Typo="Typo.body2" Class="pox-card-line"><b>WhatsApp:</b> @d.WhatsApp</MudText>
+                        </MudStack>
+                    </MudCardContent>
+                    <MudCardActions Class="pox-card-actions">
+                        <MudButton Variant="Variant.Outlined" Color="Color.Primary" Class="pox-btn-vermas"
+                                   StartIcon="@Icons.Material.Filled.Info"
+                                   Component="a" Href="@d.MoreUrl">
+                            Ver más de @d.Name
+                        </MudButton>
+
+                        <MudButton Variant="Variant.Filled" Color="Color.Success" Class="pox-btn-llamar"
+                                   StartIcon="@Icons.Material.Filled.Phone"
+                                   Component="a" Href="@d.TelUri">
+                            Llamar para reservar
+                        </MudButton>
+
+                        <MudButton Variant="Variant.Outlined" Color="Color.Success" Class="pox-btn-whatsapp"
+                                   StartIcon="@Icons.Material.Filled.Chat"
+                                   Component="a" Href="@d.WhatsUri" Target="_blank" Rel="noopener">
+                            WhatsApp oficina
+                        </MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </MudItem>
+        }
+    </MudGrid>
+</MudContainer>
+
+@code {
+    // <<< EDITA AQUÍ LOS NÚMEROS CUANDO QUIERAS >>>
+    // Por ahora todas las oficinas comparten +591 71178739 (tel y WhatsApp).
+    private List<DestinationInfo> Destinations = new()
+    {
+        new DestinationInfo("Villa Serrano", "VillaSerrano", "+591 71178739", "+591 71178739"),
+        new DestinationInfo("Tomina",        "Tomina",       "+591 71178739", "+591 71178739"),
+        new DestinationInfo("Mendoza",       "Mendoza",      "+591 71178739", "+591 71178739"),
+    };
+
+    public class DestinationInfo
+    {
+        public string Name { get; }
+        public string Slug { get; }
+        public string OfficePhone { get; set; }
+        public string WhatsApp { get; set; }
+
+        public DestinationInfo(string name, string slug, string officePhone, string whatsapp)
+        {
+            Name = name;
+            Slug = slug;
+            OfficePhone = officePhone;
+            WhatsApp = whatsapp;
+        }
+
+        public string MoreUrl => "/" + Slug + "/turistic";
+
+        // tel:+5917...
+        public string TelUri => "tel:" + NormalizePhoneForTel(OfficePhone);
+
+        // https://wa.me/
+        public string WhatsUri => BuildWhatsUri();
+
+        private string BuildWhatsUri()
+        {
+            string number = NormalizePhoneForWa(WhatsApp);
+            
+            string msg = "Hola, quisiera reservar un pasaje a " + Name + ". ¿Podrían indicarme disponibilidad y cómo enviar el comprobante?";
+            string encoded = Uri.EscapeDataString(msg);
+            return "https://wa.me/" + number + "?text=" + encoded;
+        }
+
+        private static string NormalizePhoneForTel(string raw)
+        {
+            var sb = new System.Text.StringBuilder();
+            foreach (var ch in raw)
+                if (char.IsDigit(ch) || ch == '+') sb.Append(ch);
+            return sb.ToString();
+        }
+
+        private static string NormalizePhoneForWa(string raw)
+        {
+            var sb = new System.Text.StringBuilder();
+            foreach (var ch in raw)
+                if (char.IsDigit(ch)) sb.Append(ch);
+            return sb.ToString();
+        }
+    }
+}

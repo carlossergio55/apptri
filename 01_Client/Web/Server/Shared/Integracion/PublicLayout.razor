@@ -1,107 +1,83 @@
 ﻿@inherits LayoutComponentBase
 @using MudBlazor
+@using Microsoft.AspNetCore.Components
+@inject NavigationManager Nav
+@inject IDialogService Dialog
+@inject IJSRuntime JS
 @using Server.Shared.Integracion
-
 <HeadContent>
-    <link href="styles/Integracion/estilos.css" rel="stylesheet" />
-    <link href="styles/Integracion/modal-destinos.css" rel="stylesheet" />
-    <link href="styles/Integracion/inicio.css" rel="stylesheet" />
-    <link href="styles/Integracion/comprar-public.css" rel="stylesheet" />
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap" rel="stylesheet">
-
-
-
+  <link href="styles/Integracion/modal-destinos.css" rel="stylesheet" />
+  <link href="styles/Integracion/inicio.css" rel="stylesheet" />
+  <link href="styles/Integracion/comprar-public.css" rel="stylesheet" />
+    <link href="~/styles/Integracion/aviso_dialog.css" rel="stylesheet" asp-append-version="true" />
 </HeadContent>
-
 
 <MudLayout>
 
-    <!-- Barra de navegación -->
-    <MudAppBar Elevation="4" Color="Color.Primary" Fixed="true" Class="barra-navegacion">
-        <MudContainer Class="barra-navegacion-contenido px-4">
-
-            <!-- Logo -->
-            <div class="navegacion-logo">   
-            <MudButton Variant="Variant.Text" Class="boton-logo" Style="text-transform: none; padding: 0;" OnClick="@(() => Nav.NavigateTo("/inicio"))">
-                <div class="d-flex align-items-center">
-                    <MudImage Src="images/logo_sin.png" Alt="Logo" Class="logo-img" />
-
-                    <div class="texto-logo ms-2">
-                        <div class="linea1">TRANS</div>
-                        <div class="linea2">INTEGRACIÓN</div>
-                        <div class="parachoque"></div>
-                    </div>
-                </div>
-            </MudButton>
+  <!-- Barra de navegación -->
+  <MudAppBar Elevation="4" Color="Color.Primary" Fixed="true" Class="barra-navegacion">
+    <MudContainer Class="barra-navegacion-contenido px-4">
+      <div class="navegacion-logo">
+        <MudButton Variant="Variant.Text" Class="boton-logo" Style="text-transform: none; padding: 0;" OnClick="@(() => Nav.NavigateTo("/inicio"))">
+          <div class="d-flex align-items-center">
+            <MudImage Src="images/logo_sin.png" Alt="Logo" Class="logo-img" />
+            <div class="texto-logo ms-2">
+              <div class="linea1">TRANS</div>
+              <div class="linea2">INTEGRACIÓN</div>
+              <div class="parachoque"></div>
             </div>
+          </div>
+        </MudButton>
+      </div>
 
-            <div class="navegacion-derecha">
-            <!-- Ícono de menú hamburguesa (solo visible en pantallas pequeñas) -->
-            <MudHidden Breakpoint="Breakpoint.MdAndUp">
-                <MudIconButton Icon="@Icons.Material.Filled.Menu"
-                               Color="Color.Inherit"
-                               OnClick="@ToggleDrawer"
-                               Edge="Edge.End"
-                               Class="hamburguesa-btn" />
-            </MudHidden>
+      <div class="navegacion-derecha">
+        <MudHidden Breakpoint="Breakpoint.MdAndUp">
+          <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" OnClick="@ToggleDrawer" Edge="Edge.End" Class="hamburguesa-btn" />
+        </MudHidden>
 
-            <!-- Botones de navegación (solo visible en pantallas grandes) -->
-            <MudHidden Breakpoint="Breakpoint.MdAndDown">
-                <div class="grupo_btn_nav d-flex gap-2">
-                    <div class="wrap_btn_nav">
-                        <MudButton Class="btn_nav" Variant="Variant.Text" Size="Size.Small" OnClick="@(() => Nav.NavigateTo("/comprar-public"))">Pasajes</MudButton>
-                    </div>
-                    <div class="wrap_btn_nav">
-                        <MudButton Class="btn_nav" Variant="Variant.Text" Size="Size.Small" OnClick="@(() => Nav.NavigateTo("/rastreo"))">Carga y Encomienda</MudButton>
-                    </div>
-                    <div class="wrap_btn_nav">
-                        <MudButton Class="btn_nav" Variant="Variant.Text" Size="Size.Small" OnClick="@(() => Nav.NavigateTo("/sucursales"))">Sucursales</MudButton>
-                    </div>
-                    <div class="wrap_btn_nav">
-                        <MudButton Class="btn_nav" Variant="Variant.Text" Size="Size.Small" OnClick="@(() => Nav.NavigateTo("/nosotros"))">Nuestra Empresa</MudButton>
-                    </div>
-                    <div class="wrap_btn_nav">
-                            <MudButton Class="btn_nav" Variant="Variant.Text" Size="Size.Small" OnClick="@(() => Nav.NavigateTo("/contactenos"))">Contáctenos</MudButton>
-                    </div>
-                </div>
-            </MudHidden>
-            </div>
+        <MudHidden Breakpoint="Breakpoint.MdAndDown">
+          <div class="grupo_btn_nav d-flex gap-2">
+            <div class="wrap_btn_nav"><MudButton Class="btn_nav" Variant="Variant.Text" Size="Size.Small" OnClick="@(() => Nav.NavigateTo("/comprar-public"))">Pasajes</MudButton></div>
+            <div class="wrap_btn_nav"><MudButton Class="btn_nav" Variant="Variant.Text" Size="Size.Small" OnClick="@(() => Nav.NavigateTo("/rastreo"))">Carga y Encomienda</MudButton></div>
+            <div class="wrap_btn_nav"><MudButton Class="btn_nav" Variant="Variant.Text" Size="Size.Small" OnClick="@(() => Nav.NavigateTo("/sucursales"))">Sucursales</MudButton></div>
+            <div class="wrap_btn_nav"><MudButton Class="btn_nav" Variant="Variant.Text" Size="Size.Small" OnClick="@(() => Nav.NavigateTo("/nosotros"))">Nuestra Empresa</MudButton></div>
+            <div class="wrap_btn_nav"><MudButton Class="btn_nav" Variant="Variant.Text" Size="Size.Small" OnClick="@(() => Nav.NavigateTo("/contactenos"))">Contáctenos</MudButton></div>
+          </div>
+        </MudHidden>
+      </div>
+    </MudContainer>
+  </MudAppBar>
 
-        </MudContainer>
-    </MudAppBar>
-
-    <!-- Menú móvil (aparece desde arriba) -->
-    @if (_drawerOpen)
-    {
-        <div class="mobile-menu-overlay" @onclick="CerrarDrawer">
-            <div class="mobile-menu-paper" @onclick:stopPropagation="true">
-                <div class="mobile-nav-menu" style="display: flex; flex-direction: column; gap: 12px;">
-                    <MudButton Class="mobile-nav-item" Variant="Variant.Text" OnClick="@(() => NavegarYCerrar("/comprar-public"))">Pasajes</MudButton>
-                    <MudButton Class="mobile-nav-item" Variant="Variant.Text" OnClick="@(() => NavegarYCerrar("/rastreo"))">Carga y Encomienda</MudButton>
-                    <MudButton Class="mobile-nav-item" Variant="Variant.Text" OnClick="@(() => NavegarYCerrar("/sucursales"))">Sucursales</MudButton>
-                    <MudButton Class="mobile-nav-item" Variant="Variant.Text" OnClick="@(() => NavegarYCerrar("/nosotros"))">Nuestra Empresa</MudButton>
-                    <MudButton Class="mobile-nav-item" Variant="Variant.Text" OnClick="@(() => NavegarYCerrar("/contactenos"))">Contáctenos</MudButton>
-                </div>
-            </div>
+  @if (_drawerOpen)
+  {
+    <div class="mobile-menu-overlay" @onclick="CerrarDrawer">
+      <div class="mobile-menu-paper" @onclick:stopPropagation="true">
+        <div class="mobile-nav-menu" style="display: flex; flex-direction: column; gap: 12px;">
+          <MudButton Class="mobile-nav-item" Variant="Variant.Text" OnClick="@(() => NavegarYCerrar("/comprar-public"))">Pasajes</MudButton>
+          <MudButton Class="mobile-nav-item" Variant="Variant.Text" OnClick="@(() => NavegarYCerrar("/rastreo"))">Carga y Encomienda</MudButton>
+          <MudButton Class="mobile-nav-item" Variant="Variant.Text" OnClick="@(() => NavegarYCerrar("/sucursales"))">Sucursales</MudButton>
+          <MudButton Class="mobile-nav-item" Variant="Variant.Text" OnClick="@(() => NavegarYCerrar("/nosotros"))">Nuestra Empresa</MudButton>
+          <MudButton Class="mobile-nav-item" Variant="Variant.Text" OnClick="@(() => NavegarYCerrar("/contactenos"))">Contáctenos</MudButton>
         </div>
-    }
+      </div>
+    </div>
+  }
 
-    <!-- Contenido principal -->
-    <MudMainContent Class="p-0 contenido-ajustado">
-        @Body
-    </MudMainContent>
 
-    <!-- Proveedores -->
-    <MudDialogProvider />
-    <MudSnackbarProvider Class="snackbar-ajustada"
-                         Position="SnackbarPosition.TopCenter"
-                         MaxDisplayedSnackbars="3"
-                         PreventDuplicates="true" />
 
-    <MudPopoverProvider /> <!-- 👈 ¡Esto es lo que faltaba! -->
+  <!-- Contenido principal -->
+  <MudMainContent Class="p-0 contenido-ajustado">
+    @Body
+  </MudMainContent>
+
+  <!-- Proveedores -->
+  <MudDialogProvider />
+  <MudSnackbarProvider Class="snackbar-ajustada"
+                       Position="SnackbarPosition.TopCenter"
+                       MaxDisplayedSnackbars="3"
+                       PreventDuplicates="true" />
+  <MudPopoverProvider />
+
     <!-- Footer -->
     <MudPaper Elevation="10" Class="footer-container">
         <MudContainer MaxWidth="MaxWidth.False" Class="footer-content">
@@ -137,7 +113,7 @@
                             <MudText Class="footer-contact-title">Atención al Cliente:</MudText>
                             <MudText Class="footer-contact-value">+591-71178739</MudText>
                         </MudListItem>
-                      
+
                         <MudListItem Class="footer-contact-item">
                             <MudText Class="footer-contact-title">Oficina Central:</MudText>
                             <MudText Class="footer-contact-value">18774744</MudText>
@@ -180,38 +156,61 @@
         <MudText Typo="Typo.caption" Class="copyright-text">
             © 2025 Trans Integración | Todos los derechos reservados.
             <br />
-           
+
             Desarrollado como proyecto de defensa de grado de la carrera de Ingeniería de Sistemas TIC – Universidad Boliviana de Informática (UBI).
         </MudText>
     </MudPaper>
 
 
-   
+
+
 
 </MudLayout>
 
+
+
 @code {
-    [Inject] NavigationManager Nav { get; set; }
+  private bool _drawerOpen = false;
 
-    private bool _drawerOpen = false;
+  void ToggleDrawer() { _drawerOpen = !_drawerOpen; StateHasChanged(); }
+  void CerrarDrawer() { _drawerOpen = false; StateHasChanged(); }
+  void NavegarYCerrar(string url) { _drawerOpen = false; StateHasChanged(); Nav.NavigateTo(url); }
 
-    void ToggleDrawer()
+  // ✅ Mostrar aviso 1 vez por día (MudBlazor MessageBox + localStorage)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        _drawerOpen = !_drawerOpen;
-        StateHasChanged(); // Forzar actualización de la UI
+        if (!firstRender) return;
+
+        var messageHtml =
+            "⚠️ Por el momento, el sistema solo permite compras <b>desde Sucre</b> hacia sus diferentes destinos. " +
+            "Próximamente habilitaremos compras desde todas nuestras sucursales. ¡Gracias por su comprensión!";
+
+        var opts = new DialogOptions
+        {
+            MaxWidth = MaxWidth.Small,
+            CloseOnEscapeKey = true,
+            DisableBackdropClick = true
+        };
+
+        var p = new DialogParameters
+        {
+            ["Title"] = "Aviso",
+            ["Message"] = messageHtml,
+            ["RootClass"] = "aviso-modal",
+            ["TitleClass"] = "aviso-titulo",
+            ["ContentClass"] = "aviso-contenido",
+            ["ActionsClass"] = "aviso-acciones",
+            ["OkButtonClass"] = "aviso-btn-primario",
+            ["OkText"] = "Entendido"
+        };
+
+        var dlg = Dialog.Show<Server.Shared.Integracion.AvisoDialog>(title: null, parameters: p, options: opts);
+        await dlg.Result;
+
     }
 
-    void CerrarDrawer()
-    {
-        _drawerOpen = false;
-        StateHasChanged(); 
-    }
-    void NavegarYCerrar(string url)
-    {
-        _drawerOpen = false;
-        StateHasChanged();
-        Nav.NavigateTo(url);
-    }
+
+
+
+
 }
-
-

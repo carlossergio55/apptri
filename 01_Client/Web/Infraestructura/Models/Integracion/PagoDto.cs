@@ -16,5 +16,6 @@ namespace Infraestructura.Models.Integracion
         public DateTime FechaPago { get; set; }
         public int IdUsuario { get; set; }
         public int IdCliente { get; set; }
+        public string? Referencia { get; set; }
     }
 }

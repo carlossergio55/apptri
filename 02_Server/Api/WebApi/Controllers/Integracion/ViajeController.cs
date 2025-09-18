@@ -34,11 +34,26 @@ namespace WebApi.Controllers.Integracion
         public async Task<IActionResult> Delete(int id) =>
             Ok(await Mediator.Send(new DeleteViajeCommand { IdViaje = id }));
 
+        [HttpGet("{id}/paradas")]
+        [Authorize]
+        public async Task<IActionResult> GetParadas(int id)
+        {
+            var data = await Mediator.Send(new GetParadasDeViajeQuery { IdViaje = id });
+            if (data.Count == 0) return NotFound();
+            return Ok(data);
+        }
 
 
         [HttpPost("generar-proximos")]
         [Authorize]
         public async Task<IActionResult> GenerarProximos([FromBody] GenerarViajesProximosCommand cmd)
     => Ok(await Mediator.Send(cmd));
+
+        [HttpPost("actualizar-estados")]
+        [Authorize]
+        public async Task<IActionResult> ActualizarEstados([FromBody] ActualizarEstadosViajeCommand cmd)
+    => Ok(await Mediator.Send(cmd));
+
+
     }
 }

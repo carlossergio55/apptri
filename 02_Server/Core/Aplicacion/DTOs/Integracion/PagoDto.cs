@@ -23,5 +23,6 @@ namespace Aplicacion.DTOs.Integracion
         public int IdUsuario { get; set; }
 
         public int IdCliente { get; set; }
+        public string? Referencia { get; set; }
     }
 }

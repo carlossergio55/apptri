@@ -33,5 +33,6 @@ namespace Dominio.Entities.Integracion
         public int IdCliente { get; set; }
         [ForeignKey("IdCliente")]
         public virtual Cliente Cliente { get; set; }
+        public string? Referencia { get; set; }
     }
 }

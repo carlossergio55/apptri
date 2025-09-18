@@ -10,11 +10,11 @@
     <!-- Acciones rápidas -->
     <MudStack Row="true" Spacing="2" Class="p-4 pt-3">
         <MudButton Color="Color.Success" Variant="Variant.Filled"
-                   OnClick="@(()=> GenerarProximos(14))">
+                   OnClick="@(() => GenerarProximos(14))">
             GENERAR PRÓXIMOS 14 DÍAS
         </MudButton>
         <MudButton Color="Color.Info" Variant="Variant.Outlined"
-                   OnClick="@(()=> GenerarProximos(1))">
+                   OnClick="@(() => GenerarProximos(1))">
             GENERAR MAÑANA
         </MudButton>
     </MudStack>
@@ -24,8 +24,8 @@
             <TitleContent>
                 <MudContainer MaxWidth="MaxWidth.ExtraSmall" Class="mb-5">
                     <MudButton Variant="Variant.Outlined"
-                               Color="@(expande? Color.Error: Color.Success)"
-                               OnClick="@ToggleExpand">
+                               Color="@(expande ? Color.Error : Color.Success)"
+                               OnClick="@(() => { if (expande) Collapse(); else Expand(); })">
                         @(expande ? "CERRAR" : "AGREGAR")
                     </MudButton>
                 </MudContainer>
@@ -56,7 +56,8 @@
                                                        Label="HORA SALIDA"
                                                        @bind-Value="_Viaje.HoraSalida"
                                                        Variant="Variant.Outlined"
-                                                       Margin="Margin.Dense">
+                                                       Margin="Margin.Dense"
+                                                       Required="true">
                                                 @foreach (var h in _horasPreset)
                                                 {
                                                     <MudSelectItem T="string" Value="@h">@h</MudSelectItem>
@@ -97,7 +98,6 @@
                                         <MudSelectItem T="string" Value='@("CANCELADO")'>CANCELADO</MudSelectItem>
                                     </MudSelect>
                                 </MudItem>
-
 
                                 <!-- RUTA -->
                                 <MudItem xs="12" sm="6" md="4">
@@ -185,9 +185,18 @@
             <MudTd>@context.Fecha.ToString("dd/MM/yyyy")</MudTd>
             <MudTd>@context.HoraSalida</MudTd>
             <MudTd>
-                <MudChip Color="@EstadoColor(context.Estado)" Variant="Variant.Filled" Size="Size.Small">
-                    @context.Estado
-                </MudChip>
+                <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
+                    <MudChip Color="@EstadoColor(context.Estado)" Variant="Variant.Filled" Size="Size.Small">
+                        @context.Estado
+                    </MudChip>
+                    @* Chip opcional para marcar viajes extendidos (Jue/Dom 17:30) *@
+                    @if (EsExtendido(context))
+                    {
+                        <MudChip Color="Color.Success" Variant="Variant.Outlined" Size="Size.Small">
+                            Extendido
+                        </MudChip>
+                    }
+                </MudStack>
             </MudTd>
             <MudTd>@NombreRuta(context.IdRuta)</MudTd>
             <MudTd>@NombreChofer(context.IdChofer)</MudTd>
@@ -196,12 +205,12 @@
                 <MudTooltip Text="EDITAR" Placement="Placement.Top">
                     <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                    Color="Color.Warning" Size="Size.Small"
-                                   OnClick="@(()=>FormEditar(context))" />
+                                   OnClick="@(() => FormEditar(context))" />
                 </MudTooltip>
                 <MudTooltip Text="ELIMINAR" Placement="Placement.Top">
                     <MudIconButton Icon="@Icons.Material.Filled.Delete"
                                    Color="Color.Error" Size="Size.Small"
-                                   OnClick="@(()=>Eliminar(context.IdViaje))" />
+                                   OnClick="@(() => Eliminar(context.IdViaje))" />
                 </MudTooltip>
             </MudTd>
         </RowTemplate>

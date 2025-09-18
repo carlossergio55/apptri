@@ -378,3 +378,52 @@
     text-align: center;
     padding: 0 20px;
 }
+
+
+
+/* DE LOS MENSAJES DIARIOS AVISOS */
+/* Overlay minimalista */
+/* No oscurecer el fondo (overlay) del diálogo */
+/* No oscurecer la página detrás del diálogo */
+/* No oscurecer el fondo */
+.mud-overlay {
+    background: transparent !important;
+}
+
+/* Caja del diálogo */
+.aviso-modal .mud-paper,
+.aviso-modal .mud-surface {
+    background: #fff !important;
+    color: #222 !important;
+    border-radius: 16px !important;
+    box-shadow: 0 18px 60px rgba(0,0,0,.28) !important;
+    width: min(92vw, 640px) !important;
+}
+
+/* Título */
+.aviso-titulo {
+    font-weight: 800;
+    font-size: 1rem;
+    padding: 14px 18px;
+    border-bottom: 1px solid rgba(0,0,0,.06);
+}
+
+/* Contenido */
+.aviso-contenido {
+    padding: 16px 18px;
+    font-size: .96rem;
+    line-height: 1.55;
+}
+
+/* Acciones y botón */
+.aviso-acciones {
+    padding: 10px 14px 16px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.aviso-btn-primario {
+    border-radius: 999px !important;
+    padding: 6px 16px !important;
+    font-weight: 700 !important;
+}

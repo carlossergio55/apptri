@@ -1,0 +1,54 @@
+﻿/* No oscurecer el fondo del diálogo */
+.mud-overlay {
+    background: transparent !important;
+    backdrop-filter: none !important;
+}
+
+/* === CAJA DEL DIÁLOGO (cubre varias versiones) === */
+/* La clase 'aviso-modal' va en el root del MudDialog (Class="@RootClass") */
+.mud-dialog.aviso-modal .mud-dialog-paper,
+.mud-dialog-container.aviso-modal .mud-dialog-paper,
+.mud-dialog.aviso-modal .mud-surface,
+.mud-dialog-container.aviso-modal .mud-surface,
+.mud-dialog.aviso-modal .mud-paper,
+.mud-dialog-container.aviso-modal .mud-paper {
+    background: #808080 !important;
+    color: #000 !important;
+    border-radius: 16px !important;
+    box-shadow: 0 18px 60px rgba(0,0,0,.28) !important;
+    width: min(92vw, 640px) !important;
+    max-width: 640px !important;
+}
+
+/* (por si tu tema fuerza transparencia por variable) */
+.mud-dialog.aviso-modal,
+.mud-dialog-container.aviso-modal {
+    --mud-palette-surface: #ffffff !important;
+}
+
+/* Título / Contenido / Acciones (tus clases) */
+.aviso-titulo {
+    font-weight: 800;
+    font-size: 1rem;
+    padding: 14px 18px;
+    border-bottom: 1px solid rgba(0,0,0,.06);
+}
+
+.aviso-contenido {
+    padding: 16px 18px;
+    font-size: .96rem;
+    line-height: 1.55;
+}
+
+.aviso-acciones {
+    padding: 10px 14px 16px;
+    display: flex;
+    justify-content: flex-end;
+    gap: .5rem;
+}
+
+.aviso-btn-primario {
+    border-radius: 999px !important;
+    padding: 6px 16px !important;
+    font-weight: 700 !important;
+}
