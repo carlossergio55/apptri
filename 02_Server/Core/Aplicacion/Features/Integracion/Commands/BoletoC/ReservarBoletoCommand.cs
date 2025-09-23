@@ -2,16 +2,15 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using MediatR;
 
 using Aplicacion.Wrappers;
-using Aplicacion.Interfaces;                 // IRepositoryAsync<T>
-using Dominio.Entities.Integracion;         // Viaje, RutaParada, Asiento, Boleto, Cliente
-using System.Collections.Generic;
+using Aplicacion.Interfaces;
+using Dominio.Entities.Integracion;
 
 namespace Aplicacion.Features.Integracion.Commands.BoletoC
 {
-    // REQUEST
     public class ReservarBoletoCommand : IRequest<Response<int>>
     {
         public int IdViaje { get; set; }
@@ -20,12 +19,9 @@ namespace Aplicacion.Features.Integracion.Commands.BoletoC
         public int OrigenParadaId { get; set; }
         public int DestinoParadaId { get; set; }
         public decimal Precio { get; set; }
-
-        /// <summary>Minutos para considerar expirada una reserva BLOQUEADO en la validación.</summary>
         public int ReservaTtlMinutos { get; set; } = 10;
     }
 
-    // HANDLER
     public class ReservarBoletoCommandHandler : IRequestHandler<ReservarBoletoCommand, Response<int>>
     {
         private readonly IRepositoryAsync<Viaje> _viajeRepo;
@@ -50,7 +46,6 @@ namespace Aplicacion.Features.Integracion.Commands.BoletoC
 
         public async Task<Response<int>> Handle(ReservarBoletoCommand request, CancellationToken ct)
         {
-            // 0) Validaciones básicas
             if (request.OrigenParadaId == request.DestinoParadaId)
                 throw new InvalidOperationException("Origen y destino no pueden ser iguales.");
             if (request.Precio <= 0m)
@@ -58,7 +53,6 @@ namespace Aplicacion.Features.Integracion.Commands.BoletoC
             if (request.IdCliente <= 0)
                 throw new InvalidOperationException("Cliente requerido.");
 
-            // 1) Viaje + Asiento + Cliente
             var viaje = await _viajeRepo.GetByIdAsync(request.IdViaje);
             if (viaje is null) throw new KeyNotFoundException("Viaje no encontrado.");
 
@@ -70,7 +64,6 @@ namespace Aplicacion.Features.Integracion.Commands.BoletoC
             var cliente = await _clienteRepo.GetByIdAsync(request.IdCliente);
             if (cliente is null) throw new KeyNotFoundException("Cliente no encontrado.");
 
-            // 2) Orden de paradas dentro de la ruta del viaje
             var rutaParadasAll = await _rutaParadaRepo.ListAsync();
             var ordenPorParada = rutaParadasAll
                 .Where(x => x.IdRuta == viaje.IdRuta)
@@ -85,33 +78,43 @@ namespace Aplicacion.Features.Integracion.Commands.BoletoC
             if (oN >= dN)
                 throw new InvalidOperationException("El orden de paradas es inválido (origen debe ser antes que destino).");
 
-            // 3) Validación de solape en el mismo viaje/asiento
             var ahora = DateTime.Now;
+            var salidaLocal = viaje.Fecha.Date + viaje.HoraSalida;   // HoraSalida = TimeSpan
+            var venceReservasLocal = salidaLocal.AddHours(-2);        // corte T–2h
 
-            // >>> esta línea faltaba <<<
             var boletosAll = await _boletoRepo.ListAsync();
 
-            var conflictivos = boletosAll
+            var conflictivo = boletosAll
                 .Where(b => b.IdViaje == request.IdViaje && b.IdAsiento == request.IdAsiento)
-                .Where(b =>
-                    string.Equals(b.Estado, "PAGADO", StringComparison.OrdinalIgnoreCase) ||
-                    (string.Equals(b.Estado, "BLOQUEADO", StringComparison.OrdinalIgnoreCase) &&
-                     (ahora - b.FechaCompra).TotalMinutes <= request.ReservaTtlMinutos)
-                )
                 .Where(b => b.OrigenParadaId.HasValue && b.DestinoParadaId.HasValue)
                 .Where(b =>
                 {
+                    var estado = (b.Estado ?? "").ToUpperInvariant();
+
+                    // Si tu entidad Boleto.FechaCompra es NO-nullable, usa directo:
+                    var fechaCompra = b.FechaCompra ?? ahora;
+
+                    var minutosBloqueo = (ahora - fechaCompra).TotalMinutes;
+
+                    var bloqueaPorEstado =
+                           estado == "PAGADO"
+                        || (estado == "BLOQUEADO"
+                            && ahora <= venceReservasLocal
+                            && minutosBloqueo <= request.ReservaTtlMinutos);
+
+                    if (!bloqueaPorEstado) return false;
+
                     var oE = ordenPorParada[b.OrigenParadaId!.Value];
                     var dE = ordenPorParada[b.DestinoParadaId!.Value];
-                    // solape por tramo: [oN,dN) vs [oE,dE)
+
+                    // Solape de tramos
                     return Math.Max(oN, oE) < Math.Min(dN, dE);
                 })
-                .ToList();
+                .Any();
 
-            if (conflictivos.Any())
+            if (conflictivo)
                 throw new InvalidOperationException("Asiento no disponible en el tramo seleccionado.");
 
-            // 4) Crear BLOQUEADO
             var nuevo = new Boleto
             {
                 IdViaje = request.IdViaje,
@@ -121,7 +124,7 @@ namespace Aplicacion.Features.Integracion.Commands.BoletoC
                 DestinoParadaId = request.DestinoParadaId,
                 Precio = request.Precio,
                 Estado = "BLOQUEADO",
-                FechaCompra = DateTime.Now
+                FechaCompra = ahora
             };
 
             await _boletoRepo.AddAsync(nuevo);

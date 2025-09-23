@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Infraestructura.Models.Integracion
 {
+
     public class BoletoDto
     {
         public int IdBoleto { get; set; }
@@ -10,8 +11,14 @@ namespace Infraestructura.Models.Integracion
         [Range(0.01, 10000, ErrorMessage = "Precio inválido")]
         public decimal Precio { get; set; }
 
-        public string Estado { get; set; } = "BLOQUEADO";
-        public DateTime FechaCompra { get; set; } = DateTime.Now;
+        [Required]
+        public string Estado { get; set; } = "RESERVADO";
+
+        public DateTime? FechaReservaUtc { get; set; }
+      
+        public DateTime? FechaConfirmacionUtc { get; set; }
+       
+        public DateTime? FechaCompra { get; set; }
 
         [Required]
         public int IdViaje { get; set; }
@@ -25,6 +32,5 @@ namespace Infraestructura.Models.Integracion
         public int? IdPago { get; set; }
         public int? OrigenParadaId { get; set; }
         public int? DestinoParadaId { get; set; }
-
     }
 }

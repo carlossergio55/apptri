@@ -3,10 +3,9 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
-
 using Aplicacion.Wrappers;
-using Aplicacion.Interfaces;                 // IRepositoryAsync<T>
-using Dominio.Entities.Integracion;         // Boleto, Viaje, RutaParada, Asiento
+using Aplicacion.Interfaces;
+using Dominio.Entities.Integracion;
 using System.Collections.Generic;
 
 namespace Aplicacion.Features.Integracion.Commands.BoletoC
@@ -16,12 +15,12 @@ namespace Aplicacion.Features.Integracion.Commands.BoletoC
         public int IdBoleto { get; set; }
         public int IdViajeDestino { get; set; }
         public int IdAsientoDestino { get; set; }
-        public int? OrigenParadaId { get; set; }     // opcional: cambiar tramo
-        public int? DestinoParadaId { get; set; }    // opcional: cambiar tramo
+        public int? OrigenParadaId { get; set; }
+        public int? DestinoParadaId { get; set; }
         public int? IdUsuario { get; set; }
         public string? Motivo { get; set; }
 
-        public int ReservaTtlMinutos { get; set; } = 10;   // coherente con reserva
+        public int ReservaTtlMinutos { get; set; } = 10;
     }
 
     public class ReprogramarBoletoCommandHandler : IRequestHandler<ReprogramarBoletoCommand, Response<int>>
@@ -60,13 +59,15 @@ namespace Aplicacion.Features.Integracion.Commands.BoletoC
             if (asientoDest.IdBus != viajeDest.IdBus)
                 throw new InvalidOperationException("El asiento destino no pertenece al bus del viaje destino.");
 
-            // Definir tramo destino (si no envían, usar el del boleto)
+            // Tramo destino (si no envían, usar el del boleto)
             var origenId = request.OrigenParadaId ?? boleto.OrigenParadaId ?? 0;
             var destinoId = request.DestinoParadaId ?? boleto.DestinoParadaId ?? 0;
-            if (origenId == 0 || destinoId == 0) throw new InvalidOperationException("El boleto no tiene tramo definido.");
-            if (origenId == destinoId) throw new InvalidOperationException("Origen y destino no pueden ser iguales.");
+            if (origenId == 0 || destinoId == 0)
+                throw new InvalidOperationException("El boleto no tiene tramo definido.");
+            if (origenId == destinoId)
+                throw new InvalidOperationException("Origen y destino no pueden ser iguales.");
 
-            // Orden de paradas de la ruta del viaje destino
+            // Orden de paradas
             var rpsAll = await _rutaParadaRepo.ListAsync();
             var orden = rpsAll
                 .Where(x => x.IdRuta == viajeDest.IdRuta)
@@ -82,20 +83,33 @@ namespace Aplicacion.Features.Integracion.Commands.BoletoC
                 throw new InvalidOperationException("El orden de paradas es inválido (origen debe ser antes que destino).");
 
             // Validar solape por tramo en el viaje/asiento destino
-            var ahora = DateTime.Now;
+            var ahoraUtc = DateTime.UtcNow;
+
             var boletosAll = await _boletoRepo.ListAsync();
             var conflictivos = boletosAll
-                .Where(b => b.IdViaje == request.IdViajeDestino && b.IdAsiento == request.IdAsientoDestino && b.IdBoleto != boleto.IdBoleto)
+                .Where(b => b.IdViaje == request.IdViajeDestino &&
+                            b.IdAsiento == request.IdAsientoDestino &&
+                            b.IdBoleto != boleto.IdBoleto)
                 .Where(b =>
-                    string.Equals(b.Estado, "PAGADO", StringComparison.OrdinalIgnoreCase) ||
-                    (string.Equals(b.Estado, "BLOQUEADO", StringComparison.OrdinalIgnoreCase) &&
-                     (ahora - b.FechaCompra).TotalMinutes <= request.ReservaTtlMinutos)
-                )
+                {
+                    var esPagado = string.Equals(b.Estado, "PAGADO", StringComparison.OrdinalIgnoreCase);
+
+                    // bloqueado vigente dentro del TTL
+                    var fechaBase = b.FechaReservaUtc
+                                    ?? b.FechaCompra          // si aún usas FechaCompra
+                                    ?? ahoraUtc;              // fallback => 0 min
+                    var minutosBloqueo = (ahoraUtc - fechaBase).TotalMinutes;
+                    var bloqueadoVigente = string.Equals(b.Estado, "BLOQUEADO", StringComparison.OrdinalIgnoreCase)
+                                           && minutosBloqueo <= request.ReservaTtlMinutos;
+
+                    return esPagado || bloqueadoVigente;
+                })
                 .Where(b => b.OrigenParadaId.HasValue && b.DestinoParadaId.HasValue)
                 .Where(b =>
                 {
                     var oE = orden[b.OrigenParadaId!.Value];
                     var dE = orden[b.DestinoParadaId!.Value];
+                    // solape de tramos: [oN,dN) vs [oE,dE)
                     return Math.Max(oN, oE) < Math.Min(dN, dE);
                 })
                 .ToList();
@@ -103,17 +117,15 @@ namespace Aplicacion.Features.Integracion.Commands.BoletoC
             if (conflictivos.Any())
                 throw new InvalidOperationException("El asiento destino no está disponible en el tramo.");
 
- 
+            // Actualizar boleto
             boleto.IdViaje = request.IdViajeDestino;
             boleto.IdAsiento = request.IdAsientoDestino;
             boleto.OrigenParadaId = origenId;
             boleto.DestinoParadaId = destinoId;
 
-     
-
             await _boletoRepo.UpdateAsync(boleto);
-            return new Response<int>(boleto.IdBoleto, "Boleto reprogramado.");
 
+            return new Response<int>(boleto.IdBoleto, "Boleto reprogramado.");
         }
     }
 }

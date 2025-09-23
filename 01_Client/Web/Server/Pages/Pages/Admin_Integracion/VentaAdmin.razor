@@ -68,10 +68,14 @@
             </MudTd>
 
             <MudTd>
+                @{
+                    var isOpen = _ui.ContainsKey(context.IdViaje);
+                    var label = isOpen ? "Cerrar" : "Vender / Ver";
+                }
                 <MudButton Disabled="@(!PuedeVender(context.Estado))"
                            Variant="Variant.Filled"
                            OnClick="@(async () => await ToggleExpand(context))">
-                    Vender / Ver
+                    @label
                 </MudButton>
 
                 <MudIconButton Class="ml-2"
@@ -95,9 +99,11 @@
                         </div>
                     }
 
-                    <MudGrid GutterSize="Size.Medium">
+                    <!-- NOTA: venta-grid/seat-col/form-col para que ambas columnas se estiren a la misma altura -->
+                    <MudGrid GutterSize="Size.Medium" Class="venta-grid">
+
                         <!-- Columna izquierda: tramo + mapa de asientos (ancha) -->
-                        <MudItem xs="12" md="7" lg="7">
+                        <MudItem xs="12" md="7" lg="7" Class="seat-col">
                             <MudStack Spacing="2">
 
                                 <!-- Tramo: Origen fijo (Sucre) y solo Destino editable -->
@@ -133,52 +139,57 @@
                                     <MudChip Variant="Variant.Filled" Color="Color.Primary">Seleccionado</MudChip>
                                 </MudStack>
 
-                                <!-- Mapa de asientos -->
+                                <!-- Mapa 2 – pasillo – 2, con última fila de 5 -->
                                 @if (u.Seatmap is { Count: > 0 })
                                 {
-                                    <MudGrid GutterSize="Size.Small">
-                                        @foreach (var s in u.Seatmap)
+                                    var ordered = u.Seatmap.OrderBy(s => s.Numero).ToList();
+                                    var total = ordered.Count;
+
+                                    <div class="seat-grid">
+                                        @for (int i = 0; i < total;)
                                         {
-                                            var isSelected = u.Seleccionados.ContainsKey(s.IdAsiento);
-                                            var color = isSelected
-                                            ? Color.Primary
-                                            : (string.Equals(s.EstadoSeat, "OCUPADO", StringComparison.OrdinalIgnoreCase) ? Color.Error
-                                            : (string.Equals(s.EstadoSeat, "RESERVADO", StringComparison.OrdinalIgnoreCase) ? Color.Warning
-                                            : Color.Default));
+                                            if (i + 5 == total)   // última fila especial de 5
+                                            {
+                                                var row5 = ordered.Skip(i).Take(5).ToList();
+                                                var left2 = row5.Take(2).ToList();
+                                                var center = row5[2];                 // 35 o 39
+                                                var right2 = row5.Skip(3).Take(2).ToList();
 
-                                            var variant = (isSelected || !string.Equals(s.EstadoSeat, "LIBRE", StringComparison.OrdinalIgnoreCase))
-                                            ? Variant.Filled : Variant.Outlined;
-
-                                            var tip = (string.Equals(s.EstadoSeat, "OCUPADO", StringComparison.OrdinalIgnoreCase) ||
-                                            string.Equals(s.EstadoSeat, "RESERVADO", StringComparison.OrdinalIgnoreCase))
-                                            ? $"{s.Numero} · {s.ClienteNombre ?? "-"} · CI {s.ClienteCI ?? "-"}{(s.Precio.HasValue ? $" · Bs {s.Precio:0.00}" : "")}"
-                                            : $"{s.Numero} · Libre";
-
-                                            <MudItem xs="2" sm="2" md="1">
-                                                <MudTooltip Text="@tip">
-                                                    @if (isSelected)
+                                                <div class="seat-row last-row">
+                                                    @foreach (var s in left2)
                                                     {
-                                                        <MudButton Class="seat-btn-64"
-                                                                   Color="@color"
-                                                                   Variant="@variant"
-                                                                   OnClick="@(async () => await QuitarSeleccion(u, s))">
-                                                            @s.Numero
-                                                        </MudButton>
+                                                        @SeatButton(u, s)
                                                     }
-                                                    else
+                                                    <div class="center-slot">@SeatButton(u, center)</div>
+                                                    @foreach (var s in right2)
                                                     {
-                                                        <MudButton Class="seat-btn-64"
-                                                                   Color="@color"
-                                                                   Variant="@variant"
-                                                                   Disabled="@(!string.Equals(s.EstadoSeat, "LIBRE", StringComparison.OrdinalIgnoreCase))"
-                                                                   OnClick="@(async () => await OnSeatClick(u, s))">
-                                                            @s.Numero
-                                                        </MudButton>
+                                                        @SeatButton(u, s)
                                                     }
-                                                </MudTooltip>
-                                            </MudItem>
+                                                </div>
+
+                                                i += 5;
+                                            }
+                                            else                   // filas normales 2 – pasillo – 2
+                                            {
+                                                var left = ordered.Skip(i).Take(2).ToList();
+                                                var right = ordered.Skip(i + 2).Take(2).ToList();
+
+                                                <div class="seat-row">
+                                                    @foreach (var s in left)
+                                                    {
+                                                        @SeatButton(u, s)
+                                                    }
+                                                    <div class="aisle"></div>
+                                                    @foreach (var s in right)
+                                                    {
+                                                        @SeatButton(u, s)
+                                                    }
+                                                </div>
+
+                                                i += 4;
+                                            }
                                         }
-                                    </MudGrid>
+                                    </div>
                                 }
                                 else
                                 {
@@ -186,11 +197,12 @@
                                         No hay asientos disponibles para mostrar. Verifica plantilla de bus o tramo seleccionado.
                                     </MudAlert>
                                 }
+
                             </MudStack>
                         </MudItem>
 
-                        <!-- Columna derecha: Cliente + Pago + Resumen (más grande) -->
-                        <MudItem xs="12" md="5" lg="5">
+                        <!-- Columna derecha: Cliente + Pago + Resumen -->
+                        <MudItem xs="12" md="5" lg="5" Class="form-col">
                             <MudPaper Class="p-6 registro-panel">
                                 <MudText Typo="Typo.h6" Class="mb-1">
                                     Viaje @u.Viaje?.HoraSalida – @u.Viaje?.RutaNombre
@@ -236,7 +248,7 @@
                                 }
 
                                 <MudAlert Severity="Severity.Info" Class="mt-3">
-                                    Seleccionados: <b>@u.Seleccionados.Count</b> — Total (Bs): <b>@( (u.PrecioUnitario * u.Seleccionados.Count).ToString("0.00") )</b>
+                                    Seleccionados: <b>@u.Seleccionados.Count</b> — Total (Bs): <b>@((u.PrecioUnitario * u.Seleccionados.Count).ToString("0.00"))</b>
                                 </MudAlert>
 
                                 <MudStack Direction="Direction.Row" Spacing="1" Class="mt-3">
@@ -267,24 +279,146 @@
     </MudTable>
 </MudPaper>
 
+@code {
+    // Botón-asiento reutilizable
+    RenderFragment SeatButton(RowUiState u, SeatmapSeatDto s) => __builder =>
+    {
+        var isSelected = u.Seleccionados.ContainsKey(s.IdAsiento);
+        var st = (s.EstadoSeat ?? "LIBRE").ToUpperInvariant();
+        var tip = (st is "OCUPADO" or "RESERVADO")
+            ? $"{s.Numero} · {s.ClienteNombre ?? "-"} · CI {s.ClienteCI ?? "-"}{(s.Precio.HasValue ? $" · Bs {s.Precio:0.00}" : "")}"
+            : $"{s.Numero} · Libre";
+
+        var cls = "seat ";
+        if (isSelected) cls += "selected";
+        else if (st == "OCUPADO") cls += "occupied";
+        else if (st == "RESERVADO") cls += "reserved";
+        else cls += "free";
+
+        __builder.OpenComponent<MudTooltip>(0);
+        __builder.AddAttribute(1, "Text", tip);
+        __builder.AddAttribute(2, "ChildContent", (RenderFragment)((ib) =>
+        {
+            ib.OpenElement(3, "button");
+            ib.AddAttribute(4, "class", cls);
+            if (!isSelected && st != "LIBRE")
+                ib.AddAttribute(5, "disabled", true);
+
+            ib.AddAttribute(6, "onclick",
+                EventCallback.Factory.Create<MouseEventArgs>(this,
+                    async () =>
+                    {
+                        if (isSelected)
+                            await QuitarSeleccion(u, s);
+                        else if (st == "LIBRE")
+                            await OnSeatClick(u, s);
+                    }));
+
+            ib.AddContent(7, s.Numero);
+            ib.CloseElement();
+        }));
+        __builder.CloseComponent();
+    };
+}
+
 <style>
-    /* Panel expandido un poco más ancho visualmente */
-    .venta-panel {
-        max-width: 100%;
+    /* ===== Layout del expandido: columnas que se estiran a la misma altura ===== */
+
+    .venta-grid {
+        display: flex; /* hace que las dos columnas tengan la misma altura */
+        align-items: stretch;
     }
 
-    /* Panel de registro más cómodo */
-    .registro-panel {
-        min-width: 420px;
+    .seat-col,
+    .form-col {
+        display: flex; /* permite que su contenido ocupe el 100% del alto */
     }
 
-    /* Botón de asiento más grande */
-    .seat-btn-64 {
-        width: 64px;
-        height: 64px;
-        min-width: 64px;
-        padding: 0;
-        font-size: 16px;
+        /* El stack de la izquierda ocupa todo el alto disponible */
+        .seat-col > .mud-stack {
+            flex: 1 1 auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* El papel de la derecha ocupa todo el alto disponible */
+        .form-col > .registro-panel {
+            flex: 1 1 auto;
+            height: 100%;
+            min-width: 420px; /* ancho mínimo cómodo */
+        }
+
+    /* ===== Altura mínima “del bus” ===== */
+    :root {
+        --seat-size: 44px; /* alto de botón de asiento */
+        --seat-gap: 10px; /* separación vertical entre filas */
+        --seat-rows: 11; /* filas: 10 normales + 1 última fila (5 asientos) */
+    }
+
+    /* La columna de asientos fija una altura mínima (referencia del “bus”) */
+    .seat-col {
+        min-height: calc(var(--seat-rows) * var(--seat-size) + (var(--seat-rows) - 1) * var(--seat-gap) + 40px); /* margen extra visual */
+    }
+
+    /* ===== Mapa 2 – pasillo – 2 con última fila de 5 ===== */
+
+    .seat-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .seat-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+        /* Pasillo */
+        .seat-row .aisle {
+            width: 44px;
+            height: 1px; /* no aporta alto; solo reserva el ancho */
+        }
+
+    /* Última fila: 5 asientos; el central reemplaza el pasillo */
+    .last-row .center-slot {
+        width: 44px;
+        display: flex;
+        justify-content: center;
+    }
+
+    /* Botón-asiento + estados */
+    .seat {
+        width: 44px;
+        height: 44px;
+        border-radius: 8px;
+        border: 1px solid #c8c8c8;
         font-weight: 600;
+        background: #f4f4f4;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
     }
+
+        .seat.free {
+            background: #f4f4f4;
+        }
+
+        .seat.reserved {
+            background: #ffe082;
+        }
+
+        .seat.occupied {
+            background: #ef9a9a;
+        }
+
+        .seat.selected {
+            background: #90caf9;
+        }
+
+        .seat:disabled {
+            opacity: .6;
+            cursor: not-allowed;
+        }
 </style>

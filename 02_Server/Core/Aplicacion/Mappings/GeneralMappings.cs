@@ -80,7 +80,10 @@ namespace Aplicacion.Mappings
                   o => o.MapFrom(s => (s.Estado ?? "PROGRAMADO").ToUpperInvariant()))
               .ForMember(d => d.Direccion,
                   o => o.MapFrom(s => (s.Direccion ?? "IDA").ToUpperInvariant()));
-            CreateMap<BoletoDto, Boleto>();
+            CreateMap<BoletoDto, Boleto>()
+    .ForMember(d => d.IdBoleto, o => o.Ignore()) // lo genera la BD
+    .ForMember(d => d.Estado,
+        o => o.MapFrom(s => (s.Estado ?? "RESERVADO").ToUpperInvariant()));
             CreateMap<EncomiendaDto, Encomienda>()
                .ForMember(d => d.Guiacarga, o => o.Ignore());
             CreateMap<PagoDto, Pago>();

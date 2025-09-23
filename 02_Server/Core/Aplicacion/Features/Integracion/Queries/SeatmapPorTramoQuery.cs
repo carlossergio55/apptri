@@ -61,16 +61,13 @@ namespace Aplicacion.Features.Integracion.Queries
 
         public async Task<Response<List<SeatmapSeatDto>>> Handle(SeatmapPorTramoQuery request, CancellationToken ct)
         {
-            // 0) Validación básica
             if (request.OrigenParadaId == request.DestinoParadaId)
                 throw new InvalidOperationException("Origen y destino no pueden ser iguales.");
 
-            // 1) Viaje (IdRuta, IdBus, Capacidad)
             var viaje = await _viajeRepo.GetByIdAsync(request.ViajeId);
             if (viaje is null)
                 throw new KeyNotFoundException("Viaje no encontrado.");
 
-            // 2) Orden de paradas de la ruta
             var rutaParadasAll = await _rutaParadaRepo.ListAsync();
             var rp = rutaParadasAll
                         .Where(x => x.IdRuta == viaje.IdRuta)
@@ -87,7 +84,6 @@ namespace Aplicacion.Features.Integracion.Queries
             if (oN >= dN)
                 throw new InvalidOperationException("El orden de paradas es inválido (origen debe ser antes que destino).");
 
-            // 3) Plantilla de asientos del bus (IdAsiento, Numero)
             var asientosAll = await _asientoRepo.ListAsync();
             var asientos = asientosAll
                 .Where(a => a.IdBus == viaje.IdBus)
@@ -95,8 +91,8 @@ namespace Aplicacion.Features.Integracion.Queries
                 .OrderBy(a => a.Numero)
                 .ToList();
 
-            // 4) Boletos del viaje
-            var ahora = DateTime.Now;
+            var ahoraUtc = DateTime.UtcNow;
+
             var boletosAll = await _boletoRepo.ListAsync();
             var boletos = boletosAll
                 .Where(b => b.IdViaje == request.ViajeId)
@@ -109,23 +105,21 @@ namespace Aplicacion.Features.Integracion.Queries
                     b.DestinoParadaId,
                     b.IdCliente,
                     b.Precio,
-                    b.FechaCompra
+                    b.FechaReservaUtc,   // nuevo
+                    b.FechaCompra       // compatibilidad si aún existe info aquí
                 })
                 .ToList();
 
-            // 5) Clientes (solo los necesarios)
             var clienteIds = boletos.Select(b => b.IdCliente).Distinct().ToList();
             var clientesAll = await _clienteRepo.ListAsync();
             var clientesMap = clientesAll
                 .Where(c => clienteIds.Contains(c.IdCliente))
                 .ToDictionary(c => c.IdCliente, c => new { c.Nombre, c.Carnet });
 
-            // 6) Lookup de boletos por asiento
             var boletosPorAsiento = boletos
                 .GroupBy(b => b.IdAsiento)
                 .ToDictionary(g => g.Key, g => g.ToList());
 
-            // 7) Construir seatmap
             var seatDtos = new List<SeatmapSeatDto>();
 
             foreach (var a in asientos)
@@ -139,15 +133,17 @@ namespace Aplicacion.Features.Integracion.Queries
 
                 if (boletosPorAsiento.TryGetValue(a.IdAsiento, out var blist))
                 {
-                    // buscar conflictos de tramo: max(oE,oN) < min(dE,dN)
                     var conflictivos = blist
                         .Where(b => b.OrigenParadaId.HasValue && b.DestinoParadaId.HasValue)
                         .Where(b =>
                         {
-                            // reservas expiradas no cuentan
-                            bool esBloqueadoExpirado = string.Equals(b.Estado, "BLOQUEADO", StringComparison.OrdinalIgnoreCase) &&
-                                                       ((ahora - b.FechaCompra).TotalMinutes > request.ReservaTtlMinutos);
-                            if (esBloqueadoExpirado) return false;
+                            // reservas BLOQUEADO expiradas no cuentan
+                            if (string.Equals(b.Estado, "BLOQUEADO", StringComparison.OrdinalIgnoreCase))
+                            {
+                                var baseDate = b.FechaReservaUtc ?? b.FechaCompra ?? ahoraUtc;
+                                var minutos = (ahoraUtc - baseDate).TotalMinutes;
+                                if (minutos > request.ReservaTtlMinutos) return false;
+                            }
 
                             if (!orden.ContainsKey(b.OrigenParadaId!.Value) || !orden.ContainsKey(b.DestinoParadaId!.Value))
                                 return false;
@@ -160,13 +156,12 @@ namespace Aplicacion.Features.Integracion.Queries
 
                     if (conflictivos.Count > 0)
                     {
-                        // Prioriza PAGADO sobre BLOQUEADO
                         var pagado = conflictivos.FirstOrDefault(b => string.Equals(b.Estado, "PAGADO", StringComparison.OrdinalIgnoreCase));
                         var activo = pagado ?? conflictivos.FirstOrDefault(b => string.Equals(b.Estado, "BLOQUEADO", StringComparison.OrdinalIgnoreCase));
 
                         if (activo is not null)
                         {
-                            dto.EstadoSeat = (string.Equals(activo.Estado, "PAGADO", StringComparison.OrdinalIgnoreCase)) ? "OCUPADO" : "RESERVADO";
+                            dto.EstadoSeat = string.Equals(activo.Estado, "PAGADO", StringComparison.OrdinalIgnoreCase) ? "OCUPADO" : "RESERVADO";
                             dto.IdBoleto = activo.IdBoleto;
                             dto.Precio = activo.Precio;
                             dto.OrigenParadaId = activo.OrigenParadaId;

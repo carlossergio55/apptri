@@ -4,26 +4,23 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
-
 using Aplicacion.Wrappers;
-using Aplicacion.Interfaces;                 
-using Dominio.Entities.Integracion;      
+using Aplicacion.Interfaces;
+using Dominio.Entities.Integracion;
 
 namespace Aplicacion.Features.Integracion.Commands.BoletoC
 {
-    // ===== Request =====
     public class ConfirmarBoletosCommand : IRequest<Response<ConfirmarBoletosResultDto>>
     {
         public List<int> BoletoIds { get; set; } = new();
-        public int IdCliente { get; set; }                  // cliente a facturar
-        public decimal PrecioUnitario { get; set; }         // precio final por boleto
+        public int IdCliente { get; set; }
+        public decimal PrecioUnitario { get; set; }
         public string MetodoPago { get; set; } = "EFECTIVO"; // EFECTIVO | QR | TRANSFERENCIA
-        public string? ReferenciaPago { get; set; }         // obligatorio si QR/TRANSFERENCIA
-        public int IdUsuario { get; set; } = 1;             // usuario operador
-        public int ReservaTtlMinutos { get; set; } = 10;    // coherente con reserva
+        public string? ReferenciaPago { get; set; }
+        public int IdUsuario { get; set; } = 1;
+        public int ReservaTtlMinutos { get; set; } = 10;
     }
 
-    // ===== Resultado =====
     public class ConfirmarBoletosResultDto
     {
         public List<int> Ok { get; set; } = new();
@@ -37,7 +34,6 @@ namespace Aplicacion.Features.Integracion.Commands.BoletoC
         public string Motivo { get; set; } = "";
     }
 
-    // ===== Handler =====
     public class ConfirmarBoletosCommandHandler : IRequestHandler<ConfirmarBoletosCommand, Response<ConfirmarBoletosResultDto>>
     {
         private readonly IRepositoryAsync<Boleto> _boletoRepo;
@@ -55,14 +51,12 @@ namespace Aplicacion.Features.Integracion.Commands.BoletoC
                 throw new InvalidOperationException("No hay boletos para confirmar.");
             if (request.PrecioUnitario <= 0m)
                 throw new InvalidOperationException("Precio inválido.");
-            if (string.Equals(request.MetodoPago, "QR", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(request.MetodoPago, "TRANSFERENCIA", StringComparison.OrdinalIgnoreCase))
-            {
-                if (string.IsNullOrWhiteSpace(request.ReferenciaPago))
-                    throw new InvalidOperationException("La referencia es obligatoria para QR/TRANSFERENCIA.");
-            }
+            if ((string.Equals(request.MetodoPago, "QR", StringComparison.OrdinalIgnoreCase) ||
+                 string.Equals(request.MetodoPago, "TRANSFERENCIA", StringComparison.OrdinalIgnoreCase)) &&
+                string.IsNullOrWhiteSpace(request.ReferenciaPago))
+                throw new InvalidOperationException("La referencia es obligatoria para QR/TRANSFERENCIA.");
 
-            var ahora = DateTime.Now;
+            var ahoraUtc = DateTime.UtcNow;
             var result = new ConfirmarBoletosResultDto();
 
             foreach (var id in request.BoletoIds.Distinct())
@@ -82,31 +76,32 @@ namespace Aplicacion.Features.Integracion.Commands.BoletoC
                         continue;
                     }
 
-                    // Reserva expirada no se confirma
-                    var minutos = (ahora - b.FechaCompra).TotalMinutes;
+                    // TTL: usa FechaReservaUtc si existe; si no, FechaCompra; si también es nula, ahoraUtc (=> 0 min)
+                    var fechaBase = b.FechaReservaUtc ?? b.FechaCompra ?? ahoraUtc;
+                    var minutos = (ahoraUtc - fechaBase).TotalMinutes;
                     if (minutos > request.ReservaTtlMinutos)
                     {
                         result.Fail.Add(new ConfirmarBoletosFailItem { Id = id, Motivo = "Reserva expirada." });
                         continue;
                     }
 
-                    // Actualiza boleto a PAGADO (precio final)
+                    // Confirmar
                     b.Precio = request.PrecioUnitario;
-                    b.IdCliente = request.IdCliente; // por si se actualiza el cliente facturado
+                    b.IdCliente = request.IdCliente;
                     b.Estado = "PAGADO";
-                    b.FechaCompra = ahora;
+                    b.FechaConfirmacionUtc = ahoraUtc; // para auditoría del pago
 
                     await _boletoRepo.UpdateAsync(b);
 
-                    // Crea pago
+                    // Pago
                     var pago = new Pago
                     {
                         TipoPago = "Boleto",
                         IdReferencia = b.IdBoleto,
                         Monto = request.PrecioUnitario,
                         Metodo = request.MetodoPago,
-                        Referencia = request.ReferenciaPago, // si tu entidad lo tiene; si no, quita esta línea
-                        FechaPago = ahora,
+                        Referencia = request.ReferenciaPago,
+                        FechaPago = ahoraUtc,
                         IdUsuario = request.IdUsuario,
                         IdCliente = request.IdCliente
                     };

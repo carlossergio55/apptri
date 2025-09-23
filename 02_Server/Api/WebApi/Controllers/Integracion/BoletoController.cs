@@ -23,7 +23,7 @@ namespace WebApi.Controllers.Integracion
         [HttpPost("reservar")]
         [Authorize]
         public async Task<IActionResult> Reservar([FromBody] ReservarBoletoCommand command) =>
-         Ok(await Mediator.Send(command));
+            Ok(await Mediator.Send(command));
 
         [HttpPost("confirmar")]
         [Authorize]
@@ -33,11 +33,20 @@ namespace WebApi.Controllers.Integracion
             return Ok(res);
         }
 
-
         [HttpPost("reprogramar")]
         [Authorize]
         public async Task<IActionResult> Reprogramar([FromBody] ReprogramarBoletoCommand command) =>
             Ok(await Mediator.Send(command));
+
+        
+        [HttpPost("expirar-caducadas")]
+        [Authorize]
+        public async Task<IActionResult> ExpirarCaducadas([FromQuery] int ttlMin = 10, [FromQuery] int horasAntes = 2) =>
+            Ok(await Mediator.Send(new ExpirarReservasVencidasCommand
+            {
+                ReservaTtlMinutos = ttlMin,
+                VentanaVencimientoHorasAntes = horasAntes
+            }));
 
         [HttpPut("{id}")]
         [Authorize]
@@ -55,6 +64,6 @@ namespace WebApi.Controllers.Integracion
         [HttpGet("{id}/detalle")]
         [Authorize]
         public async Task<IActionResult> GetDetalle(int id) =>
-    Ok(await Mediator.Send(new GetBoletoDetalleQuery { IdBoleto = id }));
+            Ok(await Mediator.Send(new GetBoletoDetalleQuery { IdBoleto = id }));
     }
 }

@@ -52,8 +52,11 @@ namespace Server.Pages.Pages.Admin_Integracion
         protected bool IsLoading { get; set; }
         protected List<ViajePlanillaItem> _planilla = new();
 
-        // Estado expandido por viaje
+        // Estado expandido por viaje (data + UI)
         private readonly Dictionary<int, RowUiState> _ui = new();
+
+        // Id del viaje actualmente abierto (para el botón "Vender/Ver" -> "Cerrar")
+        protected int? _viajeAbiertoId;
 
         // ===================== Ciclo de vida =====================
         protected override async Task OnInitializedAsync() => await CargarPlanilla();
@@ -144,12 +147,20 @@ namespace Server.Pages.Pages.Admin_Integracion
         // ===================== Expand / Collapse =====================
         protected async Task ToggleExpand(ViajePlanillaItem v)
         {
+            // Si el mismo viaje ya está abierto -> cerrar
             if (_ui.ContainsKey(v.IdViaje))
             {
                 _ui.Remove(v.IdViaje);
+                if (_viajeAbiertoId == v.IdViaje) _viajeAbiertoId = null;
                 StateHasChanged();
                 return;
             }
+
+            // Cerrar otro abierto (solo uno a la vez, si así lo prefieres)
+            if (_viajeAbiertoId.HasValue && _ui.ContainsKey(_viajeAbiertoId.Value))
+                _ui.Remove(_viajeAbiertoId.Value);
+
+            _viajeAbiertoId = v.IdViaje;
 
             // crear estado por defecto y cargar paradas + seatmap
             var u = new RowUiState
@@ -306,7 +317,6 @@ namespace Server.Pages.Pages.Admin_Integracion
 
             await _MessageConfirm($"¿Quitar selección del asiento {a.Numero}?", async () =>
             {
-                
                 var del = await _Rest.DeleteAsync<int>(EP_BOLETO_DELETE(idBoleto), idBoleto);
                 if (!del.Succeeded)
                 {
@@ -411,8 +421,8 @@ namespace Server.Pages.Pages.Admin_Integracion
                 _MessageShow("Boleto reprogramado.", State.Success);
                 // Refrescar vistas afectadas: planilla y cualquier viaje expandido
                 await CargarPlanilla();
-                foreach (var u in _ui.Values.ToList())
-                    await CargarSeatmap(u);
+                foreach (var s in _ui.Values.ToList())
+                    await CargarSeatmap(s);
             }
             catch (Exception ex)
             {
@@ -522,6 +532,70 @@ namespace Server.Pages.Pages.Admin_Integracion
             public string? ReferenciaPago { get; set; }
 
             public bool Loading { get; set; }
+        }
+
+        // ===================== Helpers de layout de asientos =====================
+        public class SeatRow
+        {
+            public bool IsLastRow { get; set; }
+            // filas normales (2 – pasillo – 2)
+            public SeatmapSeatDto? A1 { get; set; }
+            public SeatmapSeatDto? A2 { get; set; }
+            public SeatmapSeatDto? A3 { get; set; }
+            public SeatmapSeatDto? A4 { get; set; }
+            // última fila
+            public int LastRowSeats { get; set; } // 4 o 5
+            public SeatmapSeatDto? L1 { get; set; }
+            public SeatmapSeatDto? L2 { get; set; }
+            public SeatmapSeatDto? L3 { get; set; }
+            public SeatmapSeatDto? L4 { get; set; }
+            public SeatmapSeatDto? L5 { get; set; }
+        }
+
+        /// <summary>
+        /// Construye filas 2–pasillo–2 y última fila adaptable (41 -> 5; 37 -> 4).
+        /// </summary>
+        public static List<SeatRow> BuildSeatRows(List<SeatmapSeatDto> seats, int capacidad)
+        {
+            var list = seats.OrderBy(s => s.Numero).ToList();
+            var filas = new List<SeatRow>();
+
+            // 9 filas de 4 asientos (1..36): 2–pasillo–2
+            int rowsOfFour = Math.Min(9, (int)Math.Floor(Math.Min(list.Count, capacidad) / 4.0));
+            int idx = 0;
+            for (int r = 0; r < rowsOfFour && idx + 3 < list.Count; r++)
+            {
+                filas.Add(new SeatRow
+                {
+                    A1 = list[idx++],
+                    A2 = list[idx++],
+                    A3 = list[idx++],
+                    A4 = list[idx++],
+                    IsLastRow = false
+                });
+            }
+
+            // Última fila según capacidad
+            int restante = list.Count - idx;
+            if (capacidad >= 41)
+            {
+                // 41 ⇒ última fila de 5
+                var row = new SeatRow { IsLastRow = true, LastRowSeats = 5 };
+                if (restante > 0) row.L1 = list[idx++]; if (restante-- > 1) row.L2 = list[idx++];
+                if (restante > 0) row.L3 = list[idx++]; if (restante-- > 1) row.L4 = list[idx++];
+                if (restante > 0) row.L5 = list[idx++];
+                filas.Add(row);
+            }
+            else
+            {
+                // 37 ⇒ última fila de 4
+                var row = new SeatRow { IsLastRow = true, LastRowSeats = 4 };
+                if (restante > 0) row.L1 = list[idx++]; if (restante-- > 1) row.L2 = list[idx++];
+                if (restante > 0) row.L3 = list[idx++]; if (restante-- > 1) row.L4 = list[idx++];
+                filas.Add(row);
+            }
+
+            return filas;
         }
     }
 }

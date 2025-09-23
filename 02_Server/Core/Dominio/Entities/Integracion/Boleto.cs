@@ -15,14 +15,22 @@ namespace Dominio.Entities.Integracion
         [Column("precio", TypeName = "numeric(10,2)")]
         public decimal Precio { get; set; }
 
-        [Column("estado")]
         [MaxLength(20)]
-        public string Estado { get; set; } = "Pagado";
+        [Column("estado")]
+        public string Estado { get; set; } = "RESERVADO";
 
+        [Column("fecha_reserva_utc")]
+        public DateTime? FechaReservaUtc { get; set; }
+
+        [Column("fecha_confirmacion_utc")]
+        public DateTime? FechaConfirmacionUtc { get; set; }
+
+        // (Opcional) Si sigues teniendo la columna fecha_compra y quieres mantenerla mapeada:
         [Column("fecha_compra")]
-        public DateTime FechaCompra { get; set; } = DateTime.Now;
+        public DateTime? FechaCompra { get; set; }
 
-        // ===== Relaciones foráneas =====
+        // --- Relaciones ---
+
         [Column("id_viaje")]
         public int IdViaje { get; set; }
         [ForeignKey(nameof(IdViaje))]
@@ -38,13 +46,11 @@ namespace Dominio.Entities.Integracion
         [ForeignKey(nameof(IdAsiento))]
         public virtual Asiento Asiento { get; set; } = null!;
 
-        // (Opcional) pago asociado
         [Column("id_pago")]
         public int? IdPago { get; set; }
         [ForeignKey(nameof(IdPago))]
         public virtual Pago? Pago { get; set; }
 
-        // ===== NUEVO: Tramo (origen/destino) =====
         [Column("origen_parada_id")]
         public int? OrigenParadaId { get; set; }
         [ForeignKey(nameof(OrigenParadaId))]
