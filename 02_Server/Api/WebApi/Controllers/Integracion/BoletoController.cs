@@ -20,7 +20,20 @@ namespace WebApi.Controllers.Integracion
         public async Task<IActionResult> Post([FromBody] CreateBoletoCommand command) =>
             Ok(await Mediator.Send(command));
 
-       
+        [HttpPost("reservar")]
+        [Authorize]
+        public async Task<IActionResult> Reservar([FromBody] ReservarBoletoCommand command) =>
+         Ok(await Mediator.Send(command));
+
+        [HttpPost("confirmar")]
+        [Authorize]
+        public async Task<IActionResult> Confirmar([FromBody] ConfirmarBoletosCommand command)
+        {
+            var res = await Mediator.Send(command);
+            return Ok(res);
+        }
+
+
         [HttpPost("reprogramar")]
         [Authorize]
         public async Task<IActionResult> Reprogramar([FromBody] ReprogramarBoletoCommand command) =>
@@ -38,5 +51,10 @@ namespace WebApi.Controllers.Integracion
         [Authorize]
         public async Task<IActionResult> Delete(int id) =>
             Ok(await Mediator.Send(new DeleteBoletoCommand { IdBoleto = id }));
+
+        [HttpGet("{id}/detalle")]
+        [Authorize]
+        public async Task<IActionResult> GetDetalle(int id) =>
+    Ok(await Mediator.Send(new GetBoletoDetalleQuery { IdBoleto = id }));
     }
 }

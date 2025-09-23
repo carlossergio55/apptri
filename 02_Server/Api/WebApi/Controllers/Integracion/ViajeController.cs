@@ -1,7 +1,11 @@
-﻿using Aplicacion.Features.Integracion.Commands.ViajeC;
-using Aplicacion.Features.Integracion.Queries;
+﻿using Aplicacion.DTOs.Integracion;                       // ParadaDto
+using Aplicacion.Features.Integracion.Commands.ViajeC;   // Create/Update/Delete/Generar/Actualizar estados
+using Aplicacion.Features.Integracion.Queries;           // GetAllViajeQuery, GetParadasDeViajeQuery, SeatmapPorTramoQuery
+using Aplicacion.Wrappers;                               // Response<T>
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Webapi.Controllers.v1;
 
@@ -34,26 +38,53 @@ namespace WebApi.Controllers.Integracion
         public async Task<IActionResult> Delete(int id) =>
             Ok(await Mediator.Send(new DeleteViajeCommand { IdViaje = id }));
 
+        [HttpPost("generar-proximos")]
+        [Authorize]
+        public async Task<IActionResult> GenerarProximos([FromBody] GenerarViajesProximosCommand cmd) =>
+            Ok(await Mediator.Send(cmd));
+
+        [HttpPost("actualizar-estados")]
+        [Authorize]
+        public async Task<IActionResult> ActualizarEstados([FromBody] ActualizarEstadosViajeCommand cmd) =>
+            Ok(await Mediator.Send(cmd));
+
+        // ===== Paradas del viaje (devuelve Response<List<ParadaDto>>) =====
         [HttpGet("{id}/paradas")]
         [Authorize]
         public async Task<IActionResult> GetParadas(int id)
         {
-            var data = await Mediator.Send(new GetParadasDeViajeQuery { IdViaje = id });
-            if (data.Count == 0) return NotFound();
-            return Ok(data);
+            // Esta query te está devolviendo List<ParadaVm>
+            var vms = await Mediator.Send(new GetParadasDeViajeQuery { IdViaje = id });
+
+            // Mapear manualmente ParadaVm -> ParadaDto (los campos que uses en front)
+            var dtos = vms.Select(p => new ParadaDto
+            {
+                IdParada = p.IdParada,
+                Nombre = p.Nombre
+                // si ParadaDto tiene más campos y existen en el VM, mapéalos aquí
+            }).ToList();
+
+            return Ok(new Response<List<ParadaDto>>(dtos));
         }
 
-
-        [HttpPost("generar-proximos")]
+        // ===== Seatmap por tramo (Response<List<SeatmapSeatDto>>) =====
+        [HttpGet("{id}/seatmap")]
         [Authorize]
-        public async Task<IActionResult> GenerarProximos([FromBody] GenerarViajesProximosCommand cmd)
-    => Ok(await Mediator.Send(cmd));
+        public async Task<IActionResult> GetSeatmap(
+            int id,
+            [FromQuery] int origenId,
+            [FromQuery] int destinoId,
+            [FromQuery] int reservaTtlMinutos = 10)
+        {
+            var resp = await Mediator.Send(new SeatmapPorTramoQuery
+            {
+                ViajeId = id,
+                OrigenParadaId = origenId,
+                DestinoParadaId = destinoId,
+                ReservaTtlMinutos = reservaTtlMinutos
+            });
 
-        [HttpPost("actualizar-estados")]
-        [Authorize]
-        public async Task<IActionResult> ActualizarEstados([FromBody] ActualizarEstadosViajeCommand cmd)
-    => Ok(await Mediator.Send(cmd));
-
-
+            return Ok(resp); // ya es Response<List<SeatmapSeatDto>>
+        }
     }
 }

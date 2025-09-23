@@ -1,48 +1,44 @@
-﻿using Infraestructura.Abstract;
-using Infraestructura.Models.Integracion;
-using Microsoft.AspNetCore.Components;
-using MudBlazor;
-using Server.Shared.Component;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components.Web;
 
+using Infraestructura.Abstract;
+using Infraestructura.Models.Integracion;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
+using MudBlazor;
+using Server.Shared.Component;
 
 namespace Server.Pages.Pages.Admin_Integracion
 {
     public partial class VentaAdmin : MainBaseComponent
     {
-        // ========= Endpoints =========
+        // ===================== Endpoints base existentes =====================
         private const string EP_VIAJES = "Viaje/viaje";
         private const string EP_RUTAS = "Ruta/ruta";
         private const string EP_CHOFER = "Chofer/chofer";
         private const string EP_BUS = "Bus/bus";
 
-        private const string EP_ASIENTO = "Asiento/asiento";
+        // Nuevos/auxiliares
+        private static string EP_VIAJE_PARADAS(int idViaje) => $"Viaje/{idViaje}/paradas";
+        private static string EP_VIAJE_SEATMAP(int idViaje, int origenId, int destinoId)
+            => $"Viaje/{idViaje}/seatmap?origenId={origenId}&destinoId={destinoId}";
 
-        private const string EP_BOLETO = "Boleto/boleto";
-        private const string EP_B_SAVE = "Boleto/guardar";
-        private const string EP_B_DEL = "Boleto";
-        private const string EP_P_SAVE = "Pago/guardar";
-        private const string EP_CLIENTE = "Cliente/cliente";
-        private const string EP_C_SAVE = "Cliente/guardar";
-        private const string EP_REPROG = "Boleto/reprogramar";
+        private const string EP_BOLETO_RESERVAR = "Boleto/reservar";
+        private const string EP_BOLETO_CONFIRMAR = "Boleto/confirmar";
+        private const string EP_BOLETO_REPROGRAMAR = "Boleto/reprogramar";
+        private static string EP_BOLETO_DELETE(int idBoleto) => $"Boleto/{idBoleto}";
 
-        // ========= Constantes / helpers =========
-        private const int TTL_RESERVA_MIN = 60;
-        private static bool Es(string? v, string x) => string.Equals(v, x, StringComparison.OrdinalIgnoreCase);
-        private static bool EsPagoConRef(string? m) => m is "QR" or "TRANSFERENCIA";
-
-        // ========= Filtros =========
+        // ===================== Filtros superiores =====================
         private DateTime? _selectedDate = DateTime.Today;
         protected DateTime? SelectedDate
         {
             get => _selectedDate;
             set
             {
-                var nv = (value ?? DateTime.Today).Date;
+                var nv = value ?? DateTime.Today;
                 if (_selectedDate != nv)
                 {
                     _selectedDate = nv;
@@ -52,94 +48,47 @@ namespace Server.Pages.Pages.Admin_Integracion
         }
         protected int _diasFiltro = 1;
 
-        // ========= Planilla =========
+        // ===================== Planilla =====================
         protected bool IsLoading { get; set; }
         protected List<ViajePlanillaItem> _planilla = new();
 
-        // ========= Venta / UI =========
-        protected bool _ventaDialogVisible, _asientosDialogVisible;
+        // Estado expandido por viaje
+        private readonly Dictionary<int, RowUiState> _ui = new();
 
-        protected VentaVm? _ventaVm;
-        private ViajePlanillaItem? _viajeActual;
-
-        protected AsientoSeatDto? _asientoSeleccionado;
-        protected AsientoSeatDto? _seatAction;
-
-        protected ClienteDto _cliente = new();
-        protected string? _pagoMetodo = "EFECTIVO";
-        protected string? _pagoReferencia;
-        protected decimal _precio = 0m;
-
-        protected List<(AsientoSeatDto a1, AsientoSeatDto a2, AsientoSeatDto a3, AsientoSeatDto a4)> _seatRows = new();
-        protected (AsientoSeatDto a1, AsientoSeatDto a2, AsientoSeatDto a3, AsientoSeatDto a4, AsientoSeatDto a5)? _lastRow5;
-
-        protected List<int> _missingSeatNumbers = new();
-
-        // Reprogramación
-        private AsientoSeatDto? _reprogOrigenSeat;
-        private int? _reprogOrigenBoletoId;
-        private AsientoSeatDto? _reprogDestinoSeat;
-        private bool _puedeConfirmarReprogramacion =>
-            _reprogOrigenSeat is not null &&
-            _reprogOrigenBoletoId.HasValue &&
-            _reprogDestinoSeat is not null &&
-            Es(_reprogDestinoSeat!.EstadoSeat, "LIBRE");
-
-        // Venta simple (habilitar botón)
-        protected bool _puedeConfirmarVenta =>
-            _ventaVm != null &&
-            _asientoSeleccionado != null &&
-            !string.IsNullOrWhiteSpace(_cliente?.Nombre) &&
-            _precio > 0 &&
-            !string.IsNullOrWhiteSpace(_pagoMetodo) &&
-            (!EsPagoConRef(_pagoMetodo) || !string.IsNullOrWhiteSpace(_pagoReferencia));
-
-        // ========= Ciclo de vida =========
+        // ===================== Ciclo de vida =====================
         protected override async Task OnInitializedAsync() => await CargarPlanilla();
         protected async Task SetHoy() { SelectedDate = DateTime.Today; await CargarPlanilla(); }
         protected async Task SetManana() { SelectedDate = DateTime.Today.AddDays(1); await CargarPlanilla(); }
 
-        // ========= Helpers REST compactos =========
-        private async Task<List<T>> GetList<T>(string ep)
-        {
-            var r = await _Rest.GetAsync<List<T>>(ep);
-            return r.State == State.Success && r.Data != null ? r.Data : new();
-        }
-        private async Task<int?> PostId(string ep, object body)
-        {
-            var r = await _Rest.PostAsync<int?>(ep, body);
-            return r.State == State.Success ? r.Data : null;
-        }
-        private async Task<bool> DeleteId(string ep, int id)
-        {
-            var r = await _Rest.DeleteAsync<int>(ep, id);
-            return r.Succeeded;
-        }
-
-        // ========= PLANILLA =========
+        // ===================== Cargar planilla =====================
         protected async Task CargarPlanilla()
         {
             IsLoading = true;
-            _planilla.Clear();
+            _planilla = new();
             try
             {
                 var fecha = (SelectedDate ?? DateTime.Today).Date;
                 var desde = fecha;
                 var hasta = fecha.AddDays(Math.Max(1, _diasFiltro) - 1);
 
-                var viajes = await GetList<ViajeDto>(EP_VIAJES);
-                var rutas = await GetList<RutaDto>(EP_RUTAS);
-                var chof = await GetList<ChoferDto>(EP_CHOFER);
-                var buses = await GetList<BusDto>(EP_BUS);
+                var rv = await _Rest.GetAsync<List<ViajeDto>>(EP_VIAJES);
+                var rr = await _Rest.GetAsync<List<RutaDto>>(EP_RUTAS);
+                var rc = await _Rest.GetAsync<List<ChoferDto>>(EP_CHOFER);
+                var rb = await _Rest.GetAsync<List<BusDto>>(EP_BUS);
 
-                var rango = viajes
-                    .Where(v => v.Fecha.Date >= desde && v.Fecha.Date <= hasta)
-                    .OrderBy(v => v.Fecha).ThenBy(v => v.HoraSalida);
+                var viajes = rv.State == State.Success && rv.Data != null ? rv.Data : new();
+                var rutas = rr.State == State.Success && rr.Data != null ? rr.Data : new();
+                var chof = rc.State == State.Success && rc.Data != null ? rc.Data : new();
+                var buses = rb.State == State.Success && rb.Data != null ? rb.Data : new();
 
-                _planilla = rango.Select(v =>
+                var viajesRango = viajes.Where(v => v.Fecha.Date >= desde && v.Fecha.Date <= hasta)
+                                        .OrderBy(v => v.Fecha).ThenBy(v => v.HoraSalida)
+                                        .ToList();
+
+                _planilla = viajesRango.Select(v =>
                 {
                     var ruta = rutas.FirstOrDefault(x => x.IdRuta == v.IdRuta);
-                    var cho = chof.FirstOrDefault(x => x.IdChofer == v.IdChofer);
+                    var ch = chof.FirstOrDefault(x => x.IdChofer == v.IdChofer);
                     var bus = buses.FirstOrDefault(x => x.IdBus == v.IdBus);
 
                     return new ViajePlanillaItem
@@ -151,12 +100,18 @@ namespace Server.Pages.Pages.Admin_Integracion
                         IdBus = v.IdBus,
                         Placa = bus?.Placa ?? "-",
                         IdChofer = v.IdChofer,
-                        ChoferNombre = cho?.Nombre ?? "-",
+                        ChoferNombre = ch?.Nombre ?? "-",
                         Capacidad = bus?.Capacidad ?? 0,
+                        Ocupados = 0,
                         Estado = v.Estado ?? "PROGRAMADO",
                         CodigoViaje = v.IdViaje.ToString()
                     };
                 }).ToList();
+
+                // Mantener estado expandido existente (si aplica)
+                var keep = _ui.Keys.ToHashSet();
+                foreach (var id in keep)
+                    if (!_planilla.Any(p => p.IdViaje == id)) _ui.Remove(id);
             }
             catch (Exception ex)
             {
@@ -169,574 +124,340 @@ namespace Server.Pages.Pages.Admin_Integracion
             }
         }
 
-        protected Color EstadoColor(string? e) => (e ?? "PROGRAMADO").ToUpperInvariant() switch
-        {
-            "PROGRAMADO" => Color.Info,
-            "EMBARCANDO" => Color.Warning,
-            "ENRUTA" => Color.Secondary,
-            "FINALIZADO" => Color.Success,
-            "CANCELADO" => Color.Error,
-            _ => Color.Default
-        };
-        protected bool PuedeVender(string? e) => (e ?? "PROGRAMADO").ToUpperInvariant() is "PROGRAMADO" or "EMBARCANDO";
+        protected bool PuedeVender(string? estado) =>
+            (estado ?? "PROGRAMADO") is "PROGRAMADO" or "Embarcando" or "EMBARCANDO";
 
-        private async Task RefrescarFila(ViajePlanillaItem v)
+        protected Color EstadoColor(string? estado)
         {
-            await CargarAsientos(v);
-            _ventaVm = null;
-            _asientoSeleccionado = _seatAction = null;
-        }
-        private async Task RefrescarDialog()
-        {
-            if (_viajeActual != null) await CargarAsientos(_viajeActual);
+            var e = (estado ?? "PROGRAMADO").ToUpperInvariant();
+            return e switch
+            {
+                "PROGRAMADO" => Color.Info,
+                "EMBARCANDO" => Color.Warning,
+                "ENRUTA" => Color.Secondary,
+                "FINALIZADO" => Color.Success,
+                "CANCELADO" => Color.Error,
+                _ => Color.Default
+            };
         }
 
-        // ========= VENTA / ASIENTOS =========
-        protected async Task AbrirVenta(ViajePlanillaItem v)
+        // ===================== Expand / Collapse =====================
+        protected async Task ToggleExpand(ViajePlanillaItem v)
         {
-            _viajeActual = v;
-            await CargarAsientos(v);
-            _cliente = new();
-            _pagoMetodo = "EFECTIVO";
-            _pagoReferencia = null;
-            _precio = 0;
-            _reprogOrigenSeat = null; _reprogOrigenBoletoId = null; _reprogDestinoSeat = null;
-            _ventaDialogVisible = true;
-        }
-        protected async Task VerAsientos(ViajePlanillaItem v)
-        {
-            _viajeActual = v;
-            await CargarAsientos(v);
-            _asientosDialogVisible = true;
-        }
+            if (_ui.ContainsKey(v.IdViaje))
+            {
+                _ui.Remove(v.IdViaje);
+                StateHasChanged();
+                return;
+            }
 
-        private async Task CargarAsientos(ViajePlanillaItem v)
-        {
+            // crear estado por defecto y cargar paradas + seatmap
+            var u = new RowUiState
+            {
+                Viaje = v,
+                Loading = true,
+                Cliente = new ClienteDto { IdCliente = 0, Nombre = "", Carnet = 0, Celular = 0 },
+                MetodoPago = "EFECTIVO",
+                PrecioUnitario = 0.00M,
+                Seleccionados = new Dictionary<int, int>() // seatId -> boletoId
+            };
+            _ui[v.IdViaje] = u;
+
             try
             {
-                _asientoSeleccionado = _seatAction = null;
-
-                // 1) plantilla por BUS
-                var plantilla = (await GetList<AsientoDto>(EP_ASIENTO))
-                    .Where(a => a.IdBus == v.IdBus).ToList();
-
-                int capacidad = v.Capacidad;
-                var porNumero = plantilla
-                    .Where(p => p.Numero is >= 1 and <= int.MaxValue)
-                    .ToDictionary(p => p.Numero);
-
-                _missingSeatNumbers.Clear();
-                var completos = new List<AsientoDto>(capacidad);
-                for (int n = 1; n <= capacidad; n++)
-                    completos.Add(porNumero.TryGetValue(n, out var p) ? p : Missing(n));
-
-                AsientoDto Missing(int n)
+                // Paradas del viaje
+                var r = await _Rest.GetAsync<List<ParadaDto>>(EP_VIAJE_PARADAS(v.IdViaje));
+                u.Paradas = r.State == State.Success && r.Data != null ? r.Data : new List<ParadaDto>();
+                if (u.Paradas.Count >= 2)
                 {
-                    _missingSeatNumbers.Add(n);
-                    return new AsientoDto { IdAsiento = 0, IdBus = v.IdBus, Numero = n };
+                    var origenSucre = u.Paradas
+                        .FirstOrDefault(p => string.Equals(p.Nombre?.Trim(), "Sucre", StringComparison.OrdinalIgnoreCase))?.IdParada
+                        ?? u.Paradas.First().IdParada;
+
+                    u.OrigenParadaId = origenSucre;
+                    u.DestinoParadaId = u.Paradas.Last(p => p.IdParada != u.OrigenParadaId).IdParada;
                 }
 
-                // 2) boletos del VIAJE
-                var boletos = (await GetList<BoletoDto>(EP_BOLETO))
-                              .Where(b => b.IdViaje == v.IdViaje).ToList();
+                // Cargar seatmap con el tramo (origen fijo + destino elegido)
+                await CargarSeatmap(u);
 
-                var ahora = DateTime.Now;
-                var seatMap = completos.Select(p =>
-                {
-                    var existe = p.IdAsiento > 0;
-                    var bs = existe
-                        ? boletos.Where(b => b.IdAsiento == p.IdAsiento)
-                                 .OrderByDescending(b => b.IdBoleto).ToList()
-                        : new List<BoletoDto>();
-
-                    var pagado = bs.FirstOrDefault(b => (b.Estado ?? "").ToUpper() is "PAGADO" or "EMBARCADO");
-                    var reservado = bs.FirstOrDefault(b => (b.Estado ?? "").ToUpper() == "BLOQUEADO"
-                                                   && (ahora - b.FechaCompra).TotalMinutes <= TTL_RESERVA_MIN);
-
-                    string estado = !existe ? "NO_EXISTE" :
-                                    pagado != null ? "OCUPADO" :
-                                    reservado != null ? "RESERVADO" : "LIBRE";
-
-                    var activo = pagado ?? reservado;
-
-                    return new AsientoSeatDto
-                    {
-                        IdAsiento = p.IdAsiento,
-                        Numero = p.Numero,
-                        EstadoSeat = estado,
-                        IdBoleto = activo?.IdBoleto,
-                        EstadoBoleto = activo?.Estado,
-                        PrecioBoleto = activo?.Precio,
-                        IdClienteBoleto = activo?.IdCliente
-                    };
-                })
-                .OrderBy(s => s.Numero)
-                .ToList();
-
-                var (rows4, row5) = BuildSeatLayout(seatMap, capacidad);
-                _seatRows = rows4; _lastRow5 = row5;
-
-                var item = _planilla.FirstOrDefault(x => x.IdViaje == v.IdViaje);
-                if (item != null)
-                    item.Ocupados = seatMap.Count(s => s.EstadoSeat is "OCUPADO" or "RESERVADO");
-
-                _ventaVm = new VentaVm
-                {
-                    IdViaje = v.IdViaje,
-                    RutaNombre = v.RutaNombre,
-                    HoraSalida = v.HoraSalida,
-                    Placa = v.Placa,
-                    Asientos = seatMap
-                };
             }
             catch (Exception ex)
             {
-                _MessageShow($"Error al cargar asientos: {ex.Message}", State.Error);
+                _MessageShow($"Error al expandir: {ex.Message}", State.Error);
+            }
+            finally
+            {
+                u.Loading = false;
+                StateHasChanged();
             }
         }
 
-        private static (
-            List<(AsientoSeatDto, AsientoSeatDto, AsientoSeatDto, AsientoSeatDto)> rows4,
-            (AsientoSeatDto, AsientoSeatDto, AsientoSeatDto, AsientoSeatDto, AsientoSeatDto)? last5
-        ) BuildSeatLayout(List<AsientoSeatDto> seats, int capacidad)
+        // ===================== Seatmap por tramo =====================
+        protected async Task CargarSeatmap(RowUiState u)
         {
-            var byNum = seats.ToDictionary(s => s.Numero);
-            AsientoSeatDto Get(int x) => byNum.TryGetValue(x, out var s)
-                ? s : new AsientoSeatDto { IdAsiento = 0, Numero = x, EstadoSeat = "NO_EXISTE" };
-
-            bool last5 = capacidad % 4 == 1;
-            int full = last5 ? (capacidad - 5) / 4 : capacidad / 4;
-
-            var rows4 = new List<(AsientoSeatDto, AsientoSeatDto, AsientoSeatDto, AsientoSeatDto)>();
-            (AsientoSeatDto, AsientoSeatDto, AsientoSeatDto, AsientoSeatDto, AsientoSeatDto)? last = null;
-
-            int n = 1;
-            for (int i = 0; i < full; i++) rows4.Add((Get(n++), Get(n++), Get(n++), Get(n++)));
-            if (last5) last = (Get(n++), Get(n++), Get(n++), Get(n++), Get(n++));
-
-            return (rows4, last);
-        }
-
-        // ========= Render helpers =========
-        private static (Color color, Variant variant) EstiloSeat(bool seleccionado, bool ocupado, bool reservado) =>
-            (seleccionado ? Color.Primary
-             : ocupado ? Color.Error
-             : reservado ? Color.Warning : Color.Default,
-             (seleccionado || ocupado || reservado) ? Variant.Filled : Variant.Outlined);
-
-        private RenderFragment SeatButton(AsientoSeatDto a) => builder =>
-        {
-            if (a is null) return;
-
-            bool noExiste = a.IdAsiento <= 0 || string.Equals(a.EstadoSeat, "NO_EXISTE", StringComparison.OrdinalIgnoreCase);
-            bool esReservado = string.Equals(a.EstadoSeat, "RESERVADO", StringComparison.OrdinalIgnoreCase);
-            bool esOcupado = string.Equals(a.EstadoSeat, "OCUPADO", StringComparison.OrdinalIgnoreCase);
-            bool seleccionado = (_asientoSeleccionado?.Numero == a.Numero) || (_seatAction?.Numero == a.Numero);
-
-            var color =
-                seleccionado ? Color.Primary :
-                esOcupado ? Color.Error :
-                esReservado ? Color.Warning :
-                               Color.Default;
-
-            var variant = (seleccionado || esOcupado || esReservado) ? Variant.Filled : Variant.Outlined;
-
-            builder.OpenComponent<MudButton>(0);
-            builder.AddAttribute(1, "Class", "seat-btn");
-            builder.AddAttribute(2, "Color", color);
-            builder.AddAttribute(3, "Variant", variant);
-            builder.AddAttribute(4, "Disabled", noExiste);
-
-            // 👇 cambio clave: EventCallback<MouseEventArgs>
-            builder.AddAttribute(5, "OnClick",
-                EventCallback.Factory.Create<MouseEventArgs>(this, _ => SeleccionarAsiento(a)));
-
-            builder.AddAttribute(6, "ChildContent", (RenderFragment)(b => b.AddContent(7, a.Numero)));
-            builder.CloseComponent();
-        };
-
-
-        private RenderFragment StaticSeat(AsientoSeatDto a) => builder =>
-        {
-            if (a is null) return;
-            var (color, variant) = EstiloSeat(false, Es(a.EstadoSeat, "OCUPADO"), Es(a.EstadoSeat, "RESERVADO"));
-
-            builder.OpenComponent<MudButton>(0);
-            builder.AddAttribute(1, "Class", "seat-btn");
-            builder.AddAttribute(2, "Color", color);
-            builder.AddAttribute(3, "Variant", variant);
-            builder.AddAttribute(4, "Disabled", true);
-            builder.AddAttribute(5, "ChildContent", (RenderFragment)(b => b.AddContent(6, a.Numero)));
-            builder.CloseComponent();
-        };
-
-        // ========= Interacción =========
-        protected async Task SeleccionarAsiento(AsientoSeatDto a)
-        {
-            _seatAction = a;
-
-            if (Es(a.EstadoSeat, "LIBRE"))
-                _asientoSeleccionado = a;
-            else
+            if (u.Viaje is null || u.OrigenParadaId == 0 || u.DestinoParadaId == 0 || u.OrigenParadaId == u.DestinoParadaId)
             {
-                _asientoSeleccionado = null;
-                if (a.PrecioBoleto.HasValue) _precio = a.PrecioBoleto.Value;
-            }
-            StateHasChanged();
-        }
-
-        // ========= Cliente =========
-        private async Task<int> EnsureClienteId()
-        {
-            if (_cliente.IdCliente > 0) return _cliente.IdCliente;
-
-            var lista = await GetList<ClienteDto>(EP_CLIENTE);
-            var existente = lista.FirstOrDefault(c =>
-                (c.Carnet == _cliente.Carnet && c.Carnet != 0) ||
-                (!string.IsNullOrWhiteSpace(c.Nombre) &&
-                 c.Nombre.Trim().Equals(_cliente.Nombre?.Trim(), StringComparison.OrdinalIgnoreCase) &&
-                 c.Celular == _cliente.Celular));
-
-            if (existente != null) return existente.IdCliente;
-
-            var nuevo = new ClienteDto
-            {
-                Nombre = _cliente.Nombre?.Trim() ?? "",
-                Carnet = _cliente.Carnet,
-                Celular = _cliente.Celular,
-                Correo = _cliente.Correo
-            };
-
-            var id = await PostId(EP_C_SAVE, new { Cliente = nuevo });
-            if (id is null or <= 0) throw new InvalidOperationException("No se pudo registrar el cliente.");
-            return id.Value;
-        }
-
-        // ========= Selección múltiple =========
-        private readonly List<AsientoSeatDto> _seleccionados = new();
-        private decimal _total => (_precio > 0 ? _precio : 0) * _seleccionados.Count;
-
-        private bool _puedeConfirmarVentaMulti =>
-            _ventaVm != null && _seleccionados.Count > 0 &&
-            !string.IsNullOrWhiteSpace(_cliente?.Nombre) &&
-            _precio > 0 && !string.IsNullOrWhiteSpace(_pagoMetodo) &&
-            (!EsPagoConRef(_pagoMetodo) || !string.IsNullOrWhiteSpace(_pagoReferencia));
-
-        private void LimpiarSeleccion()
-        {
-            _seleccionados.Clear();
-            _asientoSeleccionado = _seatAction = null;
-            StateHasChanged();
-        }
-        private void ToggleSeat(AsientoSeatDto a)
-        {
-            if (a is null || !Es(a.EstadoSeat, "LIBRE") || a.IdAsiento <= 0) return;
-            var ya = _seleccionados.Any(s => s.IdAsiento == a.IdAsiento);
-            if (ya) _seleccionados.RemoveAll(s => s.IdAsiento == a.IdAsiento);
-            else _seleccionados.Add(a);
-            StateHasChanged();
-        }
-
-        // ========= núcleo: emitir boleto + pago =========
-        private async Task<(bool ok, int boletoId, string? msg)> EmitirBoletoYPago(
-            int idViaje, int idAsiento, int idCliente, decimal precio, string metodo, string? referencia)
-        {
-            var boleto = new BoletoDto
-            {
-                IdViaje = idViaje,
-                IdAsiento = idAsiento,
-                IdCliente = idCliente,
-                Precio = precio,
-                Estado = "PAGADO",
-                FechaCompra = DateTime.Now
-            };
-
-            var idB = await PostId(EP_B_SAVE, new { Boleto = boleto });
-            if (idB is null or <= 0) return (false, 0, "No se pudo guardar el boleto.");
-
-            if (EsPagoConRef(metodo) && string.IsNullOrWhiteSpace(referencia))
-            {
-                await DeleteId(EP_B_DEL, idB.Value);
-                return (false, 0, "La referencia es obligatoria para QR/TRANSFERENCIA.");
+                u.Seatmap = new();
+                return;
             }
 
-            var pago = new PagoDto
+            u.Loading = true;
+            try
             {
-                TipoPago = "Boleto",
-                IdReferencia = idB.Value,
-                Monto = precio,
-                Metodo = metodo,
-                FechaPago = DateTime.Now,
-                IdUsuario = 1,
-                IdCliente = idCliente,
-                // Referencia = referencia  // si tu DTO ya la expone
-            };
+                var ep = EP_VIAJE_SEATMAP(u.Viaje.IdViaje, u.OrigenParadaId, u.DestinoParadaId);
+                var rs = await _Rest.GetAsync<List<SeatmapSeatDto>>(ep);
+                u.Seatmap = rs.State == State.Success && rs.Data != null ? rs.Data.OrderBy(s => s.Numero).ToList() : new();
 
-            var idP = await PostId(EP_P_SAVE, new { Pago = pago });
-            if (idP is null)
-            {
-                await DeleteId(EP_B_DEL, idB.Value);
-                return (false, 0, "Falló el registro del pago.");
+                // Ocupación visible en fila
+                var plan = _planilla.FirstOrDefault(x => x.IdViaje == u.Viaje.IdViaje);
+                if (plan != null)
+                    plan.Ocupados = u.Seatmap.Count(s => s.EstadoSeat is "OCUPADO" or "RESERVADO");
             }
-
-            return (true, idB.Value, null);
+            catch (Exception ex)
+            {
+                _MessageShow($"Error al cargar seatmap: {ex.Message}", State.Error);
+            }
+            finally
+            {
+                u.Loading = false;
+                StateHasChanged();
+            }
         }
 
-        // ========= Acciones: Reservar / Pagar / Anular =========
-        public async Task ReservarAsiento()
+        // ===================== Click de asiento =====================
+        protected async Task OnSeatClick(RowUiState u, SeatmapSeatDto a)
         {
-            if (_ventaVm is null || _seatAction is null || _seatAction.IdAsiento <= 0 || !Es(_seatAction.EstadoSeat, "LIBRE"))
-            { _MessageShow("Selecciona un asiento LIBRE.", State.Warning); return; }
-            if (string.IsNullOrWhiteSpace(_cliente?.Nombre))
-            { _MessageShow("Registra el cliente (Nombre).", State.Warning); return; }
-            if (_precio <= 0) { _MessageShow("Indica el precio antes de reservar.", State.Warning); return; }
+            if (u.Loading || a is null) return;
+
+            switch (a.EstadoSeat?.ToUpperInvariant())
+            {
+                case "LIBRE":
+                    await ReservarAsiento(u, a);
+                    break;
+
+                case "RESERVADO":
+                case "OCUPADO":
+                    // Aquí podrías abrir un panel o tooltip con info (a.ClienteNombre, CI, Precio, tramo)
+                    // y exponer botón para reprogramar. Por ahora sólo mostramos un toast.
+                    var tipo = a.EstadoSeat.ToUpperInvariant() == "OCUPADO" ? "ocupado" : "reservado";
+                    _MessageShow($"Asiento {a.Numero} {tipo}. Cliente: {a.ClienteNombre ?? "-"}", State.Success);
+                    break;
+            }
+        }
+
+        // ===================== Reservar (selección) =====================
+        private async Task ReservarAsiento(RowUiState u, SeatmapSeatDto a)
+        {
+            if (u.Viaje is null || a is null || a.EstadoSeat != "LIBRE") return;
+            if (u.PrecioUnitario <= 0)
+            {
+                _MessageShow("Indica el precio antes de reservar.", State.Warning);
+                return;
+            }
+            if (string.IsNullOrWhiteSpace(u.Cliente?.Nombre))
+            {
+                _MessageShow("Registra el cliente (Nombre).", State.Warning);
+                return;
+            }
 
             try
             {
-                _Loading.Show();
-                int idCliente = await EnsureClienteId();
+                u.Loading = true;
 
-                var id = await PostId(EP_B_SAVE, new
+                int idCliente = await EnsureClienteId(u.Cliente);
+
+                var body = new
                 {
-                    Boleto = new BoletoDto
-                    {
-                        IdViaje = _ventaVm.IdViaje,
-                        IdAsiento = _seatAction.IdAsiento,
-                        IdCliente = idCliente,
-                        Precio = _precio,
-                        Estado = "BLOQUEADO",
-                        FechaCompra = DateTime.Now
-                    }
-                });
-
-                if (id is null or <= 0) _MessageShow("No se pudo reservar el asiento.", State.Warning);
-                else
-                {
-                    _MessageShow($"Asiento {_seatAction.Numero} reservado.", State.Success);
-                    await RefrescarDialog();
-                }
-            }
-            catch (Exception ex) { _MessageShow($"No se pudo reservar: {ex.Message}", State.Error); }
-            finally { _Loading.Hide(); }
-        }
-
-        public async Task PagarReserva()
-        {
-            if (_ventaVm is null || _seatAction is null || !Es(_seatAction.EstadoSeat, "RESERVADO") || !_seatAction.IdBoleto.HasValue)
-            { _MessageShow("Selecciona un asiento RESERVADO.", State.Warning); return; }
-
-            try
-            {
-                _Loading.Show();
-
-                var boletoUpd = new BoletoDto
-                {
-                    IdBoleto = _seatAction.IdBoleto!.Value,
-                    IdViaje = _ventaVm.IdViaje,
-                    IdAsiento = _seatAction.IdAsiento,
-                    IdCliente = _seatAction.IdClienteBoleto ?? 0,
-                    Precio = _seatAction.PrecioBoleto ?? _precio,
-                    Estado = "PAGADO",
-                    FechaCompra = DateTime.Now
+                    IdViaje = u.Viaje.IdViaje,
+                    IdAsiento = a.IdAsiento,
+                    IdCliente = idCliente,
+                    OrigenParadaId = u.OrigenParadaId,
+                    DestinoParadaId = u.DestinoParadaId,
+                    Precio = u.PrecioUnitario
                 };
 
-                var id = await PostId(EP_B_SAVE, new { Boleto = boletoUpd });
-                if (id is null)
-                { _MessageShow("No se pudo confirmar el boleto.", State.Warning); return; }
-
-                if (EsPagoConRef(_pagoMetodo) && string.IsNullOrWhiteSpace(_pagoReferencia))
-                { _MessageShow("La referencia es obligatoria para QR/TRANSFERENCIA.", State.Warning); return; }
-
-                var pagoId = await PostId(EP_P_SAVE, new
+                var r = await _Rest.PostAsync<int?>(EP_BOLETO_RESERVAR, body);
+                if (r.State != State.Success || r.Data is null || r.Data.Value <= 0)
                 {
-                    Pago = new PagoDto
-                    {
-                        TipoPago = "Boleto",
-                        IdReferencia = boletoUpd.IdBoleto,
-                        Monto = boletoUpd.Precio,
-                        Metodo = _pagoMetodo!,
-                        FechaPago = DateTime.Now,
-                        IdUsuario = 1,
-                        IdCliente = boletoUpd.IdCliente
-                    }
-                });
-
-                if (pagoId is null)
-                {
-                    // rollback a reserva
-                    await PostId(EP_B_SAVE, new
-                    {
-                        Boleto = new BoletoDto
-                        {
-                            IdBoleto = boletoUpd.IdBoleto,
-                            IdViaje = boletoUpd.IdViaje,
-                            IdAsiento = boletoUpd.IdAsiento,
-                            IdCliente = boletoUpd.IdCliente,
-                            Precio = boletoUpd.Precio,
-                            Estado = "BLOQUEADO",
-                            FechaCompra = DateTime.Now
-                        }
-                    });
-                    _MessageShow("Falló el pago de la reserva.", State.Warning);
+                    _MessageShow(r.Message ?? "No se pudo reservar el asiento.", State.Warning);
                     return;
                 }
 
-                _MessageShow("Reserva pagada.", State.Success);
-                await RefrescarDialog();
+                // Guardar la reserva localmente (seat -> boletoId)
+                u.Seleccionados[a.IdAsiento] = r.Data.Value;
+                _MessageShow($"Asiento {a.Numero} reservado.", State.Success);
             }
-            catch (Exception ex) { _MessageShow($"No se pudo pagar la reserva: {ex.Message}", State.Error); }
-            finally { _Loading.Hide(); }
+            catch (Exception ex)
+            {
+                _MessageShow($"Error al reservar: {ex.Message}", State.Error);
+            }
+            finally
+            {
+                u.Loading = false;
+                await CargarSeatmap(u);
+            }
         }
 
-        public async Task AnularReserva()
+        // Des-seleccionar (eliminar BLOQUEADO propio)
+        protected async Task QuitarSeleccion(RowUiState u, SeatmapSeatDto a)
         {
-            if (_seatAction?.EstadoSeat != "RESERVADO" || !_seatAction.IdBoleto.HasValue)
-            { _MessageShow("Selecciona un asiento RESERVADO.", State.Warning); return; }
+            if (a is null || !u.Seleccionados.TryGetValue(a.IdAsiento, out var idBoleto)) return;
 
-            await _MessageConfirm($"¿Anular la reserva del asiento {_seatAction.Numero}?", async () =>
+            await _MessageConfirm($"¿Quitar selección del asiento {a.Numero}?", async () =>
             {
-                if (!await DeleteId(EP_B_DEL, _seatAction.IdBoleto.Value))
-                    _MessageShow("No se pudo anular la reserva.", State.Error);
-                else
+                
+                var del = await _Rest.DeleteAsync<int>(EP_BOLETO_DELETE(idBoleto), idBoleto);
+                if (!del.Succeeded)
                 {
-                    _MessageShow("Reserva anulada.", State.Success);
-                    await RefrescarDialog();
+                    _MessageShow(del.Message ?? "No se pudo quitar la reserva.", State.Error);
+                    return;
                 }
+
+                u.Seleccionados.Remove(a.IdAsiento);
+                _MessageShow("Reserva quitada.", State.Success);
+                await CargarSeatmap(u);
             });
         }
 
-        public async Task AnularBoletoPagado()
+        // ===================== Confirmar múltiples =====================
+        protected bool PuedeConfirmar(RowUiState u)
         {
-            _MessageShow("Anulación de boleto pagado no permitida por política. Usa reprogramación.", State.Success);
-            await Task.CompletedTask;
+            if (u is null) return false;
+            var n = u.Seleccionados.Count;
+            bool refOk = u.MetodoPago == "EFECTIVO" || !string.IsNullOrWhiteSpace(u.ReferenciaPago);
+            return n > 0 && u.PrecioUnitario > 0 && !string.IsNullOrWhiteSpace(u.Cliente?.Nombre) && refOk;
         }
 
-        // ========= Reprogramación =========
-        public void IniciarReprogramacion()
+        protected async Task ConfirmarSeleccion(RowUiState u)
         {
-            if (_seatAction is null || !_seatAction.IdBoleto.HasValue)
-            { _MessageShow("Selecciona primero un asiento con boleto (reservado/ocupado).", State.Warning); return; }
-
-            _reprogOrigenSeat = _seatAction;
-            _reprogOrigenBoletoId = _seatAction.IdBoleto;
-            _reprogDestinoSeat = null;
-            _MessageShow($"Origen: asiento {_reprogOrigenSeat.Numero}. Elige ahora un asiento LIBRE destino.", State.Success);
-        }
-
-        public void SeleccionarDestinoReprogramacion(AsientoSeatDto a)
-        {
-            if (_reprogOrigenSeat is null || !_reprogOrigenBoletoId.HasValue)
-            { _MessageShow("Primero elige el asiento de origen (con boleto) para reprogramar.", State.Warning); return; }
-
-            if (!Es(a.EstadoSeat, "LIBRE") || a.IdAsiento <= 0)
-            { _MessageShow("El destino debe ser un asiento LIBRE.", State.Warning); return; }
-
-            _reprogDestinoSeat = a;
-            _MessageShow($"Destino tentativo: asiento {a.Numero}.", State.Success);
-        }
-
-        public async Task ConfirmarReprogramacion(string motivo = "Reprogramación operativa")
-        {
-            if (!_puedeConfirmarReprogramacion || _ventaVm is null)
-            { _MessageShow("Selecciona origen (con boleto) y destino (LIBRE) para reprogramar.", State.Warning); return; }
+            if (!PuedeConfirmar(u)) return;
 
             try
             {
-                _Loading.Show();
-                var id = await PostId(EP_REPROG, new
+                u.Loading = true;
+
+                int idCliente = await EnsureClienteId(u.Cliente);
+
+                var body = new
                 {
-                    IdBoleto = _reprogOrigenBoletoId!.Value,
-                    IdViajeDestino = _ventaVm.IdViaje,
-                    IdAsientoDestino = _reprogDestinoSeat!.IdAsiento,
-                    IdUsuario = 1,
-                    Motivo = motivo
-                });
+                    BoletoIds = u.Seleccionados.Values.ToList(),
+                    IdCliente = idCliente,
+                    PrecioUnitario = u.PrecioUnitario,
+                    MetodoPago = u.MetodoPago,
+                    ReferenciaPago = u.MetodoPago is "QR" or "TRANSFERENCIA" ? u.ReferenciaPago : null
+                };
 
-                if (id is null) { _MessageShow("No se pudo reprogramar el boleto.", State.Warning); return; }
-
-                _MessageShow("Boleto reprogramado.", State.Success);
-                _reprogOrigenSeat = null; _reprogOrigenBoletoId = null; _reprogDestinoSeat = null;
-                await RefrescarDialog();
-            }
-            catch (Exception ex) { _MessageShow($"Error al reprogramar: {ex.Message}", State.Error); }
-            finally { _Loading.Hide(); }
-        }
-        public void CancelarReprogramacion()
-        {
-            _reprogOrigenSeat = null; _reprogOrigenBoletoId = null; _reprogDestinoSeat = null;
-            _MessageShow("Reprogramación cancelada.", State.Success);
-        }
-
-        // ========= Venta directa =========
-        protected async Task ConfirmarVenta()
-        {
-            if (_ventaVm is null || _asientoSeleccionado is null)
-            { _MessageShow("Selecciona un asiento y completa los datos.", State.Warning); return; }
-            if (_asientoSeleccionado.IdAsiento <= 0)
-            { _MessageShow($"El asiento {_asientoSeleccionado.Numero} no existe en el backend.", State.Warning); return; }
-
-            try
-            {
-                _Loading.Show();
-                int idCliente = await EnsureClienteId();
-
-                var (ok, boletoId, msg) = await EmitirBoletoYPago(
-                    _ventaVm.IdViaje, _asientoSeleccionado.IdAsiento, idCliente, _precio, _pagoMetodo!, _pagoReferencia);
-
-                if (!ok) { _MessageShow(msg ?? "No se pudo emitir el boleto.", State.Warning); return; }
-
-                _MessageShow($"Boleto #{boletoId} emitido. Total Bs {_precio:0.00}", State.Success);
-                _ventaDialogVisible = false;
-                await CargarPlanilla();
-            }
-            catch (Exception ex) { _MessageShow($"No se pudo emitir el boleto: {ex.Message}", State.Error); }
-            finally { _Loading.Hide(); }
-        }
-
-        // ========= Venta múltiple =========
-        private async Task ConfirmarVentaMultiple()
-        {
-            if (!_puedeConfirmarVentaMulti || _ventaVm is null) return;
-
-            try
-            {
-                _Loading.Show();
-                int idCliente = await EnsureClienteId();
-
-                int ok = 0, fail = 0;
-                foreach (var s in _seleccionados.ToList())
+                var r = await _Rest.PostAsync<ConfirmarBoletosResultDto>(EP_BOLETO_CONFIRMAR, body);
+                if (r.State != State.Success || r.Data is null)
                 {
-                    if (s is null || s.IdAsiento <= 0 || !Es(s.EstadoSeat, "LIBRE")) { fail++; continue; }
-
-                    var (bien, boletoId, msg) = await EmitirBoletoYPago(
-                        _ventaVm.IdViaje, s.IdAsiento, idCliente, _precio, _pagoMetodo!, _pagoReferencia);
-
-                    if (bien) { ok++; _seleccionados.RemoveAll(x => x.IdAsiento == s.IdAsiento); }
-                    else { fail++; }
+                    _MessageShow(r.Message ?? "No se pudo confirmar.", State.Warning);
+                    return;
                 }
 
-                _MessageShow(ok > 0 && fail == 0
-                    ? $"Se emitieron {ok} boletos correctamente."
-                    : ok > 0 ? $"Parcial: {ok} emitidos, {fail} con error."
-                             : "No se pudo emitir ningún boleto.", ok > 0 ? State.Success : State.Warning);
+                var d = r.Data;
+                if (d.Ok.Count > 0 && d.Fail.Count == 0)
+                    _MessageShow($"Se emitieron {d.Ok.Count} boletos. Total Bs {d.TotalCobrado:0.00}", State.Success);
+                else if (d.Ok.Count > 0)
+                    _MessageShow($"Parcial: {d.Ok.Count} ok, {d.Fail.Count} con error.", State.Warning);
+                else
+                    _MessageShow("No se pudo emitir ningún boleto.", State.Warning);
 
+                // Limpiar seleccionados confirmados
+                var okSet = d.Ok.ToHashSet();
+                u.Seleccionados = u.Seleccionados
+                    .Where(kv => !okSet.Contains(kv.Value))
+                    .ToDictionary(kv => kv.Key, kv => kv.Value);
+
+                await CargarSeatmap(u);
                 await CargarPlanilla();
-                await RefrescarDialog();
             }
-            catch (Exception ex) { _MessageShow($"Error en venta múltiple: {ex.Message}", State.Error); }
-            finally { _Loading.Hide(); StateHasChanged(); }
+            catch (Exception ex)
+            {
+                _MessageShow($"Error al confirmar: {ex.Message}", State.Error);
+            }
+            finally
+            {
+                u.Loading = false;
+            }
         }
 
-        protected void CerrarDialogo()
+        // ===================== Reprogramación =====================
+        // (UI: elige viaje/asiento destino y opcionalmente tramo destino)
+        protected async Task ReprogramarBoleto(int idBoleto, int idViajeDestino, int idAsientoDestino, int? origenDestinoId, int? destinoDestinoId, string motivo = "Reprogramación")
         {
-            _ventaDialogVisible = _asientosDialogVisible = false;
-            _ventaVm = null;
-            _asientoSeleccionado = _seatAction = null;
-            _reprogOrigenSeat = null; _reprogOrigenBoletoId = null; _reprogDestinoSeat = null;
-            _precio = 0;
+            try
+            {
+                _Loading.Show();
+
+                var body = new
+                {
+                    IdBoleto = idBoleto,
+                    IdViajeDestino = idViajeDestino,
+                    IdAsientoDestino = idAsientoDestino,
+                    OrigenParadaId = origenDestinoId,
+                    DestinoParadaId = destinoDestinoId,
+                    Motivo = motivo,
+                    IdUsuario = 1
+                };
+
+                var rs = await _Rest.PostAsync<int?>(EP_BOLETO_REPROGRAMAR, body);
+                if (rs.State != State.Success)
+                {
+                    _MessageShow(rs.Message ?? "No se pudo reprogramar el boleto.", State.Warning);
+                    return;
+                }
+
+                _MessageShow("Boleto reprogramado.", State.Success);
+                // Refrescar vistas afectadas: planilla y cualquier viaje expandido
+                await CargarPlanilla();
+                foreach (var u in _ui.Values.ToList())
+                    await CargarSeatmap(u);
+            }
+            catch (Exception ex)
+            {
+                _MessageShow($"Error al reprogramar: {ex.Message}", State.Error);
+            }
+            finally
+            {
+                _Loading.Hide();
+            }
         }
 
-        // ========= View Models =========
+        // ===================== Helpers =====================
+        private async Task<int> EnsureClienteId(ClienteDto cli)
+        {
+            if (cli is null) throw new InvalidOperationException("Cliente requerido.");
+
+            if (cli.IdCliente > 0) return cli.IdCliente;
+
+            // Buscar posibles existentes por Carnet o por Nombre+Celular
+            var rList = await _Rest.GetAsync<List<ClienteDto>>("Cliente/cliente");
+            var lista = (rList.State == State.Success && rList.Data != null) ? rList.Data : new List<ClienteDto>();
+
+            var existente = lista.FirstOrDefault(c =>
+                (cli.Carnet != 0 && c.Carnet == cli.Carnet) ||
+                (!string.IsNullOrWhiteSpace(cli.Nombre) &&
+                 string.Equals((c.Nombre ?? "").Trim(), cli.Nombre.Trim(), StringComparison.OrdinalIgnoreCase) &&
+                 c.Celular == cli.Celular));
+
+            if (existente is not null) return existente.IdCliente;
+
+            var nuevo = new ClienteDto
+            {
+                Nombre = cli.Nombre?.Trim() ?? "",
+                Carnet = cli.Carnet,
+                Celular = cli.Celular
+            };
+
+            var rSave = await _Rest.PostAsync<int?>("Cliente/guardar", new { Cliente = nuevo });
+            if (rSave.State != State.Success || rSave.Data is null || rSave.Data.Value <= 0)
+                throw new InvalidOperationException(rSave.Message ?? "No se pudo registrar el cliente.");
+
+            return rSave.Data.Value;
+        }
+
+        // ===================== Modelos UI / DTOs locales =====================
         public class ViajePlanillaItem
         {
             public DateTime Fecha { get; set; }
@@ -753,25 +474,54 @@ namespace Server.Pages.Pages.Admin_Integracion
             public string CodigoViaje { get; set; } = "";
         }
 
-        public class AsientoSeatDto
+        // Seatmap del endpoint /Viaje/{id}/seatmap
+        public class SeatmapSeatDto
         {
             public int IdAsiento { get; set; }
             public int Numero { get; set; }
-            public string EstadoSeat { get; set; } = "LIBRE";
-            public DateTime? HoldExpira { get; set; }
+            public string EstadoSeat { get; set; } = "LIBRE"; // LIBRE | RESERVADO | OCUPADO | NO_EXISTE
+
+            // Info si no es libre (para tooltip/panel)
             public int? IdBoleto { get; set; }
-            public string? EstadoBoleto { get; set; }
-            public decimal? PrecioBoleto { get; set; }
-            public int? IdClienteBoleto { get; set; }
+            public string? ClienteNombre { get; set; }
+            public string? ClienteCI { get; set; }
+            public decimal? Precio { get; set; }
+            public int? OrigenParadaId { get; set; }
+            public int? DestinoParadaId { get; set; }
         }
 
-        public class VentaVm
+        // Resultado del /Boleto/confirmar
+        public class ConfirmarBoletosResultDto
         {
-            public int IdViaje { get; set; }
-            public string RutaNombre { get; set; } = "";
-            public string HoraSalida { get; set; } = "";
-            public string Placa { get; set; } = "";
-            public List<AsientoSeatDto> Asientos { get; set; } = new();
+            public List<int> Ok { get; set; } = new();
+            public List<ConfirmarFailItem> Fail { get; set; } = new();
+            public decimal TotalCobrado { get; set; }
+        }
+        public class ConfirmarFailItem { public int Id { get; set; } public string Motivo { get; set; } = ""; }
+
+        // Estado por fila expandida
+        public class RowUiState
+        {
+            public ViajePlanillaItem? Viaje { get; set; }
+
+            // Paradas del viaje
+            public List<ParadaDto> Paradas { get; set; } = new();
+            public int OrigenParadaId { get; set; }
+            public int DestinoParadaId { get; set; }
+
+            // Seatmap por tramo
+            public List<SeatmapSeatDto> Seatmap { get; set; } = new();
+
+            // Selección local: seatId -> boletoId BLOQUEADO
+            public Dictionary<int, int> Seleccionados { get; set; } = new();
+
+            // Cliente / Pago
+            public ClienteDto Cliente { get; set; } = new();
+            public decimal PrecioUnitario { get; set; } = 0.00M;
+            public string MetodoPago { get; set; } = "EFECTIVO"; // EFECTIVO | QR | TRANSFERENCIA
+            public string? ReferenciaPago { get; set; }
+
+            public bool Loading { get; set; }
         }
     }
 }
