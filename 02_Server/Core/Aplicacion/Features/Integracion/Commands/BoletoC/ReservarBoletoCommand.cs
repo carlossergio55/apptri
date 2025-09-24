@@ -19,7 +19,7 @@ namespace Aplicacion.Features.Integracion.Commands.BoletoC
         public int OrigenParadaId { get; set; }
         public int DestinoParadaId { get; set; }
         public decimal Precio { get; set; }
-        public int ReservaTtlMinutos { get; set; } = 10;
+        public int ReservaTtlMinutos { get; set; } = 10; // bloqueo por clic
     }
 
     public class ReservarBoletoCommandHandler : IRequestHandler<ReservarBoletoCommand, Response<int>>
@@ -46,6 +46,7 @@ namespace Aplicacion.Features.Integracion.Commands.BoletoC
 
         public async Task<Response<int>> Handle(ReservarBoletoCommand request, CancellationToken ct)
         {
+            // -------- Validaciones básicas --------
             if (request.OrigenParadaId == request.DestinoParadaId)
                 throw new InvalidOperationException("Origen y destino no pueden ser iguales.");
             if (request.Precio <= 0m)
@@ -78,43 +79,48 @@ namespace Aplicacion.Features.Integracion.Commands.BoletoC
             if (oN >= dN)
                 throw new InvalidOperationException("El orden de paradas es inválido (origen debe ser antes que destino).");
 
-            var ahora = DateTime.Now;
-            var salidaLocal = viaje.Fecha.Date + viaje.HoraSalida;   // HoraSalida = TimeSpan
-            var venceReservasLocal = salidaLocal.AddHours(-2);        // corte T–2h
+            // -------- Cronología LOCAL coherente --------
+            var ahoraLocal = DateTime.Now;                         // usa Now en TODO el flujo
+            var salidaLocal = viaje.Fecha.Date + viaje.HoraSalida;  // DateOnly + TimeSpan => DateTime local
+            var dosHorasAntes = salidaLocal.AddHours(-2);
 
+            // Si ya estamos dentro de la ventana T–2h, no aceptamos reservas
+            if (ahoraLocal >= dosHorasAntes)
+                throw new InvalidOperationException("No se permiten reservas a menos de 2 horas de la salida.");
+
+            // -------- Conflicto de asiento por tramo --------
             var boletosAll = await _boletoRepo.ListAsync();
 
-            var conflictivo = boletosAll
+            bool hayConflicto = boletosAll
                 .Where(b => b.IdViaje == request.IdViaje && b.IdAsiento == request.IdAsiento)
                 .Where(b => b.OrigenParadaId.HasValue && b.DestinoParadaId.HasValue)
                 .Where(b =>
                 {
                     var estado = (b.Estado ?? "").ToUpperInvariant();
 
-                    // Si tu entidad Boleto.FechaCompra es NO-nullable, usa directo:
-                    var fechaCompra = b.FechaCompra ?? ahora;
+                    var fechaBase = b.FechaReservaUtc ?? b.FechaCompra ?? ahoraLocal;
+                    var minutos = (ahoraLocal - fechaBase).TotalMinutes;
 
-                    var minutosBloqueo = (ahora - fechaCompra).TotalMinutes;
-
+                    // BLOQUEADO solo bloquea si aún NO estamos en la ventana T–2h y su TTL no venció
                     var bloqueaPorEstado =
                            estado == "PAGADO"
                         || (estado == "BLOQUEADO"
-                            && ahora <= venceReservasLocal
-                            && minutosBloqueo <= request.ReservaTtlMinutos);
+                            && ahoraLocal < dosHorasAntes
+                            && minutos <= request.ReservaTtlMinutos);
 
                     if (!bloqueaPorEstado) return false;
 
+                    // solape de tramos [oN,dN) vs [oE,dE)
                     var oE = ordenPorParada[b.OrigenParadaId!.Value];
                     var dE = ordenPorParada[b.DestinoParadaId!.Value];
-
-                    // Solape de tramos
                     return Math.Max(oN, oE) < Math.Min(dN, dE);
                 })
                 .Any();
 
-            if (conflictivo)
+            if (hayConflicto)
                 throw new InvalidOperationException("Asiento no disponible en el tramo seleccionado.");
 
+            // -------- Crear reserva (bloqueo por clic) --------
             var nuevo = new Boleto
             {
                 IdViaje = request.IdViaje,
@@ -124,12 +130,18 @@ namespace Aplicacion.Features.Integracion.Commands.BoletoC
                 DestinoParadaId = request.DestinoParadaId,
                 Precio = request.Precio,
                 Estado = "BLOQUEADO",
-                FechaCompra = ahora
+
+                FechaReservaUtc = ahoraLocal,
+                // legacy (si aún lo usas en reportes):
+                FechaCompra = ahoraLocal
             };
 
             await _boletoRepo.AddAsync(nuevo);
 
-            return new Response<int>(nuevo.IdBoleto, "Asiento reservado.");
+            return new Response<int>(
+                nuevo.IdBoleto,
+                $"Asiento reservado. Expira en {request.ReservaTtlMinutos} min o 2 h antes de la salida."
+            );
         }
     }
 }

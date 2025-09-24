@@ -99,14 +99,10 @@
                         </div>
                     }
 
-                    <!-- NOTA: venta-grid/seat-col/form-col para que ambas columnas se estiren a la misma altura -->
                     <MudGrid GutterSize="Size.Medium" Class="venta-grid">
-
-                        <!-- Columna izquierda: tramo + mapa de asientos (ancha) -->
+                        <!-- Columna izquierda: tramo + mapa de asientos -->
                         <MudItem xs="12" md="7" lg="7" Class="seat-col">
                             <MudStack Spacing="2">
-
-                                <!-- Tramo: Origen fijo (Sucre) y solo Destino editable -->
                                 <MudGrid>
                                     <MudItem xs="6">
                                         <MudText Typo="Typo.subtitle2" Class="mb-1">Origen</MudText>
@@ -131,7 +127,6 @@
                                     </MudItem>
                                 </MudGrid>
 
-                                <!-- Leyenda -->
                                 <MudStack Direction="Direction.Row" AlignItems="AlignItems.Center" Spacing="1">
                                     <MudChip Variant="Variant.Outlined" Color="Color.Default">Libre</MudChip>
                                     <MudChip Variant="Variant.Filled" Color="Color.Warning">Reservado</MudChip>
@@ -139,7 +134,6 @@
                                     <MudChip Variant="Variant.Filled" Color="Color.Primary">Seleccionado</MudChip>
                                 </MudStack>
 
-                                <!-- Mapa 2 – pasillo – 2, con última fila de 5 -->
                                 @if (u.Seatmap is { Count: > 0 })
                                 {
                                     var ordered = u.Seatmap.OrderBy(s => s.Numero).ToList();
@@ -148,42 +142,30 @@
                                     <div class="seat-grid">
                                         @for (int i = 0; i < total;)
                                         {
-                                            if (i + 5 == total)   // última fila especial de 5
+                                            if (i + 5 == total)   
                                             {
                                                 var row5 = ordered.Skip(i).Take(5).ToList();
                                                 var left2 = row5.Take(2).ToList();
-                                                var center = row5[2];                 // 35 o 39
+                                                var center = row5[2];
                                                 var right2 = row5.Skip(3).Take(2).ToList();
 
                                                 <div class="seat-row last-row">
-                                                    @foreach (var s in left2)
-                                                    {
-                                                        @SeatButton(u, s)
-                                                    }
+                                                    @foreach (var s in left2) { @SeatButton(u, s) }
                                                     <div class="center-slot">@SeatButton(u, center)</div>
-                                                    @foreach (var s in right2)
-                                                    {
-                                                        @SeatButton(u, s)
-                                                    }
+                                                    @foreach (var s in right2) { @SeatButton(u, s) }
                                                 </div>
 
                                                 i += 5;
                                             }
-                                            else                   // filas normales 2 – pasillo – 2
+                                            else
                                             {
                                                 var left = ordered.Skip(i).Take(2).ToList();
                                                 var right = ordered.Skip(i + 2).Take(2).ToList();
 
                                                 <div class="seat-row">
-                                                    @foreach (var s in left)
-                                                    {
-                                                        @SeatButton(u, s)
-                                                    }
+                                                    @foreach (var s in left) { @SeatButton(u, s) }
                                                     <div class="aisle"></div>
-                                                    @foreach (var s in right)
-                                                    {
-                                                        @SeatButton(u, s)
-                                                    }
+                                                    @foreach (var s in right) { @SeatButton(u, s) }
                                                 </div>
 
                                                 i += 4;
@@ -197,7 +179,6 @@
                                         No hay asientos disponibles para mostrar. Verifica plantilla de bus o tramo seleccionado.
                                     </MudAlert>
                                 }
-
                             </MudStack>
                         </MudItem>
 
@@ -255,7 +236,16 @@
                                     <MudButton Variant="Variant.Outlined"
                                                Color="Color.Default"
                                                Disabled="@(u.Seleccionados.Count == 0)"
-                                               OnClick="@(() => { u.Seleccionados.Clear(); StateHasChanged(); })">
+                                               OnClick="@(async () =>
+                                               {
+                                                   // Cancelar TODAS las reservas seleccionadas (no solo limpiar UI)
+                                                   foreach (var kv in u.Seleccionados.ToList())
+                                                   {
+                                                       var seat = u.Seatmap.FirstOrDefault(x => x.IdAsiento == kv.Key);
+                                                       if (seat != null)
+                                                           await QuitarSeleccion(u, seat);
+                                                   }
+                                               })">
                                         Limpiar selección
                                     </MudButton>
 
@@ -280,7 +270,6 @@
 </MudPaper>
 
 @code {
-    // Botón-asiento reutilizable
     RenderFragment SeatButton(RowUiState u, SeatmapSeatDto s) => __builder =>
     {
         var isSelected = u.Seleccionados.ContainsKey(s.IdAsiento);
@@ -322,103 +311,32 @@
 }
 
 <style>
-    /* ===== Layout del expandido: columnas que se estiran a la misma altura ===== */
+    .venta-grid { display:flex; align-items:stretch; }
+    .seat-col, .form-col { display:flex; }
+    .seat-col > .mud-stack { flex:1 1 auto; display:flex; flex-direction:column; }
+    .form-col > .registro-panel { flex:1 1 auto; height:100%; min-width:420px; }
 
-    .venta-grid {
-        display: flex; /* hace que las dos columnas tengan la misma altura */
-        align-items: stretch;
-    }
-
-    .seat-col,
-    .form-col {
-        display: flex; /* permite que su contenido ocupe el 100% del alto */
-    }
-
-        /* El stack de la izquierda ocupa todo el alto disponible */
-        .seat-col > .mud-stack {
-            flex: 1 1 auto;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* El papel de la derecha ocupa todo el alto disponible */
-        .form-col > .registro-panel {
-            flex: 1 1 auto;
-            height: 100%;
-            min-width: 420px; /* ancho mínimo cómodo */
-        }
-
-    /* ===== Altura mínima “del bus” ===== */
     :root {
-        --seat-size: 44px; /* alto de botón de asiento */
-        --seat-gap: 10px; /* separación vertical entre filas */
-        --seat-rows: 11; /* filas: 10 normales + 1 última fila (5 asientos) */
+        --seat-size: 44px;
+        --seat-gap: 10px;
+        --seat-rows: 11;
     }
-
-    /* La columna de asientos fija una altura mínima (referencia del “bus”) */
     .seat-col {
-        min-height: calc(var(--seat-rows) * var(--seat-size) + (var(--seat-rows) - 1) * var(--seat-gap) + 40px); /* margen extra visual */
+        min-height: calc(var(--seat-rows) * var(--seat-size) + (var(--seat-rows) - 1) * var(--seat-gap) + 40px);
     }
 
-    /* ===== Mapa 2 – pasillo – 2 con última fila de 5 ===== */
+    .seat-grid { display:flex; flex-direction:column; gap:10px; }
+    .seat-row { display:flex; align-items:center; gap:10px; }
+    .seat-row .aisle { width:44px; height:1px; }
+    .last-row .center-slot { width:44px; display:flex; justify-content:center; }
 
-    .seat-grid {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-    }
-
-    .seat-row {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-        /* Pasillo */
-        .seat-row .aisle {
-            width: 44px;
-            height: 1px; /* no aporta alto; solo reserva el ancho */
-        }
-
-    /* Última fila: 5 asientos; el central reemplaza el pasillo */
-    .last-row .center-slot {
-        width: 44px;
-        display: flex;
-        justify-content: center;
-    }
-
-    /* Botón-asiento + estados */
     .seat {
-        width: 44px;
-        height: 44px;
-        border-radius: 8px;
-        border: 1px solid #c8c8c8;
-        font-weight: 600;
-        background: #f4f4f4;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
+        width:44px; height:44px; border-radius:8px; border:1px solid #c8c8c8;
+        font-weight:600; background:#f4f4f4; display:flex; align-items:center; justify-content:center; cursor:pointer;
     }
-
-        .seat.free {
-            background: #f4f4f4;
-        }
-
-        .seat.reserved {
-            background: #ffe082;
-        }
-
-        .seat.occupied {
-            background: #ef9a9a;
-        }
-
-        .seat.selected {
-            background: #90caf9;
-        }
-
-        .seat:disabled {
-            opacity: .6;
-            cursor: not-allowed;
-        }
+    .seat.free { background:#f4f4f4; }
+    .seat.reserved { background:#ffe082; }
+    .seat.occupied { background:#ef9a9a; }
+    .seat.selected { background:#90caf9; }
+    .seat:disabled { opacity:.6; cursor:not-allowed; }
 </style>

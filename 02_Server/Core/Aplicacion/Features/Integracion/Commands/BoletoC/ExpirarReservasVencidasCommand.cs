@@ -26,6 +26,8 @@ namespace Aplicacion.Features.Integracion.Commands.BoletoC
     {
         public int TotalRevisadas { get; set; }
         public int TotalExpiradas { get; set; }
+        public int ExpiradasPorTtl { get; set; }
+        public int ExpiradasPorVentana { get; set; }
         public List<int> ExpiradasIds { get; set; } = new();
     }
 
@@ -48,7 +50,9 @@ namespace Aplicacion.Features.Integracion.Commands.BoletoC
             ExpirarReservasVencidasCommand request,
             CancellationToken ct)
         {
-            var now = DateTime.Now;
+            var now = DateTime.Now; // **hora local** para ser consistente con Reservar/Confirmar
+            var ttlMin = request.ReservaTtlMinutos;
+            var ventanaHoras = request.VentanaVencimientoHorasAntes;
 
             // 1) Buscar boletos BLOQUEADO
             var todos = await _boletoRepo.ListAsync();
@@ -73,16 +77,16 @@ namespace Aplicacion.Features.Integracion.Commands.BoletoC
             // 3) Evaluar vencimiento
             foreach (var b in bloqueados)
             {
-                // a) Vencimiento por TTL (si hay FechaCompra; si no hay, no vence por TTL)
-                var vencePorTtl = b.FechaCompra.HasValue &&
-                                  (now - b.FechaCompra.Value).TotalMinutes > request.ReservaTtlMinutos;
+                // TTL basado en FechaReservaUtc; si no hay, cae a FechaCompra; si tampoco hay, no expira por TTL
+                var fechaBase = b.FechaReservaUtc ?? b.FechaCompra;
+                var vencePorTtl = fechaBase.HasValue && (now - fechaBase.Value).TotalMinutes > ttlMin;
 
-                // b) Vencimiento por ventana global (2h antes de salida)
-                bool vencePorVentana = false;
+                // Ventana global (2h antes de salida)
+                var vencePorVentana = false;
                 if (viajes.TryGetValue(b.IdViaje, out var v))
                 {
-                    var salidaLocal = v.Fecha.Date + v.HoraSalida;            // DateOnly + TimeSpan => DateTime
-                    var limite = salidaLocal.AddHours(-request.VentanaVencimientoHorasAntes);
+                    var salidaLocal = v.Fecha.Date + v.HoraSalida;   // DateOnly + TimeSpan => DateTime local
+                    var limite = salidaLocal.AddHours(-ventanaHoras); // T–2h (por defecto)
                     vencePorVentana = now >= limite;
                 }
 
@@ -90,14 +94,18 @@ namespace Aplicacion.Features.Integracion.Commands.BoletoC
                 {
                     b.Estado = "ANULADO";
                     await _boletoRepo.UpdateAsync(b);
+
                     result.TotalExpiradas++;
+                    if (vencePorTtl) result.ExpiradasPorTtl++;
+                    if (vencePorVentana) result.ExpiradasPorVentana++;
                     result.ExpiradasIds.Add(b.IdBoleto);
                 }
             }
 
             var msg = result.TotalExpiradas > 0
-                ? $"Reservas expiradas: {result.TotalExpiradas}."
+                ? $"Reservas expiradas: {result.TotalExpiradas} (TTL: {result.ExpiradasPorTtl}, Ventana: {result.ExpiradasPorVentana})."
                 : "No había reservas para expirar.";
+
             return new Response<ExpirarReservasResultDto>(result, msg);
         }
     }

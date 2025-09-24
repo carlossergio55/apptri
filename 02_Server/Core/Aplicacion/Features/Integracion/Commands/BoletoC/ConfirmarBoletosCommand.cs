@@ -38,11 +38,16 @@ namespace Aplicacion.Features.Integracion.Commands.BoletoC
     {
         private readonly IRepositoryAsync<Boleto> _boletoRepo;
         private readonly IRepositoryAsync<Pago> _pagoRepo;
+        private readonly IRepositoryAsync<Viaje> _viajeRepo;
 
-        public ConfirmarBoletosCommandHandler(IRepositoryAsync<Boleto> boletoRepo, IRepositoryAsync<Pago> pagoRepo)
+        public ConfirmarBoletosCommandHandler(
+            IRepositoryAsync<Boleto> boletoRepo,
+            IRepositoryAsync<Pago> pagoRepo,
+            IRepositoryAsync<Viaje> viajeRepo)
         {
             _boletoRepo = boletoRepo;
             _pagoRepo = pagoRepo;
+            _viajeRepo = viajeRepo;
         }
 
         public async Task<Response<ConfirmarBoletosResultDto>> Handle(ConfirmarBoletosCommand request, CancellationToken ct)
@@ -56,7 +61,7 @@ namespace Aplicacion.Features.Integracion.Commands.BoletoC
                 string.IsNullOrWhiteSpace(request.ReferenciaPago))
                 throw new InvalidOperationException("La referencia es obligatoria para QR/TRANSFERENCIA.");
 
-            var ahoraUtc = DateTime.UtcNow;
+            var ahora = DateTime.Now; // **hora local** para ser consistente con Reservar/Expirar
             var result = new ConfirmarBoletosResultDto();
 
             foreach (var id in request.BoletoIds.Distinct())
@@ -64,9 +69,23 @@ namespace Aplicacion.Features.Integracion.Commands.BoletoC
                 try
                 {
                     var b = await _boletoRepo.GetByIdAsync(id);
-                    if (b == null)
+                    if (b is null)
                     {
                         result.Fail.Add(new ConfirmarBoletosFailItem { Id = id, Motivo = "Boleto no encontrado." });
+                        continue;
+                    }
+
+                    // Estados permitidos
+                    if (string.Equals(b.Estado, "ANULADO", StringComparison.OrdinalIgnoreCase))
+                    {
+                        result.Fail.Add(new ConfirmarBoletosFailItem { Id = id, Motivo = "La reserva fue anulada." });
+                        continue;
+                    }
+
+                    // Idempotencia: si ya está pagado, lo consideramos OK (no volver a cobrar)
+                    if (string.Equals(b.Estado, "PAGADO", StringComparison.OrdinalIgnoreCase))
+                    {
+                        result.Ok.Add(id);
                         continue;
                     }
 
@@ -76,24 +95,38 @@ namespace Aplicacion.Features.Integracion.Commands.BoletoC
                         continue;
                     }
 
-                    // TTL: usa FechaReservaUtc si existe; si no, FechaCompra; si también es nula, ahoraUtc (=> 0 min)
-                    var fechaBase = b.FechaReservaUtc ?? b.FechaCompra ?? ahoraUtc;
-                    var minutos = (ahoraUtc - fechaBase).TotalMinutes;
+                    // TTL: preferir FechaReservaUtc; fallback a FechaCompra; si tampoco hay, ahora (=> 0 min)
+                    var fechaBase = b.FechaReservaUtc ?? b.FechaCompra ?? ahora;
+                    var minutos = (ahora - fechaBase).TotalMinutes;
                     if (minutos > request.ReservaTtlMinutos)
                     {
-                        result.Fail.Add(new ConfirmarBoletosFailItem { Id = id, Motivo = "Reserva expirada." });
+                        result.Fail.Add(new ConfirmarBoletosFailItem { Id = id, Motivo = "Reserva expirada por tiempo de espera." });
                         continue;
                     }
 
-                    // Confirmar
+                    // Ventana T–2h: no confirmar si faltan ≤ 2 horas para la salida
+                    var viaje = await _viajeRepo.GetByIdAsync(b.IdViaje);
+                    if (viaje is null)
+                    {
+                        result.Fail.Add(new ConfirmarBoletosFailItem { Id = id, Motivo = "Viaje no encontrado." });
+                        continue;
+                    }
+                    var salidaLocal = viaje.Fecha.Date + viaje.HoraSalida; // DateOnly + TimeSpan => DateTime local
+                    var limite = salidaLocal.AddHours(-2);
+                    if (ahora >= limite)
+                    {
+                        result.Fail.Add(new ConfirmarBoletosFailItem { Id = id, Motivo = "La reserva se liberó por proximidad a la salida (≤ 2 horas)." });
+                        continue;
+                    }
+
+                    // Confirmar pago
                     b.Precio = request.PrecioUnitario;
                     b.IdCliente = request.IdCliente;
                     b.Estado = "PAGADO";
-                    b.FechaConfirmacionUtc = ahoraUtc; // para auditoría del pago
+                    b.FechaConfirmacionUtc = ahora; // sellado en hora local, coherente con el resto
 
                     await _boletoRepo.UpdateAsync(b);
 
-                    // Pago
                     var pago = new Pago
                     {
                         TipoPago = "Boleto",
@@ -101,7 +134,7 @@ namespace Aplicacion.Features.Integracion.Commands.BoletoC
                         Monto = request.PrecioUnitario,
                         Metodo = request.MetodoPago,
                         Referencia = request.ReferenciaPago,
-                        FechaPago = ahoraUtc,
+                        FechaPago = ahora,
                         IdUsuario = request.IdUsuario,
                         IdCliente = request.IdCliente
                     };

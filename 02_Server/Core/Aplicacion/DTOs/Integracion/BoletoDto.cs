@@ -12,9 +12,12 @@ namespace Aplicacion.DTOs.Integracion
 
         public DateTime? FechaCompra { get; set; }
 
+        //NUevas propiedades para la expiración de reservas
         public DateTime? FechaReservaUtc { get; set; }
 
         public DateTime? FechaConfirmacionUtc { get; set; }
+        //------------------------------------------------
+
 
         public int IdViaje { get; set; }
         public int IdCliente { get; set; }

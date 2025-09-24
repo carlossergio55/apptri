@@ -11,17 +11,14 @@ using Dominio.Entities.Integracion;         // Viaje, RutaParada, Asiento, Bolet
 
 namespace Aplicacion.Features.Integracion.Queries
 {
-    // ====== Query (request) ======
     public class SeatmapPorTramoQuery : IRequest<Response<List<SeatmapSeatDto>>>
     {
         public int ViajeId { get; set; }
         public int OrigenParadaId { get; set; }
         public int DestinoParadaId { get; set; }
-        /// <summary>Minutos para considerar expirada una reserva BLOQUEADO.</summary>
-        public int ReservaTtlMinutos { get; set; } = 10;
+        public int ReservaTtlMinutos { get; set; } = 10; // TTL de bloqueos
     }
 
-    // ====== DTO de respuesta de cada asiento ======
     public class SeatmapSeatDto
     {
         public int IdAsiento { get; set; }
@@ -36,7 +33,6 @@ namespace Aplicacion.Features.Integracion.Queries
         public int? DestinoParadaId { get; set; }
     }
 
-    // ====== Handler ======
     public class SeatmapPorTramoQueryHandler : IRequestHandler<SeatmapPorTramoQuery, Response<List<SeatmapSeatDto>>>
     {
         private readonly IRepositoryAsync<Viaje> _viajeRepo;
@@ -70,10 +66,10 @@ namespace Aplicacion.Features.Integracion.Queries
 
             var rutaParadasAll = await _rutaParadaRepo.ListAsync();
             var rp = rutaParadasAll
-                        .Where(x => x.IdRuta == viaje.IdRuta)
-                        .OrderBy(x => x.Orden)
-                        .Select(x => new { x.IdParada, x.Orden })
-                        .ToList();
+                .Where(x => x.IdRuta == viaje.IdRuta)
+                .OrderBy(x => x.Orden)
+                .Select(x => new { x.IdParada, x.Orden })
+                .ToList();
 
             var orden = rp.ToDictionary(x => x.IdParada, x => x.Orden);
             if (!orden.ContainsKey(request.OrigenParadaId) || !orden.ContainsKey(request.DestinoParadaId))
@@ -91,7 +87,10 @@ namespace Aplicacion.Features.Integracion.Queries
                 .OrderBy(a => a.Numero)
                 .ToList();
 
-            var ahoraUtc = DateTime.UtcNow;
+            // === Cronología LOCAL coherente y ventana T–2h ===
+            var ahora = DateTime.Now;
+            var salidaLocal = viaje.Fecha.Date + viaje.HoraSalida; // DateOnly + TimeSpan => DateTime local
+            var limite = salidaLocal.AddHours(-2);                  // T–2h
 
             var boletosAll = await _boletoRepo.ListAsync();
             var boletos = boletosAll
@@ -105,8 +104,8 @@ namespace Aplicacion.Features.Integracion.Queries
                     b.DestinoParadaId,
                     b.IdCliente,
                     b.Precio,
-                    b.FechaReservaUtc,   // nuevo
-                    b.FechaCompra       // compatibilidad si aún existe info aquí
+                    b.FechaReservaUtc,
+                    b.FechaCompra
                 })
                 .ToList();
 
@@ -116,9 +115,8 @@ namespace Aplicacion.Features.Integracion.Queries
                 .Where(c => clienteIds.Contains(c.IdCliente))
                 .ToDictionary(c => c.IdCliente, c => new { c.Nombre, c.Carnet });
 
-            var boletosPorAsiento = boletos
-                .GroupBy(b => b.IdAsiento)
-                .ToDictionary(g => g.Key, g => g.ToList());
+            var boletosPorAsiento = boletos.GroupBy(b => b.IdAsiento)
+                                           .ToDictionary(g => g.Key, g => g.ToList());
 
             var seatDtos = new List<SeatmapSeatDto>();
 
@@ -137,27 +135,36 @@ namespace Aplicacion.Features.Integracion.Queries
                         .Where(b => b.OrigenParadaId.HasValue && b.DestinoParadaId.HasValue)
                         .Where(b =>
                         {
-                            // reservas BLOQUEADO expiradas no cuentan
-                            if (string.Equals(b.Estado, "BLOQUEADO", StringComparison.OrdinalIgnoreCase))
+                            // Solo consideramos PAGADO o BLOQUEADO vigente
+                            var estado = (b.Estado ?? "").ToUpperInvariant();
+                            if (estado == "ANULADO") return false; // ignora anulados
+                            var esPagado = (estado == "PAGADO");
+
+                            var bloqueoVigente = false;
+                            if (estado == "BLOQUEADO")
                             {
-                                var baseDate = b.FechaReservaUtc ?? b.FechaCompra ?? ahoraUtc;
-                                var minutos = (ahoraUtc - baseDate).TotalMinutes;
-                                if (minutos > request.ReservaTtlMinutos) return false;
+                                // Bloqueo solo cuenta si estamos fuera de T–2h y TTL no venció
+                                var baseDate = b.FechaReservaUtc ?? b.FechaCompra ?? ahora;
+                                var minutos = (ahora - baseDate).TotalMinutes;
+                                bloqueoVigente = (ahora < limite) && (minutos <= request.ReservaTtlMinutos);
                             }
+
+                            if (!esPagado && !bloqueoVigente) return false;
 
                             if (!orden.ContainsKey(b.OrigenParadaId!.Value) || !orden.ContainsKey(b.DestinoParadaId!.Value))
                                 return false;
 
                             var oE = orden[b.OrigenParadaId!.Value];
                             var dE = orden[b.DestinoParadaId!.Value];
+                            // solape de tramos [oN,dN) vs [oE,dE)
                             return Math.Max(oE, oN) < Math.Min(dE, dN);
                         })
                         .ToList();
 
                     if (conflictivos.Count > 0)
                     {
-                        var pagado = conflictivos.FirstOrDefault(b => string.Equals(b.Estado, "PAGADO", StringComparison.OrdinalIgnoreCase));
-                        var activo = pagado ?? conflictivos.FirstOrDefault(b => string.Equals(b.Estado, "BLOQUEADO", StringComparison.OrdinalIgnoreCase));
+                        var activo = conflictivos.FirstOrDefault(x => string.Equals(x.Estado, "PAGADO", StringComparison.OrdinalIgnoreCase))
+                                     ?? conflictivos.FirstOrDefault(x => string.Equals(x.Estado, "BLOQUEADO", StringComparison.OrdinalIgnoreCase));
 
                         if (activo is not null)
                         {
@@ -179,7 +186,7 @@ namespace Aplicacion.Features.Integracion.Queries
                 seatDtos.Add(dto);
             }
 
-            return new Response<List<SeatmapSeatDto>>(seatDtos);
+            return new Response<List<SeatmapSeatDto>>(seatDtos, "Seatmap generado.");
         }
     }
 }

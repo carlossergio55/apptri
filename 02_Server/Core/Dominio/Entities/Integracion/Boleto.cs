@@ -17,7 +17,7 @@ namespace Dominio.Entities.Integracion
 
         [MaxLength(20)]
         [Column("estado")]
-        public string Estado { get; set; } = "RESERVADO";
+        public string Estado { get; set; } = "BLOQUEADO";
 
         [Column("fecha_reserva_utc")]
         public DateTime? FechaReservaUtc { get; set; }

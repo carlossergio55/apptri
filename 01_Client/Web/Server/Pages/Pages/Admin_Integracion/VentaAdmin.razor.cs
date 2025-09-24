@@ -15,13 +15,11 @@ namespace Server.Pages.Pages.Admin_Integracion
 {
     public partial class VentaAdmin : MainBaseComponent
     {
-        // ===================== Endpoints base existentes =====================
         private const string EP_VIAJES = "Viaje/viaje";
         private const string EP_RUTAS = "Ruta/ruta";
         private const string EP_CHOFER = "Chofer/chofer";
         private const string EP_BUS = "Bus/bus";
 
-        // Nuevos/auxiliares
         private static string EP_VIAJE_PARADAS(int idViaje) => $"Viaje/{idViaje}/paradas";
         private static string EP_VIAJE_SEATMAP(int idViaje, int origenId, int destinoId)
             => $"Viaje/{idViaje}/seatmap?origenId={origenId}&destinoId={destinoId}";
@@ -29,9 +27,10 @@ namespace Server.Pages.Pages.Admin_Integracion
         private const string EP_BOLETO_RESERVAR = "Boleto/reservar";
         private const string EP_BOLETO_CONFIRMAR = "Boleto/confirmar";
         private const string EP_BOLETO_REPROGRAMAR = "Boleto/reprogramar";
-        private static string EP_BOLETO_DELETE(int idBoleto) => $"Boleto/{idBoleto}";
+        private static string EP_BOLETO_CANCELAR(int idBoleto) => $"Boleto/{idBoleto}/cancelar";
 
-        // ===================== Filtros superiores =====================
+        private const int TTL_ADMIN_MIN = 5;
+
         private DateTime? _selectedDate = DateTime.Today;
         protected DateTime? SelectedDate
         {
@@ -48,22 +47,15 @@ namespace Server.Pages.Pages.Admin_Integracion
         }
         protected int _diasFiltro = 1;
 
-        // ===================== Planilla =====================
         protected bool IsLoading { get; set; }
         protected List<ViajePlanillaItem> _planilla = new();
-
-        // Estado expandido por viaje (data + UI)
         private readonly Dictionary<int, RowUiState> _ui = new();
-
-        // Id del viaje actualmente abierto (para el botón "Vender/Ver" -> "Cerrar")
         protected int? _viajeAbiertoId;
 
-        // ===================== Ciclo de vida =====================
         protected override async Task OnInitializedAsync() => await CargarPlanilla();
         protected async Task SetHoy() { SelectedDate = DateTime.Today; await CargarPlanilla(); }
         protected async Task SetManana() { SelectedDate = DateTime.Today.AddDays(1); await CargarPlanilla(); }
 
-        // ===================== Cargar planilla =====================
         protected async Task CargarPlanilla()
         {
             IsLoading = true;
@@ -111,7 +103,6 @@ namespace Server.Pages.Pages.Admin_Integracion
                     };
                 }).ToList();
 
-                // Mantener estado expandido existente (si aplica)
                 var keep = _ui.Keys.ToHashSet();
                 foreach (var id in keep)
                     if (!_planilla.Any(p => p.IdViaje == id)) _ui.Remove(id);
@@ -144,10 +135,8 @@ namespace Server.Pages.Pages.Admin_Integracion
             };
         }
 
-        // ===================== Expand / Collapse =====================
         protected async Task ToggleExpand(ViajePlanillaItem v)
         {
-            // Si el mismo viaje ya está abierto -> cerrar
             if (_ui.ContainsKey(v.IdViaje))
             {
                 _ui.Remove(v.IdViaje);
@@ -156,13 +145,11 @@ namespace Server.Pages.Pages.Admin_Integracion
                 return;
             }
 
-            // Cerrar otro abierto (solo uno a la vez, si así lo prefieres)
             if (_viajeAbiertoId.HasValue && _ui.ContainsKey(_viajeAbiertoId.Value))
                 _ui.Remove(_viajeAbiertoId.Value);
 
             _viajeAbiertoId = v.IdViaje;
 
-            // crear estado por defecto y cargar paradas + seatmap
             var u = new RowUiState
             {
                 Viaje = v,
@@ -170,13 +157,12 @@ namespace Server.Pages.Pages.Admin_Integracion
                 Cliente = new ClienteDto { IdCliente = 0, Nombre = "", Carnet = 0, Celular = 0 },
                 MetodoPago = "EFECTIVO",
                 PrecioUnitario = 0.00M,
-                Seleccionados = new Dictionary<int, int>() // seatId -> boletoId
+                Seleccionados = new Dictionary<int, int>()
             };
             _ui[v.IdViaje] = u;
 
             try
             {
-                // Paradas del viaje
                 var r = await _Rest.GetAsync<List<ParadaDto>>(EP_VIAJE_PARADAS(v.IdViaje));
                 u.Paradas = r.State == State.Success && r.Data != null ? r.Data : new List<ParadaDto>();
                 if (u.Paradas.Count >= 2)
@@ -189,9 +175,7 @@ namespace Server.Pages.Pages.Admin_Integracion
                     u.DestinoParadaId = u.Paradas.Last(p => p.IdParada != u.OrigenParadaId).IdParada;
                 }
 
-                // Cargar seatmap con el tramo (origen fijo + destino elegido)
                 await CargarSeatmap(u);
-
             }
             catch (Exception ex)
             {
@@ -204,7 +188,6 @@ namespace Server.Pages.Pages.Admin_Integracion
             }
         }
 
-        // ===================== Seatmap por tramo =====================
         protected async Task CargarSeatmap(RowUiState u)
         {
             if (u.Viaje is null || u.OrigenParadaId == 0 || u.DestinoParadaId == 0 || u.OrigenParadaId == u.DestinoParadaId)
@@ -220,7 +203,6 @@ namespace Server.Pages.Pages.Admin_Integracion
                 var rs = await _Rest.GetAsync<List<SeatmapSeatDto>>(ep);
                 u.Seatmap = rs.State == State.Success && rs.Data != null ? rs.Data.OrderBy(s => s.Numero).ToList() : new();
 
-                // Ocupación visible en fila
                 var plan = _planilla.FirstOrDefault(x => x.IdViaje == u.Viaje.IdViaje);
                 if (plan != null)
                     plan.Ocupados = u.Seatmap.Count(s => s.EstadoSeat is "OCUPADO" or "RESERVADO");
@@ -236,7 +218,6 @@ namespace Server.Pages.Pages.Admin_Integracion
             }
         }
 
-        // ===================== Click de asiento =====================
         protected async Task OnSeatClick(RowUiState u, SeatmapSeatDto a)
         {
             if (u.Loading || a is null) return;
@@ -246,18 +227,15 @@ namespace Server.Pages.Pages.Admin_Integracion
                 case "LIBRE":
                     await ReservarAsiento(u, a);
                     break;
-
                 case "RESERVADO":
+                    _MessageShow($"Asiento {a.Numero} reservado. Cliente: {a.ClienteNombre ?? "-"}", State.Warning);
+                    break;
                 case "OCUPADO":
-                    // Aquí podrías abrir un panel o tooltip con info (a.ClienteNombre, CI, Precio, tramo)
-                    // y exponer botón para reprogramar. Por ahora sólo mostramos un toast.
-                    var tipo = a.EstadoSeat.ToUpperInvariant() == "OCUPADO" ? "ocupado" : "reservado";
-                    _MessageShow($"Asiento {a.Numero} {tipo}. Cliente: {a.ClienteNombre ?? "-"}", State.Success);
+                    _MessageShow($"Asiento {a.Numero} ocupado. Cliente: {a.ClienteNombre ?? "-"}", State.Error);
                     break;
             }
         }
 
-        // ===================== Reservar (selección) =====================
         private async Task ReservarAsiento(RowUiState u, SeatmapSeatDto a)
         {
             if (u.Viaje is null || a is null || a.EstadoSeat != "LIBRE") return;
@@ -285,7 +263,8 @@ namespace Server.Pages.Pages.Admin_Integracion
                     IdCliente = idCliente,
                     OrigenParadaId = u.OrigenParadaId,
                     DestinoParadaId = u.DestinoParadaId,
-                    Precio = u.PrecioUnitario
+                    Precio = u.PrecioUnitario,
+                    ReservaTtlMinutos = TTL_ADMIN_MIN
                 };
 
                 var r = await _Rest.PostAsync<int?>(EP_BOLETO_RESERVAR, body);
@@ -295,7 +274,6 @@ namespace Server.Pages.Pages.Admin_Integracion
                     return;
                 }
 
-                // Guardar la reserva localmente (seat -> boletoId)
                 u.Seleccionados[a.IdAsiento] = r.Data.Value;
                 _MessageShow($"Asiento {a.Numero} reservado.", State.Success);
             }
@@ -310,27 +288,25 @@ namespace Server.Pages.Pages.Admin_Integracion
             }
         }
 
-        // Des-seleccionar (eliminar BLOQUEADO propio)
         protected async Task QuitarSeleccion(RowUiState u, SeatmapSeatDto a)
         {
             if (a is null || !u.Seleccionados.TryGetValue(a.IdAsiento, out var idBoleto)) return;
 
             await _MessageConfirm($"¿Quitar selección del asiento {a.Numero}?", async () =>
             {
-                var del = await _Rest.DeleteAsync<int>(EP_BOLETO_DELETE(idBoleto), idBoleto);
-                if (!del.Succeeded)
+                var del = await _Rest.PostAsync<int?>(EP_BOLETO_CANCELAR(idBoleto), new { Motivo = "Operador quitó selección" });
+                if (del.State != State.Success)
                 {
                     _MessageShow(del.Message ?? "No se pudo quitar la reserva.", State.Error);
                     return;
                 }
 
                 u.Seleccionados.Remove(a.IdAsiento);
-                _MessageShow("Reserva quitada.", State.Success);
+                _MessageShow("Reserva anulada.", State.Success);
                 await CargarSeatmap(u);
             });
         }
 
-        // ===================== Confirmar múltiples =====================
         protected bool PuedeConfirmar(RowUiState u)
         {
             if (u is null) return false;
@@ -373,7 +349,6 @@ namespace Server.Pages.Pages.Admin_Integracion
                 else
                     _MessageShow("No se pudo emitir ningún boleto.", State.Warning);
 
-                // Limpiar seleccionados confirmados
                 var okSet = d.Ok.ToHashSet();
                 u.Seleccionados = u.Seleccionados
                     .Where(kv => !okSet.Contains(kv.Value))
@@ -392,8 +367,6 @@ namespace Server.Pages.Pages.Admin_Integracion
             }
         }
 
-        // ===================== Reprogramación =====================
-        // (UI: elige viaje/asiento destino y opcionalmente tramo destino)
         protected async Task ReprogramarBoleto(int idBoleto, int idViajeDestino, int idAsientoDestino, int? origenDestinoId, int? destinoDestinoId, string motivo = "Reprogramación")
         {
             try
@@ -419,7 +392,6 @@ namespace Server.Pages.Pages.Admin_Integracion
                 }
 
                 _MessageShow("Boleto reprogramado.", State.Success);
-                // Refrescar vistas afectadas: planilla y cualquier viaje expandido
                 await CargarPlanilla();
                 foreach (var s in _ui.Values.ToList())
                     await CargarSeatmap(s);
@@ -434,14 +406,11 @@ namespace Server.Pages.Pages.Admin_Integracion
             }
         }
 
-        // ===================== Helpers =====================
         private async Task<int> EnsureClienteId(ClienteDto cli)
         {
             if (cli is null) throw new InvalidOperationException("Cliente requerido.");
-
             if (cli.IdCliente > 0) return cli.IdCliente;
 
-            // Buscar posibles existentes por Carnet o por Nombre+Celular
             var rList = await _Rest.GetAsync<List<ClienteDto>>("Cliente/cliente");
             var lista = (rList.State == State.Success && rList.Data != null) ? rList.Data : new List<ClienteDto>();
 
@@ -467,7 +436,6 @@ namespace Server.Pages.Pages.Admin_Integracion
             return rSave.Data.Value;
         }
 
-        // ===================== Modelos UI / DTOs locales =====================
         public class ViajePlanillaItem
         {
             public DateTime Fecha { get; set; }
@@ -484,14 +452,11 @@ namespace Server.Pages.Pages.Admin_Integracion
             public string CodigoViaje { get; set; } = "";
         }
 
-        // Seatmap del endpoint /Viaje/{id}/seatmap
         public class SeatmapSeatDto
         {
             public int IdAsiento { get; set; }
             public int Numero { get; set; }
-            public string EstadoSeat { get; set; } = "LIBRE"; // LIBRE | RESERVADO | OCUPADO | NO_EXISTE
-
-            // Info si no es libre (para tooltip/panel)
+            public string EstadoSeat { get; set; } = "LIBRE";
             public int? IdBoleto { get; set; }
             public string? ClienteNombre { get; set; }
             public string? ClienteCI { get; set; }
@@ -500,7 +465,6 @@ namespace Server.Pages.Pages.Admin_Integracion
             public int? DestinoParadaId { get; set; }
         }
 
-        // Resultado del /Boleto/confirmar
         public class ConfirmarBoletosResultDto
         {
             public List<int> Ok { get; set; } = new();
@@ -509,42 +473,29 @@ namespace Server.Pages.Pages.Admin_Integracion
         }
         public class ConfirmarFailItem { public int Id { get; set; } public string Motivo { get; set; } = ""; }
 
-        // Estado por fila expandida
         public class RowUiState
         {
             public ViajePlanillaItem? Viaje { get; set; }
-
-            // Paradas del viaje
             public List<ParadaDto> Paradas { get; set; } = new();
             public int OrigenParadaId { get; set; }
             public int DestinoParadaId { get; set; }
-
-            // Seatmap por tramo
             public List<SeatmapSeatDto> Seatmap { get; set; } = new();
-
-            // Selección local: seatId -> boletoId BLOQUEADO
             public Dictionary<int, int> Seleccionados { get; set; } = new();
-
-            // Cliente / Pago
             public ClienteDto Cliente { get; set; } = new();
             public decimal PrecioUnitario { get; set; } = 0.00M;
-            public string MetodoPago { get; set; } = "EFECTIVO"; // EFECTIVO | QR | TRANSFERENCIA
+            public string MetodoPago { get; set; } = "EFECTIVO";
             public string? ReferenciaPago { get; set; }
-
             public bool Loading { get; set; }
         }
 
-        // ===================== Helpers de layout de asientos =====================
         public class SeatRow
         {
             public bool IsLastRow { get; set; }
-            // filas normales (2 – pasillo – 2)
             public SeatmapSeatDto? A1 { get; set; }
             public SeatmapSeatDto? A2 { get; set; }
             public SeatmapSeatDto? A3 { get; set; }
             public SeatmapSeatDto? A4 { get; set; }
-            // última fila
-            public int LastRowSeats { get; set; } // 4 o 5
+            public int LastRowSeats { get; set; }
             public SeatmapSeatDto? L1 { get; set; }
             public SeatmapSeatDto? L2 { get; set; }
             public SeatmapSeatDto? L3 { get; set; }
@@ -552,15 +503,11 @@ namespace Server.Pages.Pages.Admin_Integracion
             public SeatmapSeatDto? L5 { get; set; }
         }
 
-        /// <summary>
-        /// Construye filas 2–pasillo–2 y última fila adaptable (41 -> 5; 37 -> 4).
-        /// </summary>
         public static List<SeatRow> BuildSeatRows(List<SeatmapSeatDto> seats, int capacidad)
         {
             var list = seats.OrderBy(s => s.Numero).ToList();
             var filas = new List<SeatRow>();
 
-            // 9 filas de 4 asientos (1..36): 2–pasillo–2
             int rowsOfFour = Math.Min(9, (int)Math.Floor(Math.Min(list.Count, capacidad) / 4.0));
             int idx = 0;
             for (int r = 0; r < rowsOfFour && idx + 3 < list.Count; r++)
@@ -575,11 +522,9 @@ namespace Server.Pages.Pages.Admin_Integracion
                 });
             }
 
-            // Última fila según capacidad
             int restante = list.Count - idx;
             if (capacidad >= 41)
             {
-                // 41 ⇒ última fila de 5
                 var row = new SeatRow { IsLastRow = true, LastRowSeats = 5 };
                 if (restante > 0) row.L1 = list[idx++]; if (restante-- > 1) row.L2 = list[idx++];
                 if (restante > 0) row.L3 = list[idx++]; if (restante-- > 1) row.L4 = list[idx++];
@@ -588,7 +533,6 @@ namespace Server.Pages.Pages.Admin_Integracion
             }
             else
             {
-                // 37 ⇒ última fila de 4
                 var row = new SeatRow { IsLastRow = true, LastRowSeats = 4 };
                 if (restante > 0) row.L1 = list[idx++]; if (restante-- > 1) row.L2 = list[idx++];
                 if (restante > 0) row.L3 = list[idx++]; if (restante-- > 1) row.L4 = list[idx++];
