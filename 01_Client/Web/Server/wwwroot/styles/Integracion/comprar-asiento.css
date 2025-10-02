@@ -184,3 +184,230 @@
     gap: 12px;
     margin: auto;
 }
+
+
+
+
+
+
+
+
+/* ====== STEPper (barra de proceso) ====== */
+.comp-public-stepper {
+    --step-primary: #3b82f6; /* azul */
+    --step-secondary: #8b5cf6; /* violeta */
+    --step-muted: #e5e7eb; /* gris barra inactiva */
+    --step-text: #4b5563;
+    --step-size: 18px; /* diámetro del punto */
+    --step-bar-h: 6px; /* alto de la barra */
+}
+
+    .comp-public-stepper .stepper-title {
+        margin-top: 6px;
+        margin-bottom: 12px;
+        letter-spacing: .03em;
+    }
+
+.comp-steps {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.comp-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 90px;
+}
+
+    .comp-step .dot {
+        width: var(--step-size);
+        height: var(--step-size);
+        border-radius: 999px;
+        background: #fff;
+        border: 2px solid var(--step-primary);
+        box-shadow: 0 0 0 4px rgba(59,130,246,.15);
+    }
+
+    .comp-step .label {
+        margin-top: 6px;
+        font-size: 14px;
+        color: var(--step-text);
+    }
+
+/* Tramos entre los pasos */
+.comp-bar {
+    flex: 1;
+    height: var(--step-bar-h);
+    background: var(--step-muted);
+    border-radius: 999px;
+    position: relative;
+}
+
+/* Paso completado */
+.comp-step.completed .dot {
+    background: linear-gradient(90deg,var(--step-primary),var(--step-secondary));
+    border-color: transparent;
+    box-shadow: none;
+}
+
+.comp-step.completed .label {
+    color: #111827;
+    font-weight: 600;
+}
+/* Rellena la barra que viene DESPUÉS de un paso completado */
+.comp-step.completed + .comp-bar {
+    background: linear-gradient(90deg,var(--step-primary),var(--step-secondary));
+}
+
+/* Paso activo */
+.comp-step.active .dot {
+    background: #fff;
+    border-color: var(--step-secondary);
+    box-shadow: 0 0 0 6px rgba(139,92,246,.25);
+}
+
+.comp-step.active .label {
+    color: #111827;
+    font-weight: 600;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .comp-step {
+        min-width: 72px;
+    }
+
+        .comp-step .label {
+            font-size: 12px;
+        }
+
+    .comp-steps {
+        gap: 10px;
+    }
+}
+/* ====== END STEPper (barra de proceso) ====== */
+
+/* Contenedor del bloque de horarios */
+.horarios-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+/* Título */
+.horarios-title {
+    font-weight: 600;
+    letter-spacing: .2px;
+}
+
+/* Carrusel horizontal de chips */
+.horarios-scroll {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 6px 2px 10px;
+    scrollbar-width: thin; /* Firefox */
+    scroll-behavior: smooth;
+    scroll-snap-type: x mandatory; /* “anclaje” al desplazar */
+}
+
+    /* Scrollbar (WebKit/Chromium) */
+    .horarios-scroll::-webkit-scrollbar {
+        height: 6px;
+    }
+
+    .horarios-scroll::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .horarios-scroll::-webkit-scrollbar-thumb {
+        background: rgba(0,0,0,.18);
+        border-radius: 999px;
+    }
+
+    /* Cada chip “ancla” al borde cuando haces scroll */
+    .horarios-scroll > .mud-chip {
+        scroll-snap-align: start;
+    }
+
+/* Chip base */
+.horarios-chip.mud-chip {
+    border-width: 2px;
+    border-radius: 9999px;
+    font-weight: 600;
+    transition: transform .12s ease, box-shadow .12s ease, background .2s ease;
+}
+
+/* Tamaño del contenido dentro del chip */
+.horarios-chip .mud-chip-content {
+    padding: 6px 14px;
+}
+
+/* Hover / foco */
+.horarios-chip.mud-chip:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(0,0,0,.08);
+}
+
+.horarios-chip:focus-visible {
+    outline: 2px solid var(--mud-palette-primary, #1976d2);
+    outline-offset: 2px;
+}
+
+/* Estado seleccionado (MudBlazor agrega .mud-chip-selected) */
+.horarios-chip.mud-chip-selected {
+    color: #fff;
+    border-color: transparent;
+    background: linear-gradient(90deg,#5b9df9,#7cd1ff);
+}
+
+/* Modo oscuro opcional */
+@media (prefers-color-scheme: dark) {
+    .horarios-scroll::-webkit-scrollbar-thumb {
+        background: rgba(255,255,255,.25);
+    }
+
+    .horarios-chip.mud-chip-outlined {
+        background-color: #14b786;
+    }
+}
+
+
+
+
+
+/* Estados básicos */
+.pasajes-public-asiento.libre i {
+    color: lightgray;
+}
+
+.pasajes-public-asiento.ocupado i {
+    color: red;
+}
+
+.pasajes-public-asiento.bloqueado i {
+    color: gold;
+}
+/* Bloqueado temporalmente */
+.pasajes-public-asiento.reservado i {
+    color: orange;
+}
+/* Reservado (vence 2h antes) */
+
+/* Seleccionado por el usuario */
+.pasajes-public-asiento.seleccionado i {
+    color: #16a34a; /* verde */
+}
+
+/* Cuando ya alcanzó el número de pasajeros buscados, deshabilita los libres restantes visualmente */
+.pasajes-public-asiento.libre.limitado {
+    opacity: .5;
+    pointer-events: none;
+}

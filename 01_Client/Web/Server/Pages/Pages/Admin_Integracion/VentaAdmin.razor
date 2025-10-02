@@ -1,18 +1,23 @@
 ﻿@page "/venta-pasajes"
+@namespace Server.Pages.Pages.Admin_Integracion
 @using MudBlazor
-@inherits MainBaseComponent
+@using Microsoft.AspNetCore.Components.Web
 @layout MainLayout
+@inherits MainBaseComponent
+@using Infraestructura.Models.Integracion
+@using Web.Infraestructura.Models.Integracion
+
+@using Server.Services.Integracion
 
 <MudPaper Class="p-4">
-
-    <!-- Filtros superiores -->
+    <!-- 🔹 Filtros -->
     <div class="flex items-center gap-3 mb-4">
         <MudDatePicker T="DateTime?"
                        @bind-Date="SelectedDate"
                        Label="Fecha"
                        DateFormat="dd/MM/yyyy"
-                       Immediate="@(true)"
-                       DisableToolbar="@(true)"
+                       Immediate=@true
+                       DisableToolbar=@true
                        Adornment="Adornment.Start"
                        AdornmentIcon="@Icons.Material.Filled.Event"
                        Class="w-64" />
@@ -21,7 +26,7 @@
                          @bind-Value="_diasFiltro"
                          Label="Días"
                          Min="1" Max="30"
-                         Immediate="@(true)"
+                         Immediate=@true
                          Class="w-28" />
 
         <MudButton Variant="Variant.Text" OnClick="@(async () => await SetHoy())">Hoy</MudButton>
@@ -33,7 +38,7 @@
         </MudText>
     </div>
 
-    <!-- Tabla de viajes con fila expandible -->
+    <!-- 🔹 Tabla principal -->
     <MudTable Items="_planilla" Hover="true" Dense="true" Bordered="true" Loading="IsLoading">
         <HeaderContent>
             <MudTh>Fecha</MudTh>
@@ -43,7 +48,7 @@
             <MudTh>Chofer</MudTh>
             <MudTh style="width:220px;">Ocupación</MudTh>
             <MudTh>Estado</MudTh>
-            <MudTh style="width:260px;">Acciones</MudTh>
+            <MudTh style="width:260px">Acciones</MudTh>
         </HeaderContent>
 
         <RowTemplate>
@@ -86,7 +91,7 @@
             </MudTd>
         </RowTemplate>
 
-        <!-- Contenido expandido -->
+        <!-- 🔹 Fila expandida -->
         <ChildRowContent>
             @if (_ui.TryGetValue(context.IdViaje, out var u))
             {
@@ -100,25 +105,23 @@
                     }
 
                     <MudGrid GutterSize="Size.Medium" Class="venta-grid">
-                        <!-- Columna izquierda: tramo + mapa de asientos -->
+                        <!-- Columna izquierda: Tramo + Mapa -->
                         <MudItem xs="12" md="7" lg="7" Class="seat-col">
                             <MudStack Spacing="2">
+
+                                <!-- Tramo -->
                                 <MudGrid>
                                     <MudItem xs="6">
                                         <MudText Typo="Typo.subtitle2" Class="mb-1">Origen</MudText>
                                         <MudChip Color="Color.Primary" Variant="Variant.Outlined">
-                                            @{
-                                                var origen = u.Paradas.FirstOrDefault(p => p.IdParada == u.OrigenParadaId)?.Nombre ?? "Sucre";
-                                            }
-                                            @origen
+                                            @u.Paradas.FirstOrDefault(p => p.IdParada == u.OrigenParadaId)?.Nombre ?? "Origen"
                                         </MudChip>
                                     </MudItem>
                                     <MudItem xs="6">
                                         <MudSelect T="int"
                                                    Label="Destino"
-                                                   Value="u.DestinoParadaId"
-                                                   ValueChanged="@(async (int v) => { u.DestinoParadaId = v; await CargarSeatmap(u); })"
-                                                   Dense="false">
+                                                   Value="@u.DestinoParadaId"
+                                                   ValueChanged="@(async (int v) => { u.DestinoParadaId = v; await CargarSeatmap(u); })">
                                             @foreach (var p in u.Paradas.Where(p => p.IdParada != u.OrigenParadaId))
                                             {
                                                 <MudSelectItem Value="@p.IdParada">@p.Nombre</MudSelectItem>
@@ -127,62 +130,39 @@
                                     </MudItem>
                                 </MudGrid>
 
+                                <!-- Leyenda -->
                                 <MudStack Direction="Direction.Row" AlignItems="AlignItems.Center" Spacing="1">
                                     <MudChip Variant="Variant.Outlined" Color="Color.Default">Libre</MudChip>
                                     <MudChip Variant="Variant.Filled" Color="Color.Warning">Reservado</MudChip>
                                     <MudChip Variant="Variant.Filled" Color="Color.Error">Ocupado</MudChip>
-                                    <MudChip Variant="Variant.Filled" Color="Color.Primary">Seleccionado</MudChip>
+                                    <MudChip Variant="Variant.Filled" Color="Color.Primary">Pendiente</MudChip>
                                 </MudStack>
 
+                                <!-- Mapa de asientos -->
                                 @if (u.Seatmap is { Count: > 0 })
                                 {
-                                    var ordered = u.Seatmap.OrderBy(s => s.Numero).ToList();
-                                    var total = ordered.Count;
-
                                     <div class="seat-grid">
-                                        @for (int i = 0; i < total;)
+                                        @foreach (var row in GetSeatRows(u.Seatmap))
                                         {
-                                            if (i + 5 == total)   
-                                            {
-                                                var row5 = ordered.Skip(i).Take(5).ToList();
-                                                var left2 = row5.Take(2).ToList();
-                                                var center = row5[2];
-                                                var right2 = row5.Skip(3).Take(2).ToList();
-
-                                                <div class="seat-row last-row">
-                                                    @foreach (var s in left2) { @SeatButton(u, s) }
-                                                    <div class="center-slot">@SeatButton(u, center)</div>
-                                                    @foreach (var s in right2) { @SeatButton(u, s) }
-                                                </div>
-
-                                                i += 5;
-                                            }
-                                            else
-                                            {
-                                                var left = ordered.Skip(i).Take(2).ToList();
-                                                var right = ordered.Skip(i + 2).Take(2).ToList();
-
-                                                <div class="seat-row">
-                                                    @foreach (var s in left) { @SeatButton(u, s) }
-                                                    <div class="aisle"></div>
-                                                    @foreach (var s in right) { @SeatButton(u, s) }
-                                                </div>
-
-                                                i += 4;
-                                            }
+                                            <div class="seat-row">
+                                                @foreach (var s in row)
+                                                {
+                                                    @SeatButton(u, s)
+                                                }
+                                            </div>
                                         }
                                     </div>
                                 }
                                 else
                                 {
                                     <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
-                                        No hay asientos disponibles para mostrar. Verifica plantilla de bus o tramo seleccionado.
+                                        No hay asientos disponibles para mostrar.
                                     </MudAlert>
                                 }
                             </MudStack>
                         </MudItem>
 
-                        <!-- Columna derecha: Cliente + Pago + Resumen -->
+                        <!-- Columna derecha: Cliente + Pago + Acciones -->
                         <MudItem xs="12" md="5" lg="5" Class="form-col">
                             <MudPaper Class="p-6 registro-panel">
                                 <MudText Typo="Typo.h6" Class="mb-1">
@@ -191,71 +171,86 @@
                                 <MudText Typo="Typo.body1" Class="mb-2">Bus: @u.Viaje?.Placa</MudText>
                                 <MudDivider Class="my-3" />
 
+                                <!-- Cliente -->
                                 <MudText Typo="Typo.subtitle1">Cliente</MudText>
                                 <MudGrid Class="mb-2">
                                     <MudItem xs="6">
-                                        <MudTextField @bind-Value="u.Cliente.Carnet" Label="Carnet / NIT" InputType="InputType.Number" />
+                                        <MudTextField @bind-Value="u.Cliente.Carnet" Label="Carnet / CI" InputType="InputType.Number" />
                                     </MudItem>
                                     <MudItem xs="6">
                                         <MudTextField @bind-Value="u.Cliente.Celular" Label="Celular" InputType="InputType.Number" />
                                     </MudItem>
                                     <MudItem xs="12">
-                                        <MudTextField @bind-Value="u.Cliente.Nombre" Label="Nombre o Razón social" />
+                                        <MudTextField @bind-Value="u.Cliente.Nombre"
+                                                      Label="Nombre o Razón social"
+                                                      Immediate=@true />
+
                                     </MudItem>
                                 </MudGrid>
 
+                                <!-- Pago -->
                                 <MudText Typo="Typo.h6">Pago</MudText>
                                 <MudGrid>
                                     <MudItem xs="6">
                                         <MudNumericField T="decimal"
                                                          @bind-Value="u.PrecioUnitario"
                                                          Label="Precio (Bs)*"
-                                                         Min="@(0.01M)"
-                                                         Immediate="@(true)" />
+                                                         Min="0.01M"
+                                                         Immediate=@true />
                                     </MudItem>
                                     <MudItem xs="6">
-                                        <MudSelect @bind-Value="u.MetodoPago" Label="Medio de pago*">
+                                        <MudSelect T="string" @bind-Value="u.MetodoPago" Label="Medio de pago*">
                                             <MudSelectItem Value="@("EFECTIVO")">Efectivo</MudSelectItem>
                                             <MudSelectItem Value="@("QR")">QR</MudSelectItem>
                                             <MudSelectItem Value="@("TRANSFERENCIA")">Transferencia</MudSelectItem>
                                         </MudSelect>
                                     </MudItem>
+
+
                                 </MudGrid>
 
                                 @if (u.MetodoPago is "QR" or "TRANSFERENCIA")
                                 {
-                                    <MudTextField @bind-Value="u.ReferenciaPago"
-                                                  Label="Referencia / N° operación" />
+                                    <MudTextField @bind-Value="u.ReferenciaPago" Label="Referencia / N° operación" />
                                 }
 
+                                <!-- Acciones -->
                                 <MudAlert Severity="Severity.Info" Class="mt-3">
-                                    Seleccionados: <b>@u.Seleccionados.Count</b> — Total (Bs): <b>@((u.PrecioUnitario * u.Seleccionados.Count).ToString("0.00"))</b>
+                                    Pendientes: <b>@u.Pendientes.Count</b> — Reservados: <b>@u.Seleccionados.Count</b> —
+                                    Total (Bs): <b>@((u.PrecioUnitario * u.Seleccionados.Count).ToString("0.00"))</b>
                                 </MudAlert>
 
                                 <MudStack Direction="Direction.Row" Spacing="1" Class="mt-3">
                                     <MudButton Variant="Variant.Outlined"
-                                               Color="Color.Default"
-                                               Disabled="@(u.Seleccionados.Count == 0)"
-                                               OnClick="@(async () =>
-                                               {
-                                                   // Cancelar TODAS las reservas seleccionadas (no solo limpiar UI)
-                                                   foreach (var kv in u.Seleccionados.ToList())
-                                                   {
-                                                       var seat = u.Seatmap.FirstOrDefault(x => x.IdAsiento == kv.Key);
-                                                       if (seat != null)
-                                                           await QuitarSeleccion(u, seat);
-                                                   }
-                                               })">
-                                        Limpiar selección
+                                               Disabled="@(u.Pendientes.Count == 0 && u.Seleccionados.Count == 0)"
+                                               OnClick="@(async () => await CancelarSeleccion(u))">
+                                        Cancelar
                                     </MudButton>
 
                                     <MudButton Variant="Variant.Filled"
-                                               Color="Color.Primary"
+                                               Color="Color.Info"
+                                               Disabled="@(u.Pendientes.Count == 0 || !PermiteReservar(u.Viaje))"
+                                               OnClick="@(async () => await ReservarSeleccion(u))">
+                                        Reservar (@u.Pendientes.Count)
+                                    </MudButton>
+
+                                    <MudButton Variant="Variant.Filled"
+                                               Color="Color.Secondary"
                                                Disabled="@(!PuedeConfirmar(u))"
                                                OnClick="@(async () => await ConfirmarSeleccion(u))">
-                                        Confirmar y emitir (@u.Seleccionados.Count)
+                                        Pagar reserva (@u.Seleccionados.Count)
                                     </MudButton>
                                 </MudStack>
+
+                                <MudDivider Class="my-2" />
+
+                                <MudButton FullWidth="true"
+                                           Variant="Variant.Filled"
+                                           Color="Color.Success"
+                                           Disabled="@(!PuedeConfirmar(u))"
+                                           OnClick="@(async () => await ConfirmarSeleccion(u))">
+                                    Confirmar y emitir (@u.Seleccionados.Count)
+                                </MudButton>
                             </MudPaper>
                         </MudItem>
                     </MudGrid>
@@ -270,19 +265,22 @@
 </MudPaper>
 
 @code {
+    // 🔹 Botón-asiento
     RenderFragment SeatButton(RowUiState u, SeatmapSeatDto s) => __builder =>
     {
-        var isSelected = u.Seleccionados.ContainsKey(s.IdAsiento);
         var st = (s.EstadoSeat ?? "LIBRE").ToUpperInvariant();
-        var tip = (st is "OCUPADO" or "RESERVADO")
+        var isPending = u.Pendientes.Contains(s.IdAsiento);
+        var isReservedByUs = u.Seleccionados.ContainsKey(s.IdAsiento);
+        var isChosen = isPending || isReservedByUs;
+
+        var tip = (st is "OCUPADO" or "RESERVADO" or "BLOQUEADO")
             ? $"{s.Numero} · {s.ClienteNombre ?? "-"} · CI {s.ClienteCI ?? "-"}{(s.Precio.HasValue ? $" · Bs {s.Precio:0.00}" : "")}"
             : $"{s.Numero} · Libre";
 
-        var cls = "seat ";
-        if (isSelected) cls += "selected";
-        else if (st == "OCUPADO") cls += "occupied";
-        else if (st == "RESERVADO") cls += "reserved";
-        else cls += "free";
+        var cls = "seat " + (isChosen ? "pending"
+                     : st == "OCUPADO" ? "occupied"
+                     : (st == "RESERVADO" || st == "BLOQUEADO") ? "reserved"
+                     : "free");
 
         __builder.OpenComponent<MudTooltip>(0);
         __builder.AddAttribute(1, "Text", tip);
@@ -290,53 +288,18 @@
         {
             ib.OpenElement(3, "button");
             ib.AddAttribute(4, "class", cls);
-            if (!isSelected && st != "LIBRE")
-                ib.AddAttribute(5, "disabled", true);
-
+            ib.AddAttribute(5, "type", "button");
             ib.AddAttribute(6, "onclick",
-                EventCallback.Factory.Create<MouseEventArgs>(this,
-                    async () =>
-                    {
-                        if (isSelected)
-                            await QuitarSeleccion(u, s);
-                        else if (st == "LIBRE")
-                            await OnSeatClick(u, s);
-                    }));
-
+                EventCallback.Factory.Create<MouseEventArgs>(this, async () =>
+                {
+                    if (isChosen)
+                        await QuitarSeleccion(u, s);
+                    else
+                        await OnSeatClick(u, s);
+                }));
             ib.AddContent(7, s.Numero);
             ib.CloseElement();
         }));
         __builder.CloseComponent();
     };
 }
-
-<style>
-    .venta-grid { display:flex; align-items:stretch; }
-    .seat-col, .form-col { display:flex; }
-    .seat-col > .mud-stack { flex:1 1 auto; display:flex; flex-direction:column; }
-    .form-col > .registro-panel { flex:1 1 auto; height:100%; min-width:420px; }
-
-    :root {
-        --seat-size: 44px;
-        --seat-gap: 10px;
-        --seat-rows: 11;
-    }
-    .seat-col {
-        min-height: calc(var(--seat-rows) * var(--seat-size) + (var(--seat-rows) - 1) * var(--seat-gap) + 40px);
-    }
-
-    .seat-grid { display:flex; flex-direction:column; gap:10px; }
-    .seat-row { display:flex; align-items:center; gap:10px; }
-    .seat-row .aisle { width:44px; height:1px; }
-    .last-row .center-slot { width:44px; display:flex; justify-content:center; }
-
-    .seat {
-        width:44px; height:44px; border-radius:8px; border:1px solid #c8c8c8;
-        font-weight:600; background:#f4f4f4; display:flex; align-items:center; justify-content:center; cursor:pointer;
-    }
-    .seat.free { background:#f4f4f4; }
-    .seat.reserved { background:#ffe082; }
-    .seat.occupied { background:#ef9a9a; }
-    .seat.selected { background:#90caf9; }
-    .seat:disabled { opacity:.6; cursor:not-allowed; }
-</style>

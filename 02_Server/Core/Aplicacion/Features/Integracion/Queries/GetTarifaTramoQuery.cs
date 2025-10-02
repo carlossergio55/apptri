@@ -23,12 +23,14 @@ namespace Aplicacion.Features.Integracion.Queries
     {
         private readonly IRepositoryAsync<TarifaTramo> _repo;
         private readonly IMapper _mapper;
+
         public GetTarifaTramoQueryHandler(IRepositoryAsync<TarifaTramo> repo, IMapper mapper)
             => (_repo, _mapper) = (repo, mapper);
 
         public async Task<Response<List<TarifaTramoDto>>> Handle(GetTarifaTramoQuery request, CancellationToken ct)
         {
-            var q = (await _repo.ListAsync()).Where(x => x.IdRuta == request.IdRuta);
+            var all = await _repo.ListAsync(ct);             // igual que tu GetAllBusQuery
+            var q = all.Where(x => x.IdRuta == request.IdRuta);
 
             if (request.OrigenParadaId.HasValue)
                 q = q.Where(x => x.OrigenParadaId == request.OrigenParadaId.Value);

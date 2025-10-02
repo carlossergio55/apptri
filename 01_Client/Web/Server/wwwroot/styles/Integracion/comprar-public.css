@@ -152,3 +152,92 @@
         font-weight: bold;
     }
 
+
+/* ____________________________________________________*/
+
+
+/* --- Stepper spacing / title --- */
+.comp-public-stepper {
+    max-width: 980px;
+    margin: 20px auto 10px; /* ↓ baja todo el bloque (antes era menor) */
+    padding-top: 8px;
+}
+
+.stepper-title {
+    margin-top: 7px; /* ↓ baja un poco más el texto */
+    letter-spacing: .03em;
+    text-transform: uppercase;
+    font-size: 24px;
+    font-weight: 800;
+}
+
+/* --- Colores (dos tonos) --- */
+:root {
+    --stepper-c1: #06b6d4; /* cian */
+    --stepper-c2: #8b5cf6; /* violeta */
+    --stepper-gray: #d5d9e2; /* gris visible */
+}
+
+/* Layout */
+.comp-public-stepper .comp-steps {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+}
+
+.comp-public-stepper .comp-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    min-width: 90px;
+    text-align: center;
+}
+
+/* Punto (inactivo) */
+.comp-public-stepper .dot {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 3px solid var(--stepper-c1);
+    background: #fff;
+    box-shadow: 0 0 0 2px rgba(0,0,0,.05);
+}
+
+/* Punto activo con degradado (dos colores) */
+.comp-public-stepper .comp-step.active .dot {
+    background: linear-gradient(135deg, var(--stepper-c1), var(--stepper-c2));
+    border-color: transparent;
+}
+
+/* Barras */
+.comp-public-stepper .comp-bar {
+    flex: 1;
+    height: 6px;
+    border-radius: 4px;
+    background: var(--stepper-gray);
+}
+
+    /* Cuando quieras marcar un tramo como completado, añade la clase "filled" al div de la barra */
+    .comp-public-stepper .comp-bar.filled {
+        background: linear-gradient(90deg, var(--stepper-c1), var(--stepper-c2));
+    }
+
+/* Etiquetas */
+.comp-public-stepper .label {
+    font-size: .9rem;
+    font-weight: 600;
+    color: #222;
+}
+
+/* Responsive */
+@media (max-width:600px) {
+    .comp-public-stepper .comp-step {
+        min-width: 70px;
+    }
+
+    .comp-public-stepper .label {
+        font-size: .78rem;
+    }
+}

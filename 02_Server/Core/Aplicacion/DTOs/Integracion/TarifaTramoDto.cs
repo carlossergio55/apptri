@@ -8,6 +8,7 @@ namespace Aplicacion.DTOs.Integracion
 {
     public class TarifaTramoDto
     {
+        public int IdTarifaTramo { get; set; }  
         public int IdRuta { get; set; }
         public int OrigenParadaId { get; set; }
         public int DestinoParadaId { get; set; }

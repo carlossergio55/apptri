@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
+using Aplicacion.DTOs.Integracion;
 
 using Aplicacion.Wrappers;
 using Aplicacion.Interfaces;                 // IRepositoryAsync<T>
@@ -31,6 +32,8 @@ namespace Aplicacion.Features.Integracion.Queries
         public decimal? Precio { get; set; }
         public int? OrigenParadaId { get; set; }
         public int? DestinoParadaId { get; set; }
+
+     
     }
 
     public class SeatmapPorTramoQueryHandler : IRequestHandler<SeatmapPorTramoQuery, Response<List<SeatmapSeatDto>>>

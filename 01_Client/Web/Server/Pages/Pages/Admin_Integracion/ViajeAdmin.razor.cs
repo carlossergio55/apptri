@@ -39,6 +39,9 @@ namespace Server.Pages.Pages.Admin_Integracion
         private DateTime _desdeEstado = DateTime.Today.AddDays(-1);
         private DateTime _hastaEstado = DateTime.Today.AddDays(2);
 
+        // Control de finalizados
+        private bool mostrarFinalizados = false;
+
         // ---------- Helpers UI ----------
         protected string NombreRuta(int idRuta)
         {
@@ -293,5 +296,15 @@ namespace Server.Pages.Pages.Admin_Integracion
                 _timer = null;
             }
         }
+
+        // ---------- Vista organizada ----------
+        private IEnumerable<ViajeDto> ViajesOrdenados =>
+            _viajes
+                .OrderBy(v => v.Fecha)
+                .ThenBy(v => v.HoraSalida)
+                .Where(v => mostrarFinalizados ||
+                            !string.Equals(v.Estado, "FINALIZADO", StringComparison.OrdinalIgnoreCase));
+
+        private void ToggleFinalizados() => mostrarFinalizados = !mostrarFinalizados;
     }
 }

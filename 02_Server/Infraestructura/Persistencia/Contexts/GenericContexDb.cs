@@ -160,7 +160,10 @@ namespace Persistencia.Contexts
                 e.HasKey(x => x.IdRutaParada);  
                 e.Property(x => x.IdRutaParada)
                     .HasColumnName("id_ruta_parada")
-                    .ValueGeneratedOnAdd(); 
+                    .ValueGeneratedOnAdd();
+                e.HasIndex(x => new { x.IdRuta, x.IdParada })
+                    .IsUnique()
+                    .HasDatabaseName("uq_ruta_parada_ruta_parada");
 
                 e.Property(x => x.IdRuta).HasColumnName("id_ruta");
                 e.Property(x => x.IdParada).HasColumnName("id_parada");
@@ -177,14 +180,42 @@ namespace Persistencia.Contexts
             modelBuilder.Entity<TarifaTramo>(e =>
             {
                 e.ToTable("tarifa_tramo", "public");
-                e.HasKey(x => new { x.IdRuta, x.OrigenParadaId, x.DestinoParadaId });
-                e.Property(x => x.IdRuta).HasColumnName("id_ruta");
-                e.Property(x => x.OrigenParadaId).HasColumnName("origen_parada_id");
-                e.Property(x => x.DestinoParadaId).HasColumnName("destino_parada_id");
-                e.Property(x => x.Precio).HasColumnName("precio").HasColumnType("numeric(10,2)");
-                e.HasOne(x => x.Ruta).WithMany().HasForeignKey(x => x.IdRuta).OnDelete(DeleteBehavior.Restrict);
-                e.HasOne(x => x.OrigenParada).WithMany().HasForeignKey(x => x.OrigenParadaId).OnDelete(DeleteBehavior.Restrict);
-                e.HasOne(x => x.DestinoParada).WithMany().HasForeignKey(x => x.DestinoParadaId).OnDelete(DeleteBehavior.Restrict);
+
+                // PK simple
+                e.HasKey(x => x.IdTarifaTramo);
+                e.Property(x => x.IdTarifaTramo)
+                    .HasColumnName("id_tarifa_tramo")
+                    .ValueGeneratedOnAdd();
+
+                e.Property(x => x.IdRuta).HasColumnName("id_ruta").IsRequired();
+                e.Property(x => x.OrigenParadaId).HasColumnName("origen_parada_id").IsRequired();
+                e.Property(x => x.DestinoParadaId).HasColumnName("destino_parada_id").IsRequired();
+                e.Property(x => x.Precio).HasColumnName("precio").HasColumnType("numeric(10,2)").IsRequired();
+
+                // FKs
+                e.HasOne(x => x.Ruta)
+                    .WithMany()
+                    .HasForeignKey(x => x.IdRuta)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                e.HasOne(x => x.OrigenParada)
+                    .WithMany()
+                    .HasForeignKey(x => x.OrigenParadaId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                e.HasOne(x => x.DestinoParada)
+                    .WithMany()
+                    .HasForeignKey(x => x.DestinoParadaId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                // Regla de unicidad (ruta + origen + destino)
+                e.HasIndex(x => new { x.IdRuta, x.OrigenParadaId, x.DestinoParadaId })
+                    .IsUnique()
+                    .HasDatabaseName("uq_tarifa_tramo_ruta_origen_destino");
+
+                // (Opcional) Evita origen == destino
+                e.HasCheckConstraint("ck_tarifa_tramo_origen_destino_distintos",
+                                     "origen_parada_id <> destino_parada_id");
             });
         }
 

@@ -19,6 +19,7 @@
         </MudButton>
     </MudStack>
 
+    <!-- Formulario -->
     <MudExpansionPanels MultiExpansion="false">
         <MudExpansionPanel @bind-IsExpanded="expande" HideIcon="true">
             <TitleContent>
@@ -35,10 +36,8 @@
                 <MudCard>
                     <EditForm Model="@_Viaje" OnValidSubmit="@OnValidViaje">
                         <DataAnnotationsValidator />
-
                         <MudCardContent>
                             <MudGrid>
-
                                 <!-- FECHA -->
                                 <MudItem xs="12" sm="6" md="4">
                                     <MudDatePicker @bind-Date="_fechaSel"
@@ -60,7 +59,7 @@
                                                        Required="true">
                                                 @foreach (var h in _horasPreset)
                                                 {
-                                                    <MudSelectItem T="string" Value="@h">@h</MudSelectItem>
+                                                    <MudSelectItem Value="@h">@h</MudSelectItem>
                                                 }
                                             </MudSelect>
                                         </MudItem>
@@ -136,7 +135,6 @@
                                         }
                                     </MudSelect>
                                 </MudItem>
-
                             </MudGrid>
                         </MudCardContent>
 
@@ -156,22 +154,31 @@
         </MudExpansionPanel>
     </MudExpansionPanels>
 
+    <!-- Lista de viajes -->
     <MudDivider />
     <MudText Typo="Typo.h6" Align="Align.Center" Color="Color.Success"><b>LISTA DE VIAJES</b></MudText>
     <MudDivider />
 
-    <MudTable Items="@_viajes" Filterable="true" Sortable="true" Bordered="true"
+    <!-- Botón para mostrar/ocultar finalizados -->
+    <MudStack Row="true" Justify="Justify.FlexEnd" Class="mb-2 pr-4">
+        <MudButton Color="Color.Primary" Variant="Variant.Outlined" OnClick="ToggleFinalizados">
+            @(mostrarFinalizados ? "Ocultar finalizados" : "Ver finalizados")
+        </MudButton>
+    </MudStack>
+
+    <!-- Tabla principal -->
+    <MudTable T="ViajeDto" Items="ViajesOrdenados" Filterable="true" Sortable="true" Bordered="true"
               Hover="true" Dense="true" RowsPerPage="25"
               RowsPerPageOptions="new int[]{10,25,50,100}">
         <HeaderContent>
             <MudTh style="width:5%;max-width:60px;">
-                <MudTableSortLabel SortBy="new Func<ViajeDto, object>(x => x.IdViaje)">COD.</MudTableSortLabel>
+                <MudTableSortLabel T="ViajeDto" SortBy="x => x.IdViaje">COD.</MudTableSortLabel>
             </MudTh>
             <MudTh>
-                <MudTableSortLabel SortBy="new Func<ViajeDto, object>(x => x.Fecha)">FECHA</MudTableSortLabel>
+                <MudTableSortLabel T="ViajeDto" SortBy="x => x.Fecha">FECHA</MudTableSortLabel>
             </MudTh>
             <MudTh>
-                <MudTableSortLabel SortBy="new Func<ViajeDto, object>(x => x.HoraSalida)">HORA</MudTableSortLabel>
+                <MudTableSortLabel T="ViajeDto" SortBy="x => x.HoraSalida">HORA</MudTableSortLabel>
             </MudTh>
             <MudTh>ESTADO</MudTh>
             <MudTh>RUTA</MudTh>
@@ -189,7 +196,6 @@
                     <MudChip Color="@EstadoColor(context.Estado)" Variant="Variant.Filled" Size="Size.Small">
                         @context.Estado
                     </MudChip>
-                    @* Chip opcional para marcar viajes extendidos (Jue/Dom 17:30) *@
                     @if (EsExtendido(context))
                     {
                         <MudChip Color="Color.Success" Variant="Variant.Outlined" Size="Size.Small">

@@ -27,5 +27,7 @@ namespace Infraestructura.Models.Integracion
 
         [Required]
         public int IdBus { get; set; }
+        public int DestinoParadaId { get; set; }
+        public int OrigenParadaId { get; set; }
     }
 }

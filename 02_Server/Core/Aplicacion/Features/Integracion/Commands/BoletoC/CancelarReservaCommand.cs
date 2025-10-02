@@ -11,8 +11,6 @@ namespace Aplicacion.Features.Integracion.Commands.BoletoC
     public class CancelarReservaCommand : IRequest<Response<int>>
     {
         public int IdBoleto { get; set; }
-        public int? IdUsuario { get; set; }   // opcional para auditoría
-        public string? Motivo { get; set; }   // opcional para auditoría
     }
 
     public class CancelarReservaCommandHandler : IRequestHandler<CancelarReservaCommand, Response<int>>
@@ -30,25 +28,20 @@ namespace Aplicacion.Features.Integracion.Commands.BoletoC
             if (b is null)
                 throw new InvalidOperationException("Boleto no encontrado.");
 
-            if (string.Equals(b.Estado, "ANULADO", StringComparison.OrdinalIgnoreCase))
-                return new Response<int>(b.IdBoleto, "La reserva ya estaba anulada.");
+            var estado = (b.Estado ?? "").ToUpperInvariant();
 
             // No se cancelan boletos pagados
-            if (string.Equals(b.Estado, "PAGADO", StringComparison.OrdinalIgnoreCase))
+            if (estado == "PAGADO")
                 throw new InvalidOperationException("No se puede cancelar un boleto pagado. Use reprogramar.");
 
-            // Solo reservas (bloqueos) pueden cancelarse
-            if (!string.Equals(b.Estado, "BLOQUEADO", StringComparison.OrdinalIgnoreCase))
-                throw new InvalidOperationException($"Estado inválido para cancelar: {b.Estado}.");
+            // Solo se pueden cancelar RESERVADO o BLOQUEADO
+            if (estado is not ("RESERVADO" or "BLOQUEADO"))
+                throw new InvalidOperationException($"Estado inválido para cancelar: {b.Estado ?? "-"}.");
 
-            // Anular reserva
-            b.Estado = "ANULADO";
+            // HARD DELETE (borra totalmente el registro)
+            await _boletoRepo.DeleteAsync(b);
 
-            await _boletoRepo.UpdateAsync(b);
-
-            // TODO (opcional): guardar historial de auditoría con request.IdUsuario y request.Motivo
-
-            return new Response<int>(b.IdBoleto, "Reserva anulada correctamente.");
+            return new Response<int>(request.IdBoleto, "Reserva/bloqueo eliminado.");
         }
     }
 }

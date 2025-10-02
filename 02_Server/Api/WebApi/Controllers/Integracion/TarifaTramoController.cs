@@ -11,11 +11,13 @@ namespace WebApi.Controllers.Integracion
     [ApiController]
     public class TarifaTramoController : BaseApiController
     {
-        // GET por ruta, y opcionalmente por origen/destino (querystring)
-        // Ej: GET /tarifa-tramo?idRuta=1&origenParadaId=10&destinoParadaId=20
+        // GET listado/filtrado
         [HttpGet("tarifa-tramo")]
         [Authorize]
-        public async Task<IActionResult> Get([FromQuery] int idRuta, [FromQuery] int? origenParadaId, [FromQuery] int? destinoParadaId) =>
+        public async Task<IActionResult> Get(
+            [FromQuery] int idRuta,
+            [FromQuery] int? origenParadaId,
+            [FromQuery] int? destinoParadaId) =>
             Ok(await Mediator.Send(new GetTarifaTramoQuery
             {
                 IdRuta = idRuta,
@@ -23,31 +25,42 @@ namespace WebApi.Controllers.Integracion
                 DestinoParadaId = destinoParadaId
             }));
 
-        // Crear tarifa
-        [HttpPost("guardar")]
-        [Authorize]
-        public async Task<IActionResult> Post([FromBody] CreateTarifaTramoCommand command) =>
-            Ok(await Mediator.Send(command));
+        
 
-        // Actualizar precio de un tramo (PK compuesta en ruta)
-        [HttpPut("{idRuta}/{origenParadaId}/{destinoParadaId}")]
+        // (Opcional) GET tarifa exacta por tramo (útil para calcular precio)
+        [HttpGet("tarifa-tramo/exacta")]
         [Authorize]
-        public async Task<IActionResult> Put(int idRuta, int origenParadaId, int destinoParadaId, [FromBody] UpdateTarifaTramoCommand command)
-        {
-            if (idRuta != command.IdRuta || origenParadaId != command.OrigenParadaId || destinoParadaId != command.DestinoParadaId)
-                return BadRequest("Ids de ruta no coinciden con el payload.");
-            return Ok(await Mediator.Send(command));
-        }
-
-        // Eliminar tarifa de tramo
-        [HttpDelete("{idRuta}/{origenParadaId}/{destinoParadaId}")]
-        [Authorize]
-        public async Task<IActionResult> Delete(int idRuta, int origenParadaId, int destinoParadaId) =>
-            Ok(await Mediator.Send(new DeleteTarifaTramoCommand
+        public async Task<IActionResult> GetExacta(
+            [FromQuery] int idRuta,
+            [FromQuery] int origenParadaId,
+            [FromQuery] int destinoParadaId) =>
+            Ok(await Mediator.Send(new GetTarifaDeTramoActualQuery
             {
                 IdRuta = idRuta,
                 OrigenParadaId = origenParadaId,
                 DestinoParadaId = destinoParadaId
             }));
+
+        // POST crear
+        [HttpPost("guardar")]
+        [Authorize]
+        public async Task<IActionResult> Post([FromBody] CreateTarifaTramoCommand command) =>
+            Ok(await Mediator.Send(command));
+
+        // PUT actualizar (por PK simple)
+        [HttpPut("tarifa-tramo/{idTarifaTramo:int}")]
+        [Authorize]
+        public async Task<IActionResult> Put([FromRoute] int idTarifaTramo, [FromBody] UpdateTarifaTramoCommand command)
+        {
+            if (idTarifaTramo != command.IdTarifaTramo)
+                return BadRequest("El id de la ruta no coincide con el payload.");
+            return Ok(await Mediator.Send(command));
+        }
+
+        // DELETE eliminar (por PK simple)
+        [HttpDelete("tarifa-tramo/{idTarifaTramo:int}")]
+        [Authorize]
+        public async Task<IActionResult> Delete([FromRoute] int idTarifaTramo) =>
+            Ok(await Mediator.Send(new DeleteTarifaTramoCommand { IdTarifaTramo = idTarifaTramo }));
     }
 }

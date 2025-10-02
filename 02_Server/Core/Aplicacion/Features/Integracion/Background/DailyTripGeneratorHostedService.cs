@@ -11,10 +11,7 @@ using Microsoft.Extensions.Options;
 
 namespace Aplicacion.Features.Integracion.Background
 {
-    /// <summary>
-    /// Ejecuta la generación de viajes 1 vez al día a una hora fija (local),
-    /// manteniendo N días por delante. Usa scope por ejecución (DbContext scoped-safe).
-    /// </summary>
+   
     public class DailyTripGeneratorHostedService : BackgroundService
     {
         private readonly ILogger<DailyTripGeneratorHostedService> _logger;

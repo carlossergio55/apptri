@@ -48,8 +48,7 @@ namespace Aplicacion.Features.Integracion.Commands.ViajeC
             var omitidos = new List<(DateTime, int, string, string)>();
             var errores = new List<(DateTime, int, string, string)>();
 
-            const int RUTA_SERRANO = 1;
-            const int RUTA_MENDOZA = 5;
+            const int RUTA_SERRANO = 1; // única ruta
 
             var h0900 = TimeSpan.ParseExact("09:00", @"hh\:mm", CultureInfo.InvariantCulture);
             var h1730 = TimeSpan.ParseExact("17:30", @"hh\:mm", CultureInfo.InvariantCulture);
@@ -61,6 +60,7 @@ namespace Aplicacion.Features.Integracion.Commands.ViajeC
                 return new Response<GenerarViajesResult>(new GenerarViajesResult(creados, omitidos, errores, 0))
                 { Message = "No hay choferes o buses en BD.", Succeeded = false };
 
+            // parejas Chofer-Bus
             var parejas = new List<(int ChoferId, int BusId)>();
             var max = Math.Max(choferes.Count, buses.Count);
             for (int i = 0; i < max; i++)
@@ -75,16 +75,14 @@ namespace Aplicacion.Features.Integracion.Commands.ViajeC
 
             for (var d = start; d < end; d = d.AddDays(1))
             {
-                bool extendido = d.DayOfWeek == DayOfWeek.Thursday || d.DayOfWeek == DayOfWeek.Sunday;
-
-                var slots = new List<(int RutaId, TimeSpan Hora, string Dir)>
+                var slots = new List<(TimeSpan Hora, string Dir)>
                 {
-                    (RUTA_SERRANO, h0900, "IDA"),
-                    (extendido ? RUTA_MENDOZA : RUTA_SERRANO, h1730, "IDA")
+                    (h0900, "IDA"),
+                    (h1730, "IDA")
                 };
 
-                foreach (var (rutaId, hora, dir) in slots)
-                    await TryCreate(d, rutaId, hora, dir);
+                foreach (var (hora, dir) in slots)
+                    await TryCreate(d, RUTA_SERRANO, hora, dir);
             }
 
             var result = new GenerarViajesResult(
@@ -117,6 +115,7 @@ namespace Aplicacion.Features.Integracion.Commands.ViajeC
                 (int ChoferId, int BusId) parejaElegida = default;
                 bool asignada = false;
 
+                // Buscar pareja disponible
                 for (int t = 0; t < parejas.Count; t++)
                 {
                     var p = parejas[(idxPareja + t) % parejas.Count];

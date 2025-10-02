@@ -11,14 +11,29 @@ namespace WebApi.Controllers.Integracion
     [ApiController]
     public class BoletoController : BaseApiController
     {
+     
         [HttpGet("boleto")]
         [Authorize]
         public async Task<IActionResult> Get() =>
             Ok(await Mediator.Send(new GetAllBoletoQuery()));
 
+        [HttpGet("{id}/detalle")]
+        [Authorize]
+        public async Task<IActionResult> GetDetalle(int id) =>
+            Ok(await Mediator.Send(new GetBoletoDetalleQuery { IdBoleto = id }));
+
         [HttpPost("guardar")]
+        [Authorize]
         public async Task<IActionResult> Post([FromBody] CreateBoletoCommand command) =>
             Ok(await Mediator.Send(command));
+
+        [HttpPut("{id}")]
+        [Authorize]
+        public async Task<IActionResult> Put(int id, [FromBody] UpdateBoletoCommand command)
+        {
+            if (id != command.IdBoleto) return BadRequest("Id de ruta y cuerpo no coinciden.");
+            return Ok(await Mediator.Send(command));
+        }
 
         [HttpPost("reservar")]
         [Authorize]
@@ -27,18 +42,20 @@ namespace WebApi.Controllers.Integracion
 
         [HttpPost("confirmar")]
         [Authorize]
-        public async Task<IActionResult> Confirmar([FromBody] ConfirmarBoletosCommand command)
-        {
-            var res = await Mediator.Send(command);
-            return Ok(res);
-        }
+        public async Task<IActionResult> Confirmar([FromBody] ConfirmarBoletosCommand command) =>
+            Ok(await Mediator.Send(command));
 
         [HttpPost("reprogramar")]
         [Authorize]
         public async Task<IActionResult> Reprogramar([FromBody] ReprogramarBoletoCommand command) =>
             Ok(await Mediator.Send(command));
 
-        
+        [HttpDelete("cancelar-reserva/{id}")]
+        [Authorize]
+        public async Task<IActionResult> CancelarReserva(int id) =>
+    Ok(await Mediator.Send(new CancelarReservaCommand { IdBoleto = id }));
+
+
         [HttpPost("expirar-caducadas")]
         [Authorize]
         public async Task<IActionResult> ExpirarCaducadas([FromQuery] int ttlMin = 10, [FromQuery] int horasAntes = 2) =>
@@ -48,22 +65,9 @@ namespace WebApi.Controllers.Integracion
                 VentanaVencimientoHorasAntes = horasAntes
             }));
 
-        [HttpPut("{id}")]
-        [Authorize]
-        public async Task<IActionResult> Put(int id, [FromBody] UpdateBoletoCommand command)
-        {
-            if (id != command.IdBoleto) return BadRequest();
-            return Ok(await Mediator.Send(command));
-        }
-
         [HttpDelete("{id}")]
         [Authorize]
         public async Task<IActionResult> Delete(int id) =>
             Ok(await Mediator.Send(new DeleteBoletoCommand { IdBoleto = id }));
-
-        [HttpGet("{id}/detalle")]
-        [Authorize]
-        public async Task<IActionResult> GetDetalle(int id) =>
-            Ok(await Mediator.Send(new GetBoletoDetalleQuery { IdBoleto = id }));
     }
 }

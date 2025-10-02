@@ -1,0 +1,107 @@
+﻿@page "/admin/tarifa-tramo"
+@namespace Server.Pages.Pages.Admin_Integracion
+@using MudBlazor
+@using Microsoft.AspNetCore.Components.Web
+@layout MainLayout
+@inherits MainBaseComponent
+@using Infraestructura.Models.Integracion
+
+<MudPaper Class="p-4">
+    <MudStack Spacing="2">
+        <MudText Typo="Typo.h5">Administración de tarifas por tramo</MudText>
+
+        <!-- Filtro: Ruta -->
+        <MudGrid>
+            <MudItem xs="12" md="4">
+                <MudText Typo="Typo.subtitle2">Ruta</MudText>
+                <MudSelect T="int"
+                           Value="@_idRuta"
+                           ValueChanged="@OnRutaChanged"
+                           Dense="true"
+                           Variant="Variant.Outlined">
+                    @foreach (var r in _rutas)
+                    {
+                        <MudSelectItem Value="@r.IdRuta">@($"{r.Origen} → {r.Destino}")</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12" md="8" Class="d-flex align-center">
+                <MudText>@(_paradas?.Count > 0 ? $"Paradas: {string.Join(" · ", _paradas.Select(p => p.Nombre))}" : "Paradas: —")</MudText>
+            </MudItem>
+        </MudGrid>
+
+        <MudDivider Class="my-2" />
+
+        <!-- Formulario Crear/Editar -->
+        <MudPaper Class="p-3">
+            <MudText Typo="Typo.subtitle1">@(_editando ? "Editar tarifa" : "Nueva tarifa")</MudText>
+
+            <MudGrid Class="mt-2">
+                <MudItem xs="12" md="4">
+                    <MudText Typo="Typo.caption">Origen</MudText>
+                    <MudSelect T="int" @bind-Value="_form.OrigenParadaId" Dense="true" Variant="Variant.Outlined">
+                        @foreach (var p in _paradas)
+                        {
+                            <MudSelectItem Value="@p.IdParada">@p.Nombre</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+
+                <MudItem xs="12" md="4">
+                    <MudText Typo="Typo.caption">Destino</MudText>
+                    <MudSelect T="int" @bind-Value="_form.DestinoParadaId" Dense="true" Variant="Variant.Outlined">
+                        @foreach (var p in _paradas)
+                        {
+                            <MudSelectItem Value="@p.IdParada">@p.Nombre</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+
+                <MudItem xs="12" md="4">
+                    <MudText Typo="Typo.caption">Precio (Bs)</MudText>
+                    <MudNumericField T="decimal"
+                                     @bind-Value="_form.Precio"
+                                     Min="0.01M"
+                                     Dense="true"
+                                     Variant="Variant.Outlined"
+                                     Immediate="true"
+                                     Adornment="Adornment.Start"
+                                     AdornmentText="Bs" />
+                </MudItem>
+            </MudGrid>
+
+            <MudStack Direction="Row" Spacing="2" Class="mt-3">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@GuardarAsync">
+                    @(_editando ? "Actualizar" : "Guardar")
+                </MudButton>
+                <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="@LimpiarForm">
+                    Limpiar
+                </MudButton>
+            </MudStack>
+        </MudPaper>
+
+        <MudDivider Class="my-2" />
+
+        <!-- Tabla -->
+        <MudTable Items="@_tarifas" Dense="true" Hover="true">
+            <HeaderContent>
+                <MudTh>Origen</MudTh>
+                <MudTh>Destino</MudTh>
+                <MudTh class="text-right">Precio (Bs)</MudTh>
+                <MudTh class="text-center">Acciones</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>@NombreParada(@context.OrigenParadaId)</MudTd>
+                <MudTd>@NombreParada(@context.DestinoParadaId)</MudTd>
+                <MudTd Class="text-right">@(@context.Precio.ToString("0.00"))</MudTd>
+                <MudTd Class="text-center">
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" OnClick="@(()=>Editar(@context))" />
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(()=>EliminarAsync(@context))" />
+                </MudTd>
+            </RowTemplate>
+            <NoRecordsContent>
+                <MudText>No hay tarifas registradas para esta ruta.</MudText>
+            </NoRecordsContent>
+        </MudTable>
+    </MudStack>
+</MudPaper>

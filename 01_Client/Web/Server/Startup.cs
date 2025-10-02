@@ -1,6 +1,7 @@
-using Infraestructura.Extensions;
+﻿using Infraestructura.Extensions;
 using Infraestructura.Services;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.Configuration;
@@ -10,6 +11,7 @@ using Microsoft.Extensions.Options;
 using MudBlazor;
 using MudBlazor.Services;
 using Server.Models;
+using Server.Services.Integracion;
 using Server.Shared;
 using Server.Shared.Component;
 using Syncfusion.Blazor;
@@ -18,7 +20,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Net.Http;
 using ConfigurationPath = Server.Models.ConfigurationPath;
-using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
+// using Server.Services; // <-- SOLO si CompraFlowState está en Server.Services
 
 namespace Server
 {
@@ -33,15 +35,14 @@ namespace Server
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddHttpClient("Api", c =>
+            services.AddHttpClient<VentaService>(c =>
             {
-                c.BaseAddress = new Uri(Configuration.GetSection("EndPoints:Api").Value);
-
+                c.BaseAddress = new Uri(Configuration["EndPoints:Api"]);
             }).ConfigurePrimaryHttpMessageHandler(_ => new HttpClientHandler
             {
-                ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => { return true; }
+                ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
             });
-         
+
 
             services.AddHttpClient("ApiSeg", c =>
             {
@@ -60,11 +61,10 @@ namespace Server
             services.AddScoped<Radzen.TooltipService>();
             services.AddScoped<GitHubService>();
 
-
             services.Configure<RequestLocalizationOptions>(options =>
             {
                 var supportedCultures = new List<CultureInfo>()
-                {                    
+                {
                     new CultureInfo("es"),
                 };
                 options.DefaultRequestCulture = new RequestCulture("es");
@@ -74,6 +74,7 @@ namespace Server
 
             services.AddRazorPages();
             services.AddServerSideBlazor(c => c.DetailedErrors = true);
+            
 
             services.AddSiabysServices();
             services.AddMudServices(config =>
@@ -87,10 +88,11 @@ namespace Server
                 config.SnackbarConfiguration.ShowTransitionDuration = 500;
                 config.SnackbarConfiguration.SnackbarVariant = Variant.Text;
             });
-           
-           
+
+            // ⬇️ NUEVO: estado del flujo de compra (1=Buscar, 2=Asientos, 3=Datos, 4=Pago)
+            services.AddScoped<CompraFlowState>();
         }
-        
+
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense("NTk1NjUwQDMxMzkyZTM0MmUzMGo1YTk3b29rL2t6NVkrUG1md2ZsUXFScHY4WG1lSmdCZTczSEQvdW9DQ2s9");
@@ -113,8 +115,6 @@ namespace Server
                 endpoints.MapBlazorHub();
                 endpoints.MapFallbackToPage("/_Host");
             });
-
-
         }
     }
 }

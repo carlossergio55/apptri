@@ -4,6 +4,7 @@ using Aplicacion.Features.Integracion.Queries;           // GetAllViajeQuery, Ge
 using Aplicacion.Wrappers;                               // Response<T>
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -86,5 +87,19 @@ namespace WebApi.Controllers.Integracion
 
             return Ok(resp); // ya es Response<List<SeatmapSeatDto>>
         }
+        
+        [HttpGet("planilla")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetPlanilla([FromQuery] DateTime fecha, [FromQuery] int dias = 1)
+        {
+            var resp = await Mediator.Send(new GetViajesPlanillaQuery
+            {
+                Fecha = fecha,
+                Dias = dias
+            });
+
+            return Ok(resp); // Response<List<ViajePlanillaDto>>
+        }
+
     }
 }
