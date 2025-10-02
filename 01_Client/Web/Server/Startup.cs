@@ -11,6 +11,7 @@ using Microsoft.Extensions.Options;
 using MudBlazor;
 using MudBlazor.Services;
 using Server.Models;
+using Server.Services;
 using Server.Services.Integracion;
 using Server.Shared;
 using Server.Shared.Component;
@@ -20,7 +21,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Net.Http;
 using ConfigurationPath = Server.Models.ConfigurationPath;
-// using Server.Services; // <-- SOLO si CompraFlowState está en Server.Services
 
 namespace Server
 {
@@ -35,15 +35,16 @@ namespace Server
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddHttpClient<VentaService>(c =>
+            // Cliente HTTP para API principal
+            services.AddHttpClient("Api", c =>
             {
-                c.BaseAddress = new Uri(Configuration["EndPoints:Api"]);
+                c.BaseAddress = new Uri(Configuration.GetSection("EndPoints:Api").Value);
             }).ConfigurePrimaryHttpMessageHandler(_ => new HttpClientHandler
             {
-                ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
+                ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => { return true; }
             });
 
-
+            // Cliente HTTP para API de seguridad
             services.AddHttpClient("ApiSeg", c =>
             {
                 c.BaseAddress = new Uri(Configuration.GetSection("EndPoints:Apiseg").Value);
@@ -74,7 +75,9 @@ namespace Server
 
             services.AddRazorPages();
             services.AddServerSideBlazor(c => c.DetailedErrors = true);
-            
+
+            // 🔹 VentaService registrado clásico
+            services.AddScoped<VentaService>();
 
             services.AddSiabysServices();
             services.AddMudServices(config =>
@@ -89,7 +92,7 @@ namespace Server
                 config.SnackbarConfiguration.SnackbarVariant = Variant.Text;
             });
 
-            // ⬇️ NUEVO: estado del flujo de compra (1=Buscar, 2=Asientos, 3=Datos, 4=Pago)
+            // ⬇️ Estado del flujo de compra
             services.AddScoped<CompraFlowState>();
         }
 
@@ -97,6 +100,7 @@ namespace Server
         {
             Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense("NTk1NjUwQDMxMzkyZTM0MmUzMGo1YTk3b29rL2t6NVkrUG1md2ZsUXFScHY4WG1lSmdCZTczSEQvdW9DQ2s9");
             app.UseRequestLocalization(app.ApplicationServices.GetService<IOptions<RequestLocalizationOptions>>().Value);
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -110,6 +114,7 @@ namespace Server
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseRouting();
+
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapBlazorHub();
